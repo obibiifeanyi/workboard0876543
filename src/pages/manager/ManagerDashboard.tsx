@@ -1,10 +1,7 @@
 import { DashboardLayout } from "@/components/DashboardLayout";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { WorkBoard } from "@/components/manager/WorkBoard";
-import { LeaveManagement } from "@/components/manager/LeaveManagement";
-import { TeamOverview } from "@/components/manager/TeamOverview";
-import { TelecomSites } from "@/components/manager/TelecomSites";
-import { TeamTimeManagement } from "@/components/manager/TeamTimeManagement";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ManagerStats } from "@/components/manager/dashboard/ManagerStats";
+import { ManagerTabContent } from "@/components/manager/dashboard/ManagerTabContent";
 
 const ManagerDashboard = () => {
   return (
@@ -22,6 +19,8 @@ const ManagerDashboard = () => {
             </div>
           </div>
         </div>
+
+        <ManagerStats />
 
         <Tabs defaultValue="time" className="space-y-6">
           <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 gap-2 bg-black/20 p-1 rounded-xl">
@@ -43,25 +42,7 @@ const ManagerDashboard = () => {
           </TabsList>
 
           <div className="mt-6 bg-black/10 rounded-3xl p-6">
-            <TabsContent value="time" className="space-y-6 mt-0">
-              <TeamTimeManagement />
-            </TabsContent>
-
-            <TabsContent value="workboard" className="space-y-6 mt-0">
-              <WorkBoard />
-            </TabsContent>
-
-            <TabsContent value="leave" className="space-y-6 mt-0">
-              <LeaveManagement />
-            </TabsContent>
-
-            <TabsContent value="team" className="space-y-6 mt-0">
-              <TeamOverview />
-            </TabsContent>
-
-            <TabsContent value="sites" className="space-y-6 mt-0">
-              <TelecomSites />
-            </TabsContent>
+            <ManagerTabContent />
           </div>
         </Tabs>
       </div>

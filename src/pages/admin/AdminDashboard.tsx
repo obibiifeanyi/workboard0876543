@@ -1,54 +1,15 @@
 import { DashboardLayout } from "@/components/DashboardLayout";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { TelecomSites } from "@/components/admin/TelecomSites";
-import { ProjectManagement } from "@/components/admin/ProjectManagement";
-import { LeaveManagement } from "@/components/admin/LeaveManagement";
-import { UserManagement } from "@/components/admin/UserManagement";
-import { DepartmentManagement } from "@/components/admin/DepartmentManagement";
-import { ActivityManagement } from "@/components/admin/ActivityManagement";
-import { TimeManagement } from "@/components/admin/TimeManagement";
-import { AIManagementSystem } from "@/components/ai/AIManagementSystem";
-import { AIKnowledgeBase } from "@/components/ai/AIKnowledgeBase";
-import { AnalyticsCards } from "@/components/analytics/AnalyticsCards";
-import { Card } from "@/components/ui/card";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-
-const mockData = [
-  { name: 'Jan', value: 400 },
-  { name: 'Feb', value: 300 },
-  { name: 'Mar', value: 600 },
-  { name: 'Apr', value: 800 },
-  { name: 'May', value: 500 },
-  { name: 'Jun', value: 700 },
-];
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AdminStats } from "@/components/admin/dashboard/AdminStats";
+import { AdminPerformanceChart } from "@/components/admin/dashboard/AdminPerformanceChart";
+import { AdminTabContent } from "@/components/admin/dashboard/AdminTabContent";
 
 const AdminDashboard = () => {
   return (
     <DashboardLayout title="Admin Dashboard">
       <div className="space-y-6 animate-fade-in">
-        <div className="mb-8">
-          <AnalyticsCards />
-        </div>
-
-        <Card className="p-6">
-          <h3 className="text-lg font-semibold mb-4">System Performance</h3>
-          <div className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={mockData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Line 
-                  type="monotone" 
-                  dataKey="value" 
-                  stroke="hsl(var(--primary))"
-                  strokeWidth={2}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </Card>
+        <AdminStats />
+        <AdminPerformanceChart />
 
         <Tabs defaultValue="time" className="space-y-4">
           <TabsList className="grid w-full grid-cols-1 md:grid-cols-9 lg:grid-cols-9 gap-4">
@@ -63,41 +24,7 @@ const AdminDashboard = () => {
             <TabsTrigger value="activity">Activity Log</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="time" className="space-y-4">
-            <TimeManagement />
-          </TabsContent>
-
-          <TabsContent value="ai" className="space-y-4">
-            <AIManagementSystem />
-          </TabsContent>
-
-          <TabsContent value="knowledge" className="space-y-4">
-            <AIKnowledgeBase />
-          </TabsContent>
-
-          <TabsContent value="telecom" className="space-y-4">
-            <TelecomSites />
-          </TabsContent>
-
-          <TabsContent value="projects" className="space-y-4">
-            <ProjectManagement />
-          </TabsContent>
-
-          <TabsContent value="leave" className="space-y-4">
-            <LeaveManagement />
-          </TabsContent>
-
-          <TabsContent value="users" className="space-y-4">
-            <UserManagement />
-          </TabsContent>
-
-          <TabsContent value="departments" className="space-y-4">
-            <DepartmentManagement />
-          </TabsContent>
-
-          <TabsContent value="activity" className="space-y-4">
-            <ActivityManagement />
-          </TabsContent>
+          <AdminTabContent />
         </Tabs>
       </div>
     </DashboardLayout>
