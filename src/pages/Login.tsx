@@ -11,21 +11,59 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isFirstLogin, setIsFirstLogin] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handlePasswordChange = async () => {
+    if (newPassword !== confirmPassword) {
+      toast({
+        title: "Error",
+        description: "Passwords do not match",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Here you would typically make an API call to change the password
+    toast({
+      title: "Success",
+      description: "Password changed successfully",
+    });
+    setIsFirstLogin(false);
+    handleLogin(null, true);
+  };
+
+  const handleLogin = async (e?: React.FormEvent, isPasswordChanged = false) => {
+    if (e) e.preventDefault();
     setLoading(true);
 
     try {
       // Mock login - replace with actual authentication
-      if (email && password) {
+      if (email && (password || isPasswordChanged)) {
+        // Check if it's first login (mock check - replace with actual logic)
+        const mockFirstLogin = !isPasswordChanged && email.includes("new");
+        
+        if (mockFirstLogin) {
+          setIsFirstLogin(true);
+          setLoading(false);
+          return;
+        }
+
         // Determine role based on email (mock logic)
         const role = email.includes("admin")
           ? "admin"
@@ -102,6 +140,43 @@ const Login = () => {
           </form>
         </CardContent>
       </Card>
+
+      <Dialog open={isFirstLogin} onOpenChange={setIsFirstLogin}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Change Password</DialogTitle>
+            <DialogDescription>
+              Since this is your first login, please change your password.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="newPassword">New Password</Label>
+              <Input
+                id="newPassword"
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+              />
+            </div>
+            <Button 
+              onClick={handlePasswordChange}
+              className="w-full bg-[#ea384c] hover:bg-[#ea384c]/90"
+            >
+              Change Password
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

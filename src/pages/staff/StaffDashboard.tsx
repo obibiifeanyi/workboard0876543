@@ -1,52 +1,49 @@
+import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { 
-  Clock, 
-  ClipboardList, 
-  Calendar,
-  Bell,
-  User
-} from "lucide-react";
-import { ThemeSwitcher } from "@/components/ThemeSwitcher";
+import { CheckCircle, Clock, Calendar, Bell } from "lucide-react";
 
 const StaffDashboard = () => {
-  const menuItems = [
-    { title: "My Tasks", icon: ClipboardList, count: "5" },
-    { title: "Leave Balance", icon: Calendar, count: "15 days" },
-    { title: "Hours Today", icon: Clock, count: "7.5" },
-    { title: "Notifications", icon: Bell, count: "2" },
+  const stats = [
+    {
+      title: "Tasks Completed",
+      value: "15",
+      icon: CheckCircle,
+    },
+    {
+      title: "Hours Today",
+      value: "6.5",
+      icon: Clock,
+    },
+    {
+      title: "Leave Balance",
+      value: "12",
+      icon: Calendar,
+    },
+    {
+      title: "Notifications",
+      value: "4",
+      icon: Bell,
+    },
   ];
 
   return (
-    <div className="min-h-screen bg-background">
-      <nav className="border-b">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold">Staff Dashboard</h1>
-          <div className="flex items-center gap-4">
-            <ThemeSwitcher />
-            <Button variant="outline">Sign Out</Button>
-          </div>
-        </div>
-      </nav>
-
-      <main className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {menuItems.map((item) => (
-            <Card key={item.title} className="hover:shadow-lg transition-shadow cursor-pointer">
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-lg font-medium">
-                  {item.title}
-                </CardTitle>
-                <item.icon className="h-5 w-5 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold">{item.count}</div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </main>
-    </div>
+    <DashboardLayout title="Staff Dashboard">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        {stats.map((stat) => (
+          <Card key={stat.title} className="hover:shadow-lg transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                {stat.title}
+              </CardTitle>
+              <stat.icon className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stat.value}</div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </DashboardLayout>
   );
 };
 
