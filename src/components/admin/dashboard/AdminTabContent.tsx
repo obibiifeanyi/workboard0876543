@@ -7,6 +7,8 @@ import { LeaveManagement } from "@/components/admin/LeaveManagement";
 import { UserManagement } from "@/components/admin/UserManagement";
 import { DepartmentManagement } from "@/components/admin/DepartmentManagement";
 import { ActivityManagement } from "@/components/admin/ActivityManagement";
+import { DocumentAnalytics } from "@/components/documents/DocumentAnalytics";
+import { EmailNotificationCenter } from "@/components/notifications/EmailNotificationCenter";
 import { TabsContent } from "@/components/ui/tabs";
 
 export const AdminTabContent = () => {
@@ -18,6 +20,7 @@ export const AdminTabContent = () => {
 
       <TabsContent value="ai" className="space-y-4">
         <AIManagementSystem />
+        <DocumentAnalytics />
       </TabsContent>
 
       <TabsContent value="knowledge" className="space-y-4">
@@ -46,6 +49,10 @@ export const AdminTabContent = () => {
 
       <TabsContent value="activity" className="space-y-4">
         <ActivityManagement />
+      </TabsContent>
+
+      <TabsContent value="settings" className="space-y-4">
+        <EmailNotificationCenter />
       </TabsContent>
     </>
   );

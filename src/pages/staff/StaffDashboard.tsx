@@ -3,11 +3,14 @@ import { DashboardLayout } from "@/components/DashboardLayout";
 import { StatsCards } from "@/components/StatsCards";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Clock, Calendar as CalendarIcon, CheckCircle, Bell } from "lucide-react";
+import { Clock, Calendar as CalendarIcon, CheckCircle, Bell, FileText, MapPin, MessageSquare } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { TaskList } from "@/components/staff/TaskList";
 import { LeaveApplication } from "@/components/staff/LeaveApplication";
 import { ProfileSection } from "@/components/staff/ProfileSection";
+import { DocumentAnalytics } from "@/components/documents/DocumentAnalytics";
+import { EmailNotificationCenter } from "@/components/notifications/EmailNotificationCenter";
+import { ChatBox } from "@/components/ChatBox";
 
 const StaffDashboard = () => {
   const [date, setDate] = useState<Date | undefined>(new Date());
@@ -72,23 +75,49 @@ const StaffDashboard = () => {
 
   return (
     <DashboardLayout title="Staff Dashboard">
-      <div className="space-y-6">
+      <div className="space-y-6 p-6">
         <StatsCards stats={stats} />
 
         <Tabs defaultValue="tasks" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="tasks">My Tasks</TabsTrigger>
-            <TabsTrigger value="leave">Leave Application</TabsTrigger>
+          <TabsList className="grid grid-cols-2 md:grid-cols-6 gap-2">
+            <TabsTrigger value="tasks">Tasks</TabsTrigger>
+            <TabsTrigger value="documents">Documents</TabsTrigger>
+            <TabsTrigger value="sites">Telecom Sites</TabsTrigger>
+            <TabsTrigger value="leave">Leave</TabsTrigger>
             <TabsTrigger value="profile">Profile</TabsTrigger>
+            <TabsTrigger value="settings">Settings</TabsTrigger>
           </TabsList>
 
           <TabsContent value="tasks" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>Current Tasks</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <CheckCircle className="h-5 w-5" />
+                  Current Tasks
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <TaskList tasks={tasks} />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="documents" className="space-y-4">
+            <DocumentAnalytics />
+          </TabsContent>
+
+          <TabsContent value="sites" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <MapPin className="h-5 w-5" />
+                  Assigned Sites
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center text-muted-foreground">
+                  No sites assigned yet.
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
@@ -104,7 +133,14 @@ const StaffDashboard = () => {
           <TabsContent value="profile" className="space-y-4">
             <ProfileSection />
           </TabsContent>
+
+          <TabsContent value="settings" className="space-y-4">
+            <EmailNotificationCenter />
+          </TabsContent>
         </Tabs>
+
+        {/* Fixed AI Chat Box */}
+        <ChatBox />
       </div>
     </DashboardLayout>
   );

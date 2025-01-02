@@ -2,6 +2,8 @@ import { DashboardLayout } from "@/components/DashboardLayout";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ManagerStats } from "@/components/manager/dashboard/ManagerStats";
 import { ManagerTabContent } from "@/components/manager/dashboard/ManagerTabContent";
+import { ChatBox } from "@/components/ChatBox";
+import { DocumentAnalytics } from "@/components/documents/DocumentAnalytics";
 
 const ManagerDashboard = () => {
   return (
@@ -22,8 +24,10 @@ const ManagerDashboard = () => {
 
         <ManagerStats />
 
+        <DocumentAnalytics />
+
         <Tabs defaultValue="time" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 gap-2 bg-black/20 p-1 rounded-xl">
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-6 gap-2 bg-black/20 p-1 rounded-xl">
             <TabsTrigger value="time" className="rounded-lg data-[state=active]:bg-primary">
               Time Logs
             </TabsTrigger>
@@ -31,13 +35,16 @@ const ManagerDashboard = () => {
               Work Board
             </TabsTrigger>
             <TabsTrigger value="leave" className="rounded-lg data-[state=active]:bg-primary">
-              Leave Management
+              Leave
             </TabsTrigger>
             <TabsTrigger value="team" className="rounded-lg data-[state=active]:bg-primary">
-              Team Overview
+              Team
             </TabsTrigger>
             <TabsTrigger value="sites" className="rounded-lg data-[state=active]:bg-primary">
-              Telecom Sites
+              Sites
+            </TabsTrigger>
+            <TabsTrigger value="settings" className="rounded-lg data-[state=active]:bg-primary">
+              Settings
             </TabsTrigger>
           </TabsList>
 
@@ -45,6 +52,9 @@ const ManagerDashboard = () => {
             <ManagerTabContent />
           </div>
         </Tabs>
+
+        {/* Fixed AI Chat Box */}
+        <ChatBox />
       </div>
     </DashboardLayout>
   );
