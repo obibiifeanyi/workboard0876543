@@ -4,6 +4,8 @@ import { TelecomSites } from "@/components/admin/TelecomSites";
 import { ProjectManagement } from "@/components/admin/ProjectManagement";
 import { LeaveManagement } from "@/components/admin/LeaveManagement";
 import { UserManagement } from "@/components/admin/UserManagement";
+import { DepartmentManagement } from "@/components/admin/DepartmentManagement";
+import { ActivityManagement } from "@/components/admin/ActivityManagement";
 import { AIManagementSystem } from "@/components/ai/AIManagementSystem";
 import { AIKnowledgeBase } from "@/components/ai/AIKnowledgeBase";
 import { AnalyticsCards } from "@/components/analytics/AnalyticsCards";
@@ -23,12 +25,10 @@ const AdminDashboard = () => {
   return (
     <DashboardLayout title="Admin Dashboard">
       <div className="space-y-6 animate-fade-in">
-        {/* Analytics Overview */}
         <div className="mb-8">
           <AnalyticsCards />
         </div>
 
-        {/* Performance Chart */}
         <Card className="p-6">
           <h3 className="text-lg font-semibold mb-4">System Performance</h3>
           <div className="h-[300px]">
@@ -49,15 +49,16 @@ const AdminDashboard = () => {
           </div>
         </Card>
 
-        {/* Main Content Tabs */}
         <Tabs defaultValue="ai" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-1 md:grid-cols-6 lg:grid-cols-6 gap-4">
+          <TabsList className="grid w-full grid-cols-1 md:grid-cols-8 lg:grid-cols-8 gap-4">
             <TabsTrigger value="ai">AI Management</TabsTrigger>
             <TabsTrigger value="knowledge">Knowledge Base</TabsTrigger>
             <TabsTrigger value="telecom">Telecom Sites</TabsTrigger>
             <TabsTrigger value="projects">Projects</TabsTrigger>
             <TabsTrigger value="leave">Leave Management</TabsTrigger>
             <TabsTrigger value="users">User Management</TabsTrigger>
+            <TabsTrigger value="departments">Departments</TabsTrigger>
+            <TabsTrigger value="activity">Activity Log</TabsTrigger>
           </TabsList>
 
           <TabsContent value="ai" className="space-y-4">
@@ -82,6 +83,14 @@ const AdminDashboard = () => {
 
           <TabsContent value="users" className="space-y-4">
             <UserManagement />
+          </TabsContent>
+
+          <TabsContent value="departments" className="space-y-4">
+            <DepartmentManagement />
+          </TabsContent>
+
+          <TabsContent value="activity" className="space-y-4">
+            <ActivityManagement />
           </TabsContent>
         </Tabs>
       </div>
