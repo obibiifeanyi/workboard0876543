@@ -63,7 +63,7 @@ export const WorkBoard = () => {
 
       <div className="grid gap-6 md:grid-cols-2">
         {mockProjects.map((project) => (
-          <Card key={project.id} className="bg-black/10 border-none shadow-lg rounded-2xl hover:bg-black/20 transition-all">
+          <Card key={project.id} className="card-enhanced">
             <CardHeader>
               <CardTitle className="text-lg font-medium">{project.name}</CardTitle>
             </CardHeader>
@@ -74,7 +74,7 @@ export const WorkBoard = () => {
                     <span>Progress</span>
                     <span>{project.progress}%</span>
                   </div>
-                  <div className="h-2 bg-black/20 rounded-full overflow-hidden">
+                  <div className="h-2 bg-black/20 dark:bg-white/10 rounded-full overflow-hidden">
                     <div
                       className="h-full bg-primary rounded-full transition-all"
                       style={{ width: `${project.progress}%` }}

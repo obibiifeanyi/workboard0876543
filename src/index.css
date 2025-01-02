@@ -57,3 +57,12 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer components {
+  .card-enhanced {
+    @apply bg-black/10 border-none shadow-lg rounded-2xl 
+           hover:bg-black/20 transition-all
+           dark:bg-white/5 dark:hover:bg-white/10
+           dark:shadow-lg dark:shadow-white/5;
+  }
+}

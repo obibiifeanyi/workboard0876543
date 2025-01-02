@@ -1,77 +1,55 @@
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { Index } from "@/pages/Index";
+import { Login } from "@/pages/Login";
+import { Dashboard } from "@/pages/Dashboard";
+import { AdminDashboard } from "@/pages/admin/AdminDashboard";
+import { ManagerDashboard } from "@/pages/manager/ManagerDashboard";
+import { StaffDashboard } from "@/pages/staff/StaffDashboard";
+import { AccountPage } from "@/pages/account/AccountPage";
+import { DocumentsPage } from "@/pages/documents/DocumentsPage";
+import { SettingsPage } from "@/pages/settings/SettingsPage";
 import { RoleBasedRoute } from "@/components/RoleBasedRoute";
-import Index from "./pages/Index";
-import Login from "./pages/Login";
-import AdminDashboard from "./pages/admin/AdminDashboard";
-import ManagerDashboard from "./pages/manager/ManagerDashboard";
-import StaffDashboard from "./pages/staff/StaffDashboard";
-import AccountPage from "./pages/account/AccountPage";
-import DocumentsPage from "./pages/documents/DocumentsPage";
+import { Toaster } from "@/components/ui/toaster";
+import "./App.css";
 
-const queryClient = new QueryClient();
-
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
+function App() {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<Index />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route
+          path="/admin/*"
+          element={
+            <RoleBasedRoute allowedRole="admin">
+              <AdminDashboard />
+            </RoleBasedRoute>
+          }
+        />
+        <Route
+          path="/manager/*"
+          element={
+            <RoleBasedRoute allowedRole="manager">
+              <ManagerDashboard />
+            </RoleBasedRoute>
+          }
+        />
+        <Route
+          path="/staff/*"
+          element={
+            <RoleBasedRoute allowedRole="staff">
+              <StaffDashboard />
+            </RoleBasedRoute>
+          }
+        />
+        <Route path="/account" element={<AccountPage />} />
+        <Route path="/documents" element={<DocumentsPage />} />
+        <Route path="/settings" element={<SettingsPage />} />
+      </Routes>
       <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/login" element={<Login />} />
-          <Route 
-            path="/admin/*" 
-            element={
-              <RoleBasedRoute 
-                element={<AdminDashboard />} 
-                allowedRoles={["admin"]} 
-              />
-            } 
-          />
-          <Route 
-            path="/manager/*" 
-            element={
-              <RoleBasedRoute 
-                element={<ManagerDashboard />} 
-                allowedRoles={["manager"]} 
-              />
-            } 
-          />
-          <Route 
-            path="/staff/*" 
-            element={
-              <RoleBasedRoute 
-                element={<StaffDashboard />} 
-                allowedRoles={["staff", "manager", "admin"]} 
-              />
-            } 
-          />
-          <Route 
-            path="/account" 
-            element={
-              <RoleBasedRoute 
-                element={<AccountPage />} 
-                allowedRoles={["staff", "manager", "admin"]} 
-              />
-            } 
-          />
-          <Route 
-            path="/documents" 
-            element={
-              <RoleBasedRoute 
-                element={<DocumentsPage />} 
-                allowedRoles={["staff", "manager", "admin"]} 
-              />
-            } 
-          />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+    </Router>
+  );
+}
 
 export default App;
