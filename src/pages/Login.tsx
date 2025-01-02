@@ -54,10 +54,14 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <Card className="w-[400px]">
-        <CardHeader>
-          <CardTitle>Login</CardTitle>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-background px-4 py-8">
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold text-center mb-2">CTNL AI WORK-BOARD</h1>
+        <p className="text-muted-foreground text-center">Sign in to your account</p>
+      </div>
+      <Card className="w-full max-w-[400px]">
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-xl">Login</CardTitle>
           <CardDescription>
             Enter your credentials to access your dashboard
           </CardDescription>
@@ -69,10 +73,11 @@ const Login = () => {
               <Input
                 id="email"
                 type="email"
-                placeholder="Enter your email"
+                placeholder="name@company.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                className="w-full"
               />
             </div>
             <div className="space-y-2">
@@ -80,14 +85,19 @@ const Login = () => {
               <Input
                 id="password"
                 type="password"
-                placeholder="Enter your password"
+                placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                className="w-full"
               />
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Logging in..." : "Login"}
+            <Button 
+              type="submit" 
+              className="w-full bg-[#ea384c] hover:bg-[#ea384c]/90" 
+              disabled={loading}
+            >
+              {loading ? "Signing in..." : "Sign in"}
             </Button>
           </form>
         </CardContent>
