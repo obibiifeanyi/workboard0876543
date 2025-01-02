@@ -5,6 +5,7 @@ import { ProjectManagement } from "@/components/admin/ProjectManagement";
 import { LeaveManagement } from "@/components/admin/LeaveManagement";
 import { UserManagement } from "@/components/admin/UserManagement";
 import { AIManagementSystem } from "@/components/ai/AIManagementSystem";
+import { AIKnowledgeBase } from "@/components/ai/AIKnowledgeBase";
 import { AnalyticsCards } from "@/components/analytics/AnalyticsCards";
 import { Card } from "@/components/ui/card";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
@@ -50,8 +51,9 @@ const AdminDashboard = () => {
 
         {/* Main Content Tabs */}
         <Tabs defaultValue="ai" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-1 md:grid-cols-5 lg:grid-cols-5 gap-4">
+          <TabsList className="grid w-full grid-cols-1 md:grid-cols-6 lg:grid-cols-6 gap-4">
             <TabsTrigger value="ai">AI Management</TabsTrigger>
+            <TabsTrigger value="knowledge">Knowledge Base</TabsTrigger>
             <TabsTrigger value="telecom">Telecom Sites</TabsTrigger>
             <TabsTrigger value="projects">Projects</TabsTrigger>
             <TabsTrigger value="leave">Leave Management</TabsTrigger>
@@ -60,6 +62,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="ai" className="space-y-4">
             <AIManagementSystem />
+          </TabsContent>
+
+          <TabsContent value="knowledge" className="space-y-4">
+            <AIKnowledgeBase />
           </TabsContent>
 
           <TabsContent value="telecom" className="space-y-4">
