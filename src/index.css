@@ -47,6 +47,24 @@
     --input: 217.2 32.6% 17.5%;
     --ring: 351 83% 56%;
   }
+
+  .glass-card {
+    @apply bg-black/10 dark:bg-white/5 backdrop-blur-lg border-none
+           hover:bg-black/20 dark:hover:bg-white/10
+           transition-all duration-200;
+  }
+
+  .chat-message {
+    @apply max-w-[80%] p-4 rounded-xl backdrop-blur-lg
+           animate-fade-in;
+  }
+
+  .ai-thinking {
+    @apply flex items-center gap-4 p-4
+           bg-secondary/10 dark:bg-secondary/5
+           rounded-xl backdrop-blur-lg
+           animate-pulse;
+  }
 }
 
 @layer base {
