@@ -22,16 +22,23 @@ export const DashboardLayout = ({ children, title }: DashboardLayoutProps) => {
     <div className="min-h-screen bg-gradient-dark text-white">
       {/* Sidebar */}
       <div className="fixed left-0 top-0 h-full w-16 bg-black/20 backdrop-blur-xl border-r border-white/10 flex flex-col items-center py-6 gap-6">
-        <Button variant="ghost" size="icon" className="text-emerald hover:bg-emerald/10">
+        <div className="w-12 h-12 mb-6">
+          <img 
+            src="/lovable-uploads/3e0c6645-67a5-4ece-879d-eb26fa386647.png" 
+            alt="CT Logo" 
+            className="w-full h-full object-contain"
+          />
+        </div>
+        <Button variant="ghost" size="icon" className="text-primary hover:bg-primary/10">
           <Home className="h-5 w-5" />
         </Button>
-        <Button variant="ghost" size="icon" className="text-emerald hover:bg-emerald/10">
+        <Button variant="ghost" size="icon" className="text-primary hover:bg-primary/10">
           <BarChart2 className="h-5 w-5" />
         </Button>
-        <Button variant="ghost" size="icon" className="text-emerald hover:bg-emerald/10">
+        <Button variant="ghost" size="icon" className="text-primary hover:bg-primary/10">
           <Users className="h-5 w-5" />
         </Button>
-        <Button variant="ghost" size="icon" className="text-emerald hover:bg-emerald/10">
+        <Button variant="ghost" size="icon" className="text-primary hover:bg-primary/10">
           <Settings className="h-5 w-5" />
         </Button>
       </div>
@@ -41,9 +48,16 @@ export const DashboardLayout = ({ children, title }: DashboardLayoutProps) => {
         {/* Header */}
         <header className="border-b border-white/10 backdrop-blur-xl bg-black/20">
           <div className="flex h-16 items-center px-6 gap-4">
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-emerald to-purple-light bg-clip-text text-transparent">
-              {title}
-            </h1>
+            <div className="flex items-center gap-3">
+              <img 
+                src="/lovable-uploads/3e0c6645-67a5-4ece-879d-eb26fa386647.png" 
+                alt="CT Logo" 
+                className="w-8 h-8 object-contain"
+              />
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                {title}
+              </h1>
+            </div>
             <div className="ml-auto flex items-center space-x-4">
               <NotificationCenter />
               <ThemeSwitcher />
@@ -51,7 +65,7 @@ export const DashboardLayout = ({ children, title }: DashboardLayoutProps) => {
                 variant="ghost" 
                 size="icon"
                 onClick={handleSignOut}
-                className="text-emerald hover:bg-emerald/10"
+                className="text-primary hover:bg-primary/10"
               >
                 <LogOut className="h-5 w-5" />
               </Button>
