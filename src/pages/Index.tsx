@@ -29,7 +29,7 @@ const Index = () => {
               CTNL AI WORK-BOARD
             </h1>
             <p className="text-muted-foreground max-w-2xl mx-auto animate-fade-in delay-100">
-              Welcome to your organizational workflow automation system. Please clock in to continue.
+              Welcome to Communication Towers Nigeria Limited Artificial Intelligence Enabled Work-Board System. Dear Esteemed Staff please clock in to start your working.
             </p>
           </div>
 
