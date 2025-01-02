@@ -1,6 +1,7 @@
 import { ClockInButton } from "@/components/ClockInButton";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 import { Card } from "@/components/ui/card";
+import { Building2 } from "lucide-react";
 
 const Index = () => {
   return (
@@ -15,10 +16,13 @@ const Index = () => {
         <div className="space-y-12">
           {/* Header */}
           <div className="text-center space-y-4">
-            <h1 className="text-4xl font-bold tracking-tight">
+            <div className="flex justify-center mb-6">
+              <Building2 className="h-16 w-16 text-primary animate-pulse" />
+            </div>
+            <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent animate-fade-in">
               CTNL AI WORK-BOARD
             </h1>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
+            <p className="text-muted-foreground max-w-2xl mx-auto animate-fade-in delay-100">
               Welcome to your organizational workflow automation system. Please clock in to continue.
             </p>
           </div>
@@ -28,7 +32,7 @@ const Index = () => {
             <div className="animate-pulse">
               <ClockInButton />
             </div>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground animate-fade-in delay-200">
               Click to clock in and proceed to login
             </p>
           </div>

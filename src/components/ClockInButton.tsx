@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
+import { Timer } from "lucide-react";
 
 export const ClockInButton = () => {
   const [loading, setLoading] = useState(false);
@@ -54,8 +55,9 @@ export const ClockInButton = () => {
     <Button
       onClick={handleClockIn}
       disabled={loading}
-      className="w-32 h-32 rounded-full bg-[#ea384c] hover:bg-[#ea384c]/90 text-white shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl dark:shadow-[#ea384c]/20"
+      className="w-32 h-32 rounded-full bg-[#ea384c] hover:bg-[#ea384c]/90 text-white shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl dark:shadow-[#ea384c]/20 flex flex-col items-center justify-center gap-2"
     >
+      <Timer className="h-8 w-8" />
       {loading ? "Processing..." : "Clock In"}
     </Button>
   );
