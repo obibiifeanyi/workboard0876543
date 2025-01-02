@@ -1,13 +1,13 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { Index } from "@/pages/Index";
-import { Login } from "@/pages/Login";
-import { Dashboard } from "@/pages/Dashboard";
-import { AdminDashboard } from "@/pages/admin/AdminDashboard";
-import { ManagerDashboard } from "@/pages/manager/ManagerDashboard";
-import { StaffDashboard } from "@/pages/staff/StaffDashboard";
-import { AccountPage } from "@/pages/account/AccountPage";
-import { DocumentsPage } from "@/pages/documents/DocumentsPage";
-import { SettingsPage } from "@/pages/settings/SettingsPage";
+import Index from "@/pages/Index";
+import Login from "@/pages/Login";
+import Dashboard from "@/pages/Dashboard";
+import AdminDashboard from "@/pages/admin/AdminDashboard";
+import ManagerDashboard from "@/pages/manager/ManagerDashboard";
+import StaffDashboard from "@/pages/staff/StaffDashboard";
+import AccountPage from "@/pages/account/AccountPage";
+import DocumentsPage from "@/pages/documents/DocumentsPage";
+import SettingsPage from "@/pages/settings/SettingsPage";
 import { RoleBasedRoute } from "@/components/RoleBasedRoute";
 import { Toaster } from "@/components/ui/toaster";
 import "./App.css";
@@ -22,25 +22,28 @@ function App() {
         <Route
           path="/admin/*"
           element={
-            <RoleBasedRoute allowedRole="admin">
-              <AdminDashboard />
-            </RoleBasedRoute>
+            <RoleBasedRoute
+              element={<AdminDashboard />}
+              allowedRoles={["admin"]}
+            />
           }
         />
         <Route
           path="/manager/*"
           element={
-            <RoleBasedRoute allowedRole="manager">
-              <ManagerDashboard />
-            </RoleBasedRoute>
+            <RoleBasedRoute
+              element={<ManagerDashboard />}
+              allowedRoles={["manager"]}
+            />
           }
         />
         <Route
           path="/staff/*"
           element={
-            <RoleBasedRoute allowedRole="staff">
-              <StaffDashboard />
-            </RoleBasedRoute>
+            <RoleBasedRoute
+              element={<StaffDashboard />}
+              allowedRoles={["staff"]}
+            />
           }
         />
         <Route path="/account" element={<AccountPage />} />
