@@ -2,7 +2,8 @@ import { ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
-import { LogOut, Bell } from "lucide-react";
+import { LogOut } from "lucide-react";
+import { NotificationCenter } from "./NotificationCenter";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -24,9 +25,7 @@ export const DashboardLayout = ({ children, title }: DashboardLayoutProps) => {
         <div className="flex h-16 items-center px-4 gap-4">
           <h1 className="text-2xl font-bold">{title}</h1>
           <div className="ml-auto flex items-center space-x-4">
-            <Button variant="ghost" size="icon">
-              <Bell className="h-5 w-5" />
-            </Button>
+            <NotificationCenter />
             <ThemeSwitcher />
             <Button 
               variant="ghost" 
