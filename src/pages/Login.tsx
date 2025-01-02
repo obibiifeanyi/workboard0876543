@@ -10,7 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import {
   Dialog,
   DialogContent,
@@ -39,7 +39,6 @@ const Login = () => {
       return;
     }
 
-    // Here you would typically make an API call to change the password
     toast({
       title: "Success",
       description: "Password changed successfully",
@@ -53,9 +52,7 @@ const Login = () => {
     setLoading(true);
 
     try {
-      // Mock login - replace with actual authentication
       if (email && (password || isPasswordChanged)) {
-        // Check if it's first login (mock check - replace with actual logic)
         const mockFirstLogin = !isPasswordChanged && email.includes("new");
         
         if (mockFirstLogin) {
@@ -65,13 +62,14 @@ const Login = () => {
         }
 
         // Determine role based on email (mock logic)
-        const role = email.includes("admin")
-          ? "admin"
-          : email.includes("manager")
-          ? "manager"
-          : "staff";
+        let role = "staff";
+        if (email.toLowerCase().includes("admin")) {
+          role = "admin";
+        } else if (email.toLowerCase().includes("manager")) {
+          role = "manager";
+        }
 
-        // Store role in localStorage for persistence
+        // Store role in localStorage
         localStorage.setItem("userRole", role);
 
         toast({
@@ -79,7 +77,7 @@ const Login = () => {
           description: `Welcome back, ${role}!`,
         });
 
-        // Navigate based on role with proper dashboard paths
+        // Navigate based on role
         switch (role) {
           case "admin":
             navigate("/admin/dashboard");
@@ -90,6 +88,12 @@ const Login = () => {
           default:
             navigate("/staff/dashboard");
         }
+      } else {
+        toast({
+          title: "Error",
+          description: "Please enter both email and password",
+          variant: "destructive",
+        });
       }
     } catch (error) {
       console.error("Login error:", error);
