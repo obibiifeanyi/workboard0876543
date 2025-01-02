@@ -2,17 +2,23 @@ import { ClockInButton } from "@/components/ClockInButton";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 import { Card } from "@/components/ui/card";
 import { Building2 } from "lucide-react";
+import { NeuralNetwork } from "@/components/NeuralNetwork";
 
 const Index = () => {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-background text-foreground relative">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-background text-foreground relative overflow-hidden">
+      {/* Neural Network Background */}
+      <div className="absolute inset-0 z-0">
+        <NeuralNetwork />
+      </div>
+
       {/* Theme Switcher */}
       <div className="absolute top-4 right-4 z-10">
         <ThemeSwitcher />
       </div>
 
       {/* Main Content */}
-      <Card className="w-full max-w-4xl mx-auto p-8 animate-fade-in glass">
+      <Card className="w-full max-w-4xl mx-auto p-8 animate-fade-in glass relative z-10 bg-background/80 backdrop-blur-xl">
         <div className="space-y-12">
           {/* Header */}
           <div className="text-center space-y-4">
@@ -38,9 +44,6 @@ const Index = () => {
           </div>
         </div>
       </Card>
-
-      {/* Background Pattern */}
-      <div className="fixed inset-0 -z-10 h-full w-full bg-background bg-[linear-gradient(to_right,#f0f0f0_1px,transparent_1px),linear-gradient(to_bottom,#f0f0f0_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_110%)] dark:bg-[linear-gradient(to_right,#1f1f1f_1px,transparent_1px),linear-gradient(to_bottom,#1f1f1f_1px,transparent_1px)]" />
     </div>
   );
 };
