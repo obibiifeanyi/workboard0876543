@@ -4,6 +4,7 @@ import { WorkBoard } from "@/components/manager/WorkBoard";
 import { LeaveManagement } from "@/components/manager/LeaveManagement";
 import { TeamOverview } from "@/components/manager/TeamOverview";
 import { TelecomSites } from "@/components/manager/TelecomSites";
+import { TeamTimeManagement } from "@/components/manager/TeamTimeManagement";
 
 const ManagerDashboard = () => {
   return (
@@ -22,8 +23,11 @@ const ManagerDashboard = () => {
           </div>
         </div>
 
-        <Tabs defaultValue="workboard" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 gap-2 bg-black/20 p-1 rounded-xl">
+        <Tabs defaultValue="time" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 gap-2 bg-black/20 p-1 rounded-xl">
+            <TabsTrigger value="time" className="rounded-lg data-[state=active]:bg-primary">
+              Time Logs
+            </TabsTrigger>
             <TabsTrigger value="workboard" className="rounded-lg data-[state=active]:bg-primary">
               Work Board
             </TabsTrigger>
@@ -39,6 +43,10 @@ const ManagerDashboard = () => {
           </TabsList>
 
           <div className="mt-6 bg-black/10 rounded-3xl p-6">
+            <TabsContent value="time" className="space-y-6 mt-0">
+              <TeamTimeManagement />
+            </TabsContent>
+
             <TabsContent value="workboard" className="space-y-6 mt-0">
               <WorkBoard />
             </TabsContent>

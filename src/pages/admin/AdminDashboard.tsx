@@ -6,6 +6,7 @@ import { LeaveManagement } from "@/components/admin/LeaveManagement";
 import { UserManagement } from "@/components/admin/UserManagement";
 import { DepartmentManagement } from "@/components/admin/DepartmentManagement";
 import { ActivityManagement } from "@/components/admin/ActivityManagement";
+import { TimeManagement } from "@/components/admin/TimeManagement";
 import { AIManagementSystem } from "@/components/ai/AIManagementSystem";
 import { AIKnowledgeBase } from "@/components/ai/AIKnowledgeBase";
 import { AnalyticsCards } from "@/components/analytics/AnalyticsCards";
@@ -49,8 +50,9 @@ const AdminDashboard = () => {
           </div>
         </Card>
 
-        <Tabs defaultValue="ai" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-1 md:grid-cols-8 lg:grid-cols-8 gap-4">
+        <Tabs defaultValue="time" className="space-y-4">
+          <TabsList className="grid w-full grid-cols-1 md:grid-cols-9 lg:grid-cols-9 gap-4">
+            <TabsTrigger value="time">Time Logs</TabsTrigger>
             <TabsTrigger value="ai">AI Management</TabsTrigger>
             <TabsTrigger value="knowledge">Knowledge Base</TabsTrigger>
             <TabsTrigger value="telecom">Telecom Sites</TabsTrigger>
@@ -60,6 +62,10 @@ const AdminDashboard = () => {
             <TabsTrigger value="departments">Departments</TabsTrigger>
             <TabsTrigger value="activity">Activity Log</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="time" className="space-y-4">
+            <TimeManagement />
+          </TabsContent>
 
           <TabsContent value="ai" className="space-y-4">
             <AIManagementSystem />
