@@ -7,9 +7,11 @@ const Index = () => {
       <div className="absolute top-4 right-4">
         <ThemeSwitcher />
       </div>
-      <h1 className="text-4xl font-bold mb-8">Welcome to WorkFlow</h1>
+      <h1 className="text-4xl font-bold mb-8">CTNL AI WORK-BOARD</h1>
       <div className="flex flex-col items-center gap-8">
-        <ClockInButton />
+        <div className="animate-pulse">
+          <ClockInButton />
+        </div>
         <p className="text-muted-foreground">
           Click to clock in and proceed to login
         </p>

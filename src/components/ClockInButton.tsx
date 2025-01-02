@@ -11,7 +11,6 @@ export const ClockInButton = () => {
   const handleClockIn = async () => {
     setLoading(true);
     try {
-      // Get user's location
       if ("geolocation" in navigator) {
         navigator.geolocation.getCurrentPosition(
           (position) => {
@@ -55,7 +54,7 @@ export const ClockInButton = () => {
     <Button
       onClick={handleClockIn}
       disabled={loading}
-      className="w-32 h-32 rounded-full bg-red-500 hover:bg-red-600 text-white shadow-lg transition-transform hover:scale-105"
+      className="w-32 h-32 rounded-full bg-red-500 hover:bg-red-600 text-white shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl"
     >
       {loading ? "Processing..." : "Clock In"}
     </Button>
