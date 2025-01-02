@@ -1,9 +1,7 @@
 import OpenAI from 'openai';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-  dangerouslyAllowBrowser: true
-});
+// Initialize OpenAI without the API key - it will be set when analyzing
+let openai: OpenAI;
 
 export interface DocumentAnalysis {
   summary: string;
@@ -13,6 +11,22 @@ export interface DocumentAnalysis {
 
 export const analyzeDocument = async (content: string): Promise<DocumentAnalysis> => {
   try {
+    // Initialize OpenAI with the API key from localStorage
+    const apiKey = localStorage.getItem('OPENAI_API_KEY');
+    
+    if (!apiKey) {
+      return {
+        summary: "Please set up your OpenAI API key to enable AI analysis.",
+        keyPoints: ["API key required"],
+        suggestedActions: ["Configure OpenAI API key in settings"]
+      };
+    }
+
+    openai = new OpenAI({
+      apiKey: apiKey,
+      dangerouslyAllowBrowser: true
+    });
+
     const response = await openai.chat.completions.create({
       model: "gpt-4",
       messages: [
