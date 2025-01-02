@@ -71,13 +71,25 @@ const Login = () => {
           ? "manager"
           : "staff";
 
+        // Store role in localStorage for persistence
+        localStorage.setItem("userRole", role);
+
         toast({
           title: "Login Successful",
           description: `Welcome back, ${role}!`,
         });
 
-        // Navigate based on role
-        navigate(`/${role}/dashboard`);
+        // Navigate based on role with proper dashboard paths
+        switch (role) {
+          case "admin":
+            navigate("/admin/dashboard");
+            break;
+          case "manager":
+            navigate("/manager/dashboard");
+            break;
+          default:
+            navigate("/staff/dashboard");
+        }
       }
     } catch (error) {
       console.error("Login error:", error);

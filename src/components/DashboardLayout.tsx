@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 import { LogOut } from "lucide-react";
 import { NotificationCenter } from "./NotificationCenter";
+import { ChatBox } from "./ChatBox";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -42,6 +43,9 @@ export const DashboardLayout = ({ children, title }: DashboardLayoutProps) => {
       <main className="container mx-auto py-6 px-4">
         {children}
       </main>
+
+      {/* AI Chat Box */}
+      <ChatBox />
     </div>
   );
 };
