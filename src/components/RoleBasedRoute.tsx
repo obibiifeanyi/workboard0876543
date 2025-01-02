@@ -8,12 +8,14 @@ interface RoleBasedRouteProps {
   userRole?: string;
 }
 
-export const RoleBasedRoute = ({ element, allowedRoles, userRole = "staff" }: RoleBasedRouteProps) => {
+export const RoleBasedRoute = ({ element, allowedRoles, userRole: propUserRole }: RoleBasedRouteProps) => {
   const { toast } = useToast();
   const [shouldRedirect, setShouldRedirect] = useState(false);
+  const storedRole = localStorage.getItem("userRole");
+  const userRole = propUserRole || storedRole || "staff";
 
   useEffect(() => {
-    if (!userRole || !allowedRoles.includes(userRole)) {
+    if (!allowedRoles.includes(userRole)) {
       toast({
         title: "Access Denied",
         description: "You don't have permission to access this page.",
