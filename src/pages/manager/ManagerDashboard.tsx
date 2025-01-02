@@ -4,6 +4,7 @@ import { WorkBoard } from "@/components/manager/WorkBoard";
 import { LeaveManagement } from "@/components/manager/LeaveManagement";
 import { TeamOverview } from "@/components/manager/TeamOverview";
 import { TelecomSites } from "@/components/manager/TelecomSites";
+import { NotificationCenter } from "@/components/NotificationCenter";
 
 const ManagerDashboard = () => {
   return (
