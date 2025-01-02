@@ -9,9 +9,12 @@ import {
   Building,
   FileText,
   Calendar,
-  AlertCircle 
+  AlertCircle,
+  Settings,
+  Shield 
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 import {
   Table,
   TableBody,
@@ -22,6 +25,8 @@ import {
 } from "@/components/ui/table";
 
 const AdminDashboard = () => {
+  const { toast } = useToast();
+
   const stats = [
     {
       title: "Total Staff",
@@ -49,100 +54,117 @@ const AdminDashboard = () => {
     },
   ];
 
-  const recentProjects = [
-    { name: "Site Maintenance A", status: "In Progress", deadline: "2024-03-20" },
-    { name: "Network Upgrade B", status: "Pending", deadline: "2024-03-25" },
-    { name: "Tower Installation", status: "Completed", deadline: "2024-03-15" },
-  ];
-
-  const leaveRequests = [
-    { employee: "John Doe", type: "Annual", from: "2024-03-20", to: "2024-03-25" },
-    { employee: "Jane Smith", type: "Sick", from: "2024-03-18", to: "2024-03-19" },
-  ];
+  const handleAction = (action: string, item: string) => {
+    toast({
+      title: "Action Triggered",
+      description: `${action} action for ${item}`,
+    });
+  };
 
   return (
     <DashboardLayout title="Admin Dashboard">
-      <div className="space-y-6">
+      <div className="space-y-6 animate-fade-in">
         <StatsCards stats={stats} />
 
-        <Tabs defaultValue="projects" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="projects">Projects</TabsTrigger>
-            <TabsTrigger value="leave">Leave Requests</TabsTrigger>
-            <TabsTrigger value="documents">Documents</TabsTrigger>
+        <Tabs defaultValue="overview" className="space-y-4">
+          <TabsList className="grid w-full grid-cols-1 md:grid-cols-4 lg:grid-cols-4 gap-4">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="users">User Management</TabsTrigger>
+            <TabsTrigger value="security">Security</TabsTrigger>
+            <TabsTrigger value="settings">Settings</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="projects" className="space-y-4">
-            <div className="flex justify-between items-center">
-              <h2 className="text-xl font-semibold">Recent Projects</h2>
-              <Button>
-                <FileText className="mr-2 h-4 w-4" />
-                New Project
-              </Button>
+          <TabsContent value="overview" className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Card className="col-span-1">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Shield className="h-5 w-5" />
+                    System Status
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span>System Health</span>
+                      <span className="text-green-500">Operational</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span>Last Backup</span>
+                      <span>2 hours ago</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span>Server Load</span>
+                      <span>42%</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="col-span-1">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <AlertCircle className="h-5 w-5" />
+                    Recent Alerts
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {[1, 2].map((i) => (
+                      <div key={i} className="flex items-center gap-4 p-2 rounded-lg bg-muted/50">
+                        <AlertCircle className="h-4 w-4 text-yellow-500" />
+                        <div className="flex-1">
+                          <p className="text-sm font-medium">System Update Required</p>
+                          <p className="text-xs text-muted-foreground">2 hours ago</p>
+                        </div>
+                        <Button variant="outline" size="sm">View</Button>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
             </div>
+          </TabsContent>
+
+          <TabsContent value="users" className="space-y-4">
             <Card>
-              <CardContent className="p-0">
+              <CardHeader>
+                <CardTitle>User Management</CardTitle>
+              </CardHeader>
+              <CardContent>
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Project Name</TableHead>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Role</TableHead>
                       <TableHead>Status</TableHead>
-                      <TableHead>Deadline</TableHead>
                       <TableHead>Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {recentProjects.map((project) => (
-                      <TableRow key={project.name}>
-                        <TableCell>{project.name}</TableCell>
-                        <TableCell>{project.status}</TableCell>
-                        <TableCell>{project.deadline}</TableCell>
-                        <TableCell>
-                          <Button variant="ghost" size="sm">
-                            View
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="leave" className="space-y-4">
-            <div className="flex justify-between items-center">
-              <h2 className="text-xl font-semibold">Leave Requests</h2>
-              <Button variant="outline">
-                <Calendar className="mr-2 h-4 w-4" />
-                View Calendar
-              </Button>
-            </div>
-            <Card>
-              <CardContent className="p-0">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Employee</TableHead>
-                      <TableHead>Type</TableHead>
-                      <TableHead>From</TableHead>
-                      <TableHead>To</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {leaveRequests.map((request) => (
-                      <TableRow key={request.employee}>
-                        <TableCell>{request.employee}</TableCell>
-                        <TableCell>{request.type}</TableCell>
-                        <TableCell>{request.from}</TableCell>
-                        <TableCell>{request.to}</TableCell>
+                    {[
+                      { name: "John Doe", role: "Manager", status: "Active" },
+                      { name: "Jane Smith", role: "Staff", status: "Active" },
+                    ].map((user) => (
+                      <TableRow key={user.name}>
+                        <TableCell>{user.name}</TableCell>
+                        <TableCell>{user.role}</TableCell>
+                        <TableCell>{user.status}</TableCell>
                         <TableCell className="space-x-2">
-                          <Button variant="outline" size="sm" className="bg-green-500/10 hover:bg-green-500/20 text-green-500">
-                            Approve
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleAction("edit", user.name)}
+                          >
+                            Edit
                           </Button>
-                          <Button variant="outline" size="sm" className="bg-red-500/10 hover:bg-red-500/20 text-red-500">
-                            Reject
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="text-destructive"
+                            onClick={() => handleAction("delete", user.name)}
+                          >
+                            Delete
                           </Button>
                         </TableCell>
                       </TableRow>
@@ -153,23 +175,60 @@ const AdminDashboard = () => {
             </Card>
           </TabsContent>
 
-          <TabsContent value="documents" className="space-y-4">
-            <div className="flex justify-between items-center">
-              <h2 className="text-xl font-semibold">Document Archive</h2>
-              <Button>
-                <FileText className="mr-2 h-4 w-4" />
-                Upload Document
-              </Button>
-            </div>
+          <TabsContent value="security" className="space-y-4">
             <Card>
-              <CardContent className="p-6">
-                <div className="text-center py-8">
-                  <AlertCircle className="mx-auto h-12 w-12 text-muted-foreground" />
-                  <h3 className="mt-2 text-lg font-semibold">No documents yet</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Upload documents to start building your archive
-                  </p>
-                </div>
+              <CardHeader>
+                <CardTitle>Security Settings</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {[
+                  { title: "Two-Factor Authentication", enabled: true },
+                  { title: "Password Policy", enabled: true },
+                  { title: "Login Monitoring", enabled: false },
+                ].map((setting) => (
+                  <div key={setting.title} className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
+                    <div>
+                      <p className="font-medium">{setting.title}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {setting.enabled ? "Enabled" : "Disabled"}
+                      </p>
+                    </div>
+                    <Button 
+                      variant="outline"
+                      onClick={() => handleAction("toggle", setting.title)}
+                    >
+                      Configure
+                    </Button>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="settings" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>System Settings</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {[
+                  { title: "Email Notifications", description: "Configure system notification settings" },
+                  { title: "Data Retention", description: "Manage data retention policies" },
+                  { title: "API Access", description: "Manage API keys and permissions" },
+                ].map((setting) => (
+                  <div key={setting.title} className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
+                    <div>
+                      <h3 className="font-medium">{setting.title}</h3>
+                      <p className="text-sm text-muted-foreground">{setting.description}</p>
+                    </div>
+                    <Button 
+                      variant="outline"
+                      onClick={() => handleAction("configure", setting.title)}
+                    >
+                      Configure
+                    </Button>
+                  </div>
+                ))}
               </CardContent>
             </Card>
           </TabsContent>
