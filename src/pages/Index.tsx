@@ -1,7 +1,6 @@
 import { ClockInButton } from "@/components/ClockInButton";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 import { Card } from "@/components/ui/card";
-import { Building2 } from "lucide-react";
 import { NeuralNetwork } from "@/components/NeuralNetwork";
 
 const Index = () => {
@@ -23,7 +22,11 @@ const Index = () => {
           {/* Header */}
           <div className="text-center space-y-4">
             <div className="flex justify-center mb-6">
-              <Building2 className="h-16 w-16 text-primary animate-pulse" />
+              <img 
+                src="/lovable-uploads/72968663-d83e-449d-a8c5-5097fe0015d9.png" 
+                alt="CT Communication Towers" 
+                className="h-24 w-auto animate-fade-in hover:scale-105 transition-transform duration-300"
+              />
             </div>
             <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent animate-fade-in">
               CTNL AI WORK-BOARD

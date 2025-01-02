@@ -34,6 +34,13 @@ const Login = () => {
       <div className="absolute inset-0 backdrop-blur-3xl" />
       
       <div className="relative z-10 mb-8 text-center space-y-2 animate-fade-in">
+        <div className="flex justify-center mb-6">
+          <img 
+            src="/lovable-uploads/72968663-d83e-449d-a8c5-5097fe0015d9.png" 
+            alt="CT Communication Towers" 
+            className="h-20 w-auto animate-fade-in hover:scale-105 transition-transform duration-300"
+          />
+        </div>
         <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
           CTNL AI WORK-BOARD
         </h1>
