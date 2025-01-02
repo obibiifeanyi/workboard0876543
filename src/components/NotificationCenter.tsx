@@ -45,29 +45,29 @@ export const NotificationCenter = () => {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative">
+        <Button variant="ghost" size="icon" className="relative text-emerald hover:bg-emerald/10">
           <Bell className="h-5 w-5" />
-          <span className="absolute top-0 right-0 h-2 w-2 rounded-full bg-red-500" />
+          <span className="absolute top-0 right-0 h-2 w-2 rounded-full bg-emerald animate-pulse" />
         </Button>
       </SheetTrigger>
-      <SheetContent>
+      <SheetContent className="bg-gradient-dark border-white/10">
         <SheetHeader>
-          <SheetTitle>Notifications</SheetTitle>
+          <SheetTitle className="text-white">Notifications</SheetTitle>
         </SheetHeader>
         <ScrollArea className="h-[calc(100vh-8rem)] mt-4">
           <div className="space-y-4">
             {mockNotifications.map((notification) => (
               <div
                 key={notification.id}
-                className={`p-4 rounded-lg border ${
-                  notification.read ? "bg-background" : "bg-accent"
+                className={`p-4 rounded-lg border border-white/10 ${
+                  notification.read ? "bg-black/20" : "bg-gradient-card"
                 }`}
               >
-                <h4 className="font-semibold">{notification.title}</h4>
-                <p className="text-sm text-muted-foreground">
+                <h4 className="font-semibold text-white">{notification.title}</h4>
+                <p className="text-sm text-white/70">
                   {notification.message}
                 </p>
-                <span className="text-xs text-muted-foreground">
+                <span className="text-xs text-white/50">
                   {notification.time}
                 </span>
               </div>

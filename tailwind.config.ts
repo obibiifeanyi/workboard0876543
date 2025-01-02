@@ -52,6 +52,20 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        emerald: {
+          DEFAULT: "#10B981",
+          dark: "#059669",
+          light: "#34D399",
+        },
+        purple: {
+          light: "#9b87f5",
+          DEFAULT: "#7C3AED",
+          dark: "#5B21B6",
+        },
+      },
+      backgroundImage: {
+        'gradient-dark': 'linear-gradient(to bottom right, #1A1F2C, #2D3748)',
+        'gradient-card': 'linear-gradient(to bottom right, rgba(255,255,255,0.05), rgba(255,255,255,0.02))',
       },
       borderRadius: {
         lg: "var(--radius)",
