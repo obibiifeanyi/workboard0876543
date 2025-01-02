@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 import { LogOut, Home, BarChart2, Users, Settings, FileArchive, UserCog, ArrowLeft } from "lucide-react";
 import { NotificationCenter } from "./NotificationCenter";
-import { ChatBox } from "./ChatBox";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -117,9 +116,6 @@ export const DashboardLayout = ({ children, title }: DashboardLayoutProps) => {
             {children}
           </div>
         </main>
-
-        {/* AI Chat Box */}
-        <ChatBox />
       </div>
     </div>
   );

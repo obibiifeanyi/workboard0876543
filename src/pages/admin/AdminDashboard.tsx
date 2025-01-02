@@ -5,11 +5,50 @@ import { ProjectManagement } from "@/components/admin/ProjectManagement";
 import { LeaveManagement } from "@/components/admin/LeaveManagement";
 import { UserManagement } from "@/components/admin/UserManagement";
 import { AIManagementSystem } from "@/components/ai/AIManagementSystem";
+import { AnalyticsCards } from "@/components/analytics/AnalyticsCards";
+import { Card } from "@/components/ui/card";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+
+const mockData = [
+  { name: 'Jan', value: 400 },
+  { name: 'Feb', value: 300 },
+  { name: 'Mar', value: 600 },
+  { name: 'Apr', value: 800 },
+  { name: 'May', value: 500 },
+  { name: 'Jun', value: 700 },
+];
 
 const AdminDashboard = () => {
   return (
     <DashboardLayout title="Admin Dashboard">
       <div className="space-y-6 animate-fade-in">
+        {/* Analytics Overview */}
+        <div className="mb-8">
+          <AnalyticsCards />
+        </div>
+
+        {/* Performance Chart */}
+        <Card className="p-6">
+          <h3 className="text-lg font-semibold mb-4">System Performance</h3>
+          <div className="h-[300px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={mockData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Line 
+                  type="monotone" 
+                  dataKey="value" 
+                  stroke="hsl(var(--primary))"
+                  strokeWidth={2}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </Card>
+
+        {/* Main Content Tabs */}
         <Tabs defaultValue="ai" className="space-y-4">
           <TabsList className="grid w-full grid-cols-1 md:grid-cols-5 lg:grid-cols-5 gap-4">
             <TabsTrigger value="ai">AI Management</TabsTrigger>
