@@ -32,26 +32,30 @@ export const TelecomSites = () => {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold">Telecom Sites</h2>
-      <div className="grid gap-4 md:grid-cols-2">
+      <div>
+        <h2 className="text-2xl font-bold">Telecom Sites</h2>
+        <p className="text-muted-foreground">Monitor site performance and status</p>
+      </div>
+
+      <div className="grid gap-6 md:grid-cols-2">
         {mockSites.map((site) => (
-          <Card key={site.id}>
+          <Card key={site.id} className="bg-black/10 border-none shadow-lg rounded-2xl hover:bg-black/20 transition-all">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-lg font-medium">
                 <MapPin className="h-5 w-5" />
                 {site.name}
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
+              <div className="space-y-6">
                 <div>
                   <p className="text-sm text-muted-foreground">{site.location}</p>
-                  <div className="mt-2 space-y-2">
+                  <div className="mt-4 space-y-2">
                     <div className="flex justify-between text-sm">
                       <span>Performance</span>
                       <span>{site.performance}%</span>
                     </div>
-                    <div className="h-2 bg-secondary rounded-full">
+                    <div className="h-2 bg-black/20 rounded-full overflow-hidden">
                       <div
                         className="h-full bg-primary rounded-full transition-all"
                         style={{ width: `${site.performance}%` }}
@@ -59,10 +63,11 @@ export const TelecomSites = () => {
                     </div>
                   </div>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex justify-between gap-4">
                   <Button
                     variant="outline"
                     size="sm"
+                    className="flex-1 rounded-xl"
                     onClick={() => handleAction("View Analytics", site.name)}
                   >
                     <BarChart3 className="h-4 w-4 mr-2" />
@@ -71,6 +76,7 @@ export const TelecomSites = () => {
                   <Button
                     variant="outline"
                     size="sm"
+                    className="flex-1 rounded-xl"
                     onClick={() => handleAction("Submit Report", site.name)}
                   >
                     <FileText className="h-4 w-4 mr-2" />
