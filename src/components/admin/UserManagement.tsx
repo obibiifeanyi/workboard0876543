@@ -1,30 +1,8 @@
 import { useState } from "react";
-import { 
-  Card, 
-  CardContent, 
-  CardHeader, 
-  CardTitle 
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { 
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from "@/components/ui/table";
+import { UserPlus } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -32,7 +10,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { UserPlus, Pencil, UserCog } from "lucide-react";
+import { UserList } from "./UserList";
+import { UserForm } from "./UserForm";
 
 interface User {
   id: string;
@@ -134,144 +113,25 @@ export const UserManagement = () => {
             <DialogHeader>
               <DialogTitle>Add New User</DialogTitle>
             </DialogHeader>
-            <form onSubmit={handleAddUser} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Full Name</Label>
-                <Input id="name" name="name" required />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input id="email" name="email" type="email" required />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="role">Role</Label>
-                <Select name="role" defaultValue="staff">
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select role" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="admin">Admin</SelectItem>
-                    <SelectItem value="manager">Manager</SelectItem>
-                    <SelectItem value="staff">Staff</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="department">Department</Label>
-                <Select name="department" defaultValue="Operations">
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select department" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Operations">Operations</SelectItem>
-                    <SelectItem value="HR">HR</SelectItem>
-                    <SelectItem value="IT">IT</SelectItem>
-                    <SelectItem value="Finance">Finance</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <Button type="submit" className="w-full">Add User</Button>
-            </form>
+            <UserForm onSubmit={handleAddUser} />
           </DialogContent>
         </Dialog>
       </CardHeader>
       <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>User</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Role</TableHead>
-              <TableHead>Department</TableHead>
-              <TableHead>Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {users.map((user) => (
-              <TableRow key={user.id}>
-                <TableCell>
-                  <div className="flex items-center gap-3">
-                    <Avatar>
-                      <AvatarImage src={user.avatar} />
-                      <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                    {user.name}
-                  </div>
-                </TableCell>
-                <TableCell>{user.email}</TableCell>
-                <TableCell className="capitalize">{user.role}</TableCell>
-                <TableCell>{user.department}</TableCell>
-                <TableCell>
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button 
-                        variant="ghost" 
-                        size="icon"
-                        onClick={() => setSelectedUser(user)}
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>Edit User</DialogTitle>
-                      </DialogHeader>
-                      <form onSubmit={handleUpdateUser} className="space-y-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="edit-name">Full Name</Label>
-                          <Input 
-                            id="edit-name" 
-                            name="name" 
-                            defaultValue={user.name}
-                            required 
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="edit-email">Email</Label>
-                          <Input 
-                            id="edit-email" 
-                            name="email" 
-                            type="email" 
-                            defaultValue={user.email}
-                            required 
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="edit-role">Role</Label>
-                          <Select name="role" defaultValue={user.role}>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select role" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="admin">Admin</SelectItem>
-                              <SelectItem value="manager">Manager</SelectItem>
-                              <SelectItem value="staff">Staff</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="edit-department">Department</Label>
-                          <Select name="department" defaultValue={user.department}>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select department" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="Operations">Operations</SelectItem>
-                              <SelectItem value="HR">HR</SelectItem>
-                              <SelectItem value="IT">IT</SelectItem>
-                              <SelectItem value="Finance">Finance</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <Button type="submit" className="w-full">Update User</Button>
-                      </form>
-                    </DialogContent>
-                  </Dialog>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+        <UserList users={users} onEditUser={setSelectedUser} />
+        {selectedUser && (
+          <Dialog open={!!selectedUser} onOpenChange={() => setSelectedUser(null)}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Edit User</DialogTitle>
+              </DialogHeader>
+              <UserForm 
+                defaultValues={selectedUser}
+                onSubmit={handleUpdateUser}
+              />
+            </DialogContent>
+          </Dialog>
+        )}
       </CardContent>
     </Card>
   );
