@@ -61,8 +61,29 @@
 @layer components {
   .card-enhanced {
     @apply bg-black/10 border-none shadow-lg rounded-2xl 
-           hover:bg-black/20 transition-all
+           hover:bg-black/20 transition-all duration-200
            dark:bg-white/5 dark:hover:bg-white/10
-           dark:shadow-lg dark:shadow-white/5;
+           dark:shadow-lg dark:shadow-white/5
+           p-6 relative overflow-hidden;
+  }
+
+  .responsive-grid {
+    @apply grid gap-6
+           grid-cols-1 
+           sm:grid-cols-2 
+           lg:grid-cols-3 
+           xl:grid-cols-4;
+  }
+
+  .responsive-text {
+    @apply text-sm sm:text-base lg:text-lg;
+  }
+
+  .responsive-heading {
+    @apply text-xl sm:text-2xl lg:text-3xl font-bold;
+  }
+
+  .responsive-container {
+    @apply w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
   }
 }

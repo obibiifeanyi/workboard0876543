@@ -1,7 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Index from "@/pages/Index";
 import Login from "@/pages/Login";
-import Dashboard from "@/pages/Dashboard";
 import AdminDashboard from "@/pages/admin/AdminDashboard";
 import ManagerDashboard from "@/pages/manager/ManagerDashboard";
 import StaffDashboard from "@/pages/staff/StaffDashboard";
@@ -18,7 +17,6 @@ function App() {
       <Routes>
         <Route path="/" element={<Index />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/dashboard" element={<Dashboard />} />
         <Route
           path="/admin/*"
           element={
