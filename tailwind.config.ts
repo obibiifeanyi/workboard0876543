@@ -25,11 +25,11 @@ export default {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: "#ea384c", // Logo red
+          DEFAULT: "#ea384c",
           foreground: "hsl(var(--primary-foreground))",
         },
         secondary: {
-          DEFAULT: "#0FA0CE", // Logo blue
+          DEFAULT: "#0FA0CE",
           foreground: "hsl(var(--secondary-foreground))",
         },
         destructive: {
@@ -52,10 +52,6 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-      },
-      backgroundImage: {
-        'gradient-dark': 'linear-gradient(to bottom right, #1A1F2C, #2D3748)',
-        'gradient-card': 'linear-gradient(to bottom right, rgba(255,255,255,0.05), rgba(255,255,255,0.02))',
       },
       keyframes: {
         "accordion-down": {

@@ -19,16 +19,9 @@ export const DashboardLayout = ({ children, title }: DashboardLayoutProps) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-dark text-white">
+    <div className="min-h-screen bg-background text-foreground">
       {/* Sidebar */}
-      <div className="fixed left-0 top-0 h-full w-16 bg-black/20 backdrop-blur-xl border-r border-white/10 flex flex-col items-center py-6 gap-6">
-        <div className="w-12 h-12 mb-6">
-          <img 
-            src="/lovable-uploads/3e0c6645-67a5-4ece-879d-eb26fa386647.png" 
-            alt="CT Logo" 
-            className="w-full h-full object-contain"
-          />
-        </div>
+      <div className="fixed left-0 top-0 h-full w-16 bg-black border-r border-white/10 flex flex-col items-center py-6 gap-6">
         <Button variant="ghost" size="icon" className="text-primary hover:bg-primary/10">
           <Home className="h-5 w-5" />
         </Button>
@@ -46,18 +39,11 @@ export const DashboardLayout = ({ children, title }: DashboardLayoutProps) => {
       {/* Main Content */}
       <div className="pl-16">
         {/* Header */}
-        <header className="border-b border-white/10 backdrop-blur-xl bg-black/20">
+        <header className="border-b border-white/10 bg-black">
           <div className="flex h-16 items-center px-6 gap-4">
-            <div className="flex items-center gap-3">
-              <img 
-                src="/lovable-uploads/3e0c6645-67a5-4ece-879d-eb26fa386647.png" 
-                alt="CT Logo" 
-                className="w-8 h-8 object-contain"
-              />
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                {title}
-              </h1>
-            </div>
+            <h1 className="text-2xl font-bold text-primary">
+              {title}
+            </h1>
             <div className="ml-auto flex items-center space-x-4">
               <NotificationCenter />
               <ThemeSwitcher />
