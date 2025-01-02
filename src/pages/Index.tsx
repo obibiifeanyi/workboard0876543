@@ -3,6 +3,8 @@ import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 import { Card } from "@/components/ui/card";
 import { Building2 } from "lucide-react";
 import { NeuralNetwork } from "@/components/NeuralNetwork";
+import { EmailNotificationCenter } from "@/components/notifications/EmailNotificationCenter";
+import { DocumentAnalytics } from "@/components/documents/DocumentAnalytics";
 
 const Index = () => {
   return (
@@ -31,6 +33,12 @@ const Index = () => {
             <p className="text-muted-foreground max-w-2xl mx-auto animate-fade-in delay-100">
               Welcome to your organizational workflow automation system. Please clock in to continue.
             </p>
+          </div>
+
+          {/* New Components */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <EmailNotificationCenter />
+            <DocumentAnalytics />
           </div>
 
           {/* Clock In Section */}
