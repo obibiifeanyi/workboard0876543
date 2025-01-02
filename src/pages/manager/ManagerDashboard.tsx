@@ -53,7 +53,6 @@ const ManagerDashboard = () => {
           </div>
         </Tabs>
 
-        {/* Fixed AI Chat Box */}
         <ChatBox />
       </div>
     </DashboardLayout>
