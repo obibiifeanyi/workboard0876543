@@ -9,6 +9,8 @@ import Login from "./pages/Login";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import ManagerDashboard from "./pages/manager/ManagerDashboard";
 import StaffDashboard from "./pages/staff/StaffDashboard";
+import AccountPage from "./pages/account/AccountPage";
+import DocumentsPage from "./pages/documents/DocumentsPage";
 
 const queryClient = new QueryClient();
 
@@ -44,6 +46,24 @@ const App = () => (
             element={
               <RoleBasedRoute 
                 element={<StaffDashboard />} 
+                allowedRoles={["staff", "manager", "admin"]} 
+              />
+            } 
+          />
+          <Route 
+            path="/account" 
+            element={
+              <RoleBasedRoute 
+                element={<AccountPage />} 
+                allowedRoles={["staff", "manager", "admin"]} 
+              />
+            } 
+          />
+          <Route 
+            path="/documents" 
+            element={
+              <RoleBasedRoute 
+                element={<DocumentsPage />} 
                 allowedRoles={["staff", "manager", "admin"]} 
               />
             } 

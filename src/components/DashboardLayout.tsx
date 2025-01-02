@@ -2,7 +2,7 @@ import { ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
-import { LogOut, Home, BarChart2, Users, Settings } from "lucide-react";
+import { LogOut, Home, BarChart2, Users, Settings, FileArchive, UserCog } from "lucide-react";
 import { NotificationCenter } from "./NotificationCenter";
 import { ChatBox } from "./ChatBox";
 
@@ -18,20 +18,60 @@ export const DashboardLayout = ({ children, title }: DashboardLayoutProps) => {
     navigate("/");
   };
 
+  const handleNavigation = (path: string) => {
+    navigate(path);
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Sidebar */}
       <div className="fixed left-0 top-0 h-full w-16 bg-black border-r border-white/10 flex flex-col items-center py-6 gap-6">
-        <Button variant="ghost" size="icon" className="text-primary hover:bg-primary/10">
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="text-primary hover:bg-primary/10"
+          onClick={() => handleNavigation('/dashboard')}
+        >
           <Home className="h-5 w-5" />
         </Button>
-        <Button variant="ghost" size="icon" className="text-primary hover:bg-primary/10">
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="text-primary hover:bg-primary/10"
+          onClick={() => handleNavigation('/analytics')}
+        >
           <BarChart2 className="h-5 w-5" />
         </Button>
-        <Button variant="ghost" size="icon" className="text-primary hover:bg-primary/10">
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="text-primary hover:bg-primary/10"
+          onClick={() => handleNavigation('/team')}
+        >
           <Users className="h-5 w-5" />
         </Button>
-        <Button variant="ghost" size="icon" className="text-primary hover:bg-primary/10">
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="text-primary hover:bg-primary/10"
+          onClick={() => handleNavigation('/account')}
+        >
+          <UserCog className="h-5 w-5" />
+        </Button>
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="text-primary hover:bg-primary/10"
+          onClick={() => handleNavigation('/documents')}
+        >
+          <FileArchive className="h-5 w-5" />
+        </Button>
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="text-primary hover:bg-primary/10"
+          onClick={() => handleNavigation('/settings')}
+        >
           <Settings className="h-5 w-5" />
         </Button>
       </div>
