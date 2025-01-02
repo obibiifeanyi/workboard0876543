@@ -27,7 +27,7 @@ const ManagerDashboard = () => {
         <DocumentAnalytics />
 
         <Tabs defaultValue="time" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-6 gap-2 bg-black/20 p-1 rounded-xl">
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-8 gap-2 bg-black/20 p-1 rounded-xl">
             <TabsTrigger value="time" className="rounded-lg data-[state=active]:bg-primary">
               Time Logs
             </TabsTrigger>
@@ -42,6 +42,12 @@ const ManagerDashboard = () => {
             </TabsTrigger>
             <TabsTrigger value="sites" className="rounded-lg data-[state=active]:bg-primary">
               Sites
+            </TabsTrigger>
+            <TabsTrigger value="reports" className="rounded-lg data-[state=active]:bg-primary">
+              Reports
+            </TabsTrigger>
+            <TabsTrigger value="memos" className="rounded-lg data-[state=active]:bg-primary">
+              Memos
             </TabsTrigger>
             <TabsTrigger value="settings" className="rounded-lg data-[state=active]:bg-primary">
               Settings
