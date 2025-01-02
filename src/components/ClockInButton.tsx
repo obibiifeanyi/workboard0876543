@@ -54,7 +54,7 @@ export const ClockInButton = () => {
     <Button
       onClick={handleClockIn}
       disabled={loading}
-      className="w-32 h-32 rounded-full bg-red-500 hover:bg-red-600 text-white shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl"
+      className="w-32 h-32 rounded-full bg-[#ea384c] hover:bg-[#ea384c]/90 text-white shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl dark:shadow-[#ea384c]/20"
     >
       {loading ? "Processing..." : "Clock In"}
     </Button>
