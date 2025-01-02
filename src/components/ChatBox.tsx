@@ -44,7 +44,7 @@ export const ChatBox = () => {
       });
     }, 300);
 
-    // Simulate AI response with enhanced features
+    // Simulate AI response
     setTimeout(() => {
       const aiResponse = {
         content: "I've analyzed the data and here's my response based on the system's knowledge base...",
