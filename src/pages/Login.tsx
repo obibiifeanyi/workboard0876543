@@ -54,14 +54,14 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-background px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-center mb-2">CTNL AI WORK-BOARD</h1>
-        <p className="text-muted-foreground text-center">Sign in to your account</p>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-background px-4 py-8 animate-fade-in">
+      <div className="mb-8 text-center">
+        <h1 className="text-3xl font-bold mb-2">CTNL AI WORK-BOARD</h1>
+        <p className="text-muted-foreground">Sign in to your account</p>
       </div>
       <Card className="w-full max-w-[400px]">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-xl">Login</CardTitle>
+        <CardHeader className="space-y-1 text-center">
+          <CardTitle className="text-2xl">Login</CardTitle>
           <CardDescription>
             Enter your credentials to access your dashboard
           </CardDescription>
