@@ -50,7 +50,7 @@ export const ProjectTracking = () => {
   };
 
   return (
-    <Card className="bg-black/10 dark:bg-white/5 backdrop-blur-lg border-none">
+    <Card className="glass-card">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-lg font-medium">
           <Target className="h-5 w-5 text-primary" />
@@ -61,7 +61,7 @@ export const ProjectTracking = () => {
         <ScrollArea className="h-[400px] pr-4">
           <div className="space-y-6">
             {projects.map((project) => (
-              <div key={project.id} className="space-y-2">
+              <div key={project.id} className="glass-card p-4 rounded-lg">
                 <div className="flex items-center justify-between">
                   <h3 className="font-medium">{project.name}</h3>
                   <span className={`flex items-center gap-1 ${getStatusColor(project.status)}`}>
@@ -69,8 +69,8 @@ export const ProjectTracking = () => {
                     {project.status}
                   </span>
                 </div>
-                <Progress value={project.progress} className="h-2" />
-                <div className="flex items-center justify-between text-sm text-muted-foreground">
+                <Progress value={project.progress} className="h-2 mt-2" />
+                <div className="flex items-center justify-between text-sm text-muted-foreground mt-2">
                   <span>{project.progress}% Complete</span>
                   <span className="flex items-center gap-1">
                     <Clock className="h-4 w-4" />
