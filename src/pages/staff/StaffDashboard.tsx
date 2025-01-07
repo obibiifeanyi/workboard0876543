@@ -3,9 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { StatsCards } from "@/components/StatsCards";
 import { Button } from "@/components/ui/button";
-import { Clock, CalendarIcon, CheckCircle, Bell, User, ListTodo, ClipboardList } from "lucide-react";
+import { 
+  Clock, CalendarIcon, CheckCircle, Bell, User, ListTodo, 
+  ClipboardList, FileText, Signal, Battery, MessageSquare,
+  Users, Settings, StickyNote
+} from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { EnhancedNotificationCenter } from "@/components/notifications/EnhancedNotificationCenter";
+import { ChatBox } from "@/components/ChatBox";
 
 const StaffDashboard = () => {
   const navigate = useNavigate();
@@ -48,7 +53,7 @@ const StaffDashboard = () => {
           <StatsCards stats={stats} />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           <Button
             variant="outline"
             className="glass-card border-primary/20 h-24 text-lg font-semibold hover:border-primary/40 transition-all duration-300"
@@ -70,12 +75,59 @@ const StaffDashboard = () => {
           <Button
             variant="outline"
             className="glass-card border-primary/20 h-24 text-lg font-semibold hover:border-primary/40 transition-all duration-300"
+            onClick={() => navigate("/staff/memos")}
+          >
+            <StickyNote className="mr-2 h-5 w-5" />
+            Memos
+          </Button>
+
+          <Button
+            variant="outline"
+            className="glass-card border-primary/20 h-24 text-lg font-semibold hover:border-primary/40 transition-all duration-300"
+            onClick={() => navigate("/staff/reports")}
+          >
+            <FileText className="mr-2 h-5 w-5" />
+            Reports
+          </Button>
+
+          <Button
+            variant="outline"
+            className="glass-card border-primary/20 h-24 text-lg font-semibold hover:border-primary/40 transition-all duration-300"
+            onClick={() => navigate("/staff/telecom-reports")}
+          >
+            <Signal className="mr-2 h-5 w-5" />
+            Telecom Reports
+          </Button>
+
+          <Button
+            variant="outline"
+            className="glass-card border-primary/20 h-24 text-lg font-semibold hover:border-primary/40 transition-all duration-300"
+            onClick={() => navigate("/staff/battery-reports")}
+          >
+            <Battery className="mr-2 h-5 w-5" />
+            Battery Reports
+          </Button>
+
+          <Button
+            variant="outline"
+            className="glass-card border-primary/20 h-24 text-lg font-semibold hover:border-primary/40 transition-all duration-300"
+            onClick={() => navigate("/staff/meetings")}
+          >
+            <Users className="mr-2 h-5 w-5" />
+            Meeting Center
+          </Button>
+
+          <Button
+            variant="outline"
+            className="glass-card border-primary/20 h-24 text-lg font-semibold hover:border-primary/40 transition-all duration-300"
             onClick={() => navigate("/staff/profile")}
           >
             <User className="mr-2 h-5 w-5" />
             Profile
           </Button>
         </div>
+
+        <ChatBox />
       </div>
     </DashboardLayout>
   );
