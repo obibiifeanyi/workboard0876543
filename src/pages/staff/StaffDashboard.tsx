@@ -9,7 +9,6 @@ import {
   Users, Settings, StickyNote
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { EnhancedNotificationCenter } from "@/components/notifications/EnhancedNotificationCenter";
 import { ChatBox } from "@/components/ChatBox";
 
 const StaffDashboard = () => {
@@ -45,9 +44,6 @@ const StaffDashboard = () => {
 
   return (
     <DashboardLayout title="Staff Dashboard">
-      <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
-        <EnhancedNotificationCenter />
-      </div>
       <div className="space-y-6 p-4 md:p-6 max-w-7xl mx-auto">
         <div className="grid gap-4 md:gap-6">
           <StatsCards stats={stats} />
