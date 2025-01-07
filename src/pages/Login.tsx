@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Brain } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -44,15 +43,11 @@ const Login = () => {
         <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
           CTNL AI WORK-BOARD
         </h1>
-        <p className="text-muted-foreground">
-          Powered by Advanced AI Technology
-        </p>
       </div>
 
       <Card className="w-full max-w-[400px] glass-card animate-scale-in">
         <CardHeader className="space-y-1 text-center">
-          <CardTitle className="text-2xl flex items-center justify-center gap-2">
-            <Brain className="h-6 w-6 text-primary animate-pulse" />
+          <CardTitle className="text-2xl">
             Login
           </CardTitle>
           <CardDescription>
@@ -87,7 +82,7 @@ const Login = () => {
               Upload documents to enhance AI learning capabilities
             </DialogDescription>
           </DialogHeader>
-          <AIKnowledgeBase />
+          <AIKnowledgeBase userRole={localStorage.getItem("userRole")} />
         </DialogContent>
       </Dialog>
     </div>
