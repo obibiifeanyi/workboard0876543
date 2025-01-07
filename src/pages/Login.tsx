@@ -5,6 +5,7 @@ import { PasswordChangeDialog } from "@/components/login/PasswordChangeDialog";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { AuthError } from "@supabase/supabase-js";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -72,9 +73,10 @@ const Login = () => {
         }
       }
     } catch (error: any) {
+      const authError = error as AuthError;
       toast({
         title: "Login Failed",
-        description: error.message,
+        description: authError.message,
         variant: "destructive",
       });
     }
