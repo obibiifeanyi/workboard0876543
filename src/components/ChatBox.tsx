@@ -33,35 +33,45 @@ export const ChatBox = () => {
     setInput("");
     setIsThinking(true);
 
-    // Simulate AI learning progress
-    const interval = setInterval(() => {
-      setLearningProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          return 100;
-        }
-        return prev + 10;
-      });
-    }, 300);
+    try {
+      // Simulate AI learning progress
+      const interval = setInterval(() => {
+        setLearningProgress(prev => {
+          if (prev >= 100) {
+            clearInterval(interval);
+            return 100;
+          }
+          return prev + 10;
+        });
+      }, 300);
 
-    // Simulate AI response
-    setTimeout(() => {
-      const aiResponse = {
-        content: "I've analyzed the data and here's my response based on the system's knowledge base...",
-        isUser: false,
-        timestamp: new Date(),
-      };
-      setMessages(prev => [...prev, aiResponse]);
+      // Simulate AI response
+      setTimeout(() => {
+        const aiResponse = {
+          content: "I've analyzed your request and here's my response based on the available data...",
+          isUser: false,
+          timestamp: new Date(),
+        };
+        setMessages(prev => [...prev, aiResponse]);
+        setIsThinking(false);
+        setLearningProgress(0);
+        clearInterval(interval);
+
+        toast({
+          title: "AI Response Ready",
+          description: "The AI has processed your request",
+          duration: 3000,
+        });
+      }, 2000);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to process your request. Please try again.",
+        variant: "destructive",
+      });
       setIsThinking(false);
       setLearningProgress(0);
-      clearInterval(interval);
-
-      toast({
-        title: "AI Response Ready",
-        description: "The AI has processed your request using the knowledge base",
-        duration: 3000,
-      });
-    }, 2000);
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -72,18 +82,18 @@ export const ChatBox = () => {
   };
 
   return (
-    <Card className={`fixed bottom-4 right-4 w-96 transition-all duration-300 ease-in-out glass-card ${
+    <Card className={`fixed bottom-4 right-4 w-[95%] sm:w-[400px] transition-all duration-300 ease-in-out shadow-xl ${
       isMinimized ? 'h-12' : 'h-[600px]'
     }`}>
-      <CardHeader className="p-3 flex flex-row items-center justify-between border-b border-white/10">
+      <CardHeader className="p-3 flex flex-row items-center justify-between border-b">
         <CardTitle className="text-sm font-medium flex items-center gap-2">
           <Brain className="h-4 w-4 text-primary animate-pulse" />
-          CTNL AI Assistant
+          AI Assistant
         </CardTitle>
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8 hover:bg-white/10"
+          className="h-8 w-8"
           onClick={() => setIsMinimized(!isMinimized)}
         >
           {isMinimized ? <Maximize2 className="h-4 w-4" /> : <Minimize2 className="h-4 w-4" />}
@@ -91,7 +101,7 @@ export const ChatBox = () => {
       </CardHeader>
       {!isMinimized && (
         <CardContent className="p-3 space-y-3">
-          <ScrollArea className="h-[480px] w-full pr-4">
+          <ScrollArea className="h-[480px] pr-4">
             <div className="space-y-4">
               {messages.map((msg, idx) => (
                 <div
@@ -105,7 +115,7 @@ export const ChatBox = () => {
                         : 'bg-secondary/10 mr-12'
                     }`}
                   >
-                    <p className="text-sm">{msg.content}</p>
+                    <p className="text-sm break-words">{msg.content}</p>
                     <span className="text-xs text-muted-foreground mt-2 block">
                       {msg.timestamp.toLocaleTimeString()}
                     </span>
@@ -116,20 +126,20 @@ export const ChatBox = () => {
                 <div className="ai-thinking">
                   <Loader className="h-5 w-5 animate-spin" />
                   <div className="flex-1">
-                    <p className="text-sm mb-2">CTNL AI is Thinking...</p>
+                    <p className="text-sm mb-2">AI is thinking...</p>
                     <Progress value={learningProgress} className="h-1" />
                   </div>
                 </div>
               )}
             </div>
           </ScrollArea>
-          <div className="flex gap-2">
+          <div className="flex gap-2 pt-2 border-t">
             <Input
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder="Ask CTNL AI anything..."
-              className="flex-1 bg-white/5 border-white/10"
+              placeholder="Ask anything..."
+              className="flex-1"
             />
             <Button 
               size="icon" 

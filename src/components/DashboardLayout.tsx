@@ -1,6 +1,8 @@
 import { ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
+import { EnhancedNotificationCenter } from "@/components/notifications/EnhancedNotificationCenter";
+import { useToast } from "@/hooks/use-toast";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -9,6 +11,16 @@ interface DashboardLayoutProps {
 
 export const DashboardLayout = ({ children, title }: DashboardLayoutProps) => {
   const navigate = useNavigate();
+  const { toast } = useToast();
+
+  const handleEmailNotification = (emailData: any) => {
+    // Handle email notification routing
+    toast({
+      title: "Email Notification",
+      description: "New email notification received",
+    });
+    // You can add additional email handling logic here
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-background/80">
@@ -16,6 +28,7 @@ export const DashboardLayout = ({ children, title }: DashboardLayoutProps) => {
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <h1 className="text-2xl font-bold">{title}</h1>
           <div className="flex items-center gap-4">
+            <EnhancedNotificationCenter />
             <ThemeSwitcher />
           </div>
         </div>
