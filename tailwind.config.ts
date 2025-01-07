@@ -86,6 +86,10 @@ export default {
           "0%": { transform: "translateY(100%)", opacity: "0" },
           "100%": { transform: "translateY(0)", opacity: "1" },
         },
+        "logo-pulse": {
+          "0%, 100%": { opacity: "1", transform: "scale(1)" },
+          "50%": { opacity: "0.7", transform: "scale(0.95)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -96,6 +100,7 @@ export default {
         "scale-in": "scale-in 0.2s ease-out",
         "pulse-beacon": "pulse-beacon 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
         "slide-in-bottom": "slide-in-bottom 0.3s ease-out",
+        "logo-pulse": "logo-pulse 2s ease-in-out infinite",
       },
     },
   },
