@@ -47,7 +47,7 @@ export const ChatBox = () => {
     // Simulate AI response
     setTimeout(() => {
       const aiResponse = {
-        content: "I've analyzed the data and here's my response based on the system's knowledge base...",
+        content: "I've analyzed your request and here's my response based on the available information...",
         isUser: false,
         timestamp: new Date(),
       };
@@ -58,7 +58,7 @@ export const ChatBox = () => {
 
       toast({
         title: "AI Response Ready",
-        description: "The AI has processed your request using the knowledge base",
+        description: "The AI has processed your request",
         duration: 3000,
       });
     }, 2000);
@@ -72,10 +72,11 @@ export const ChatBox = () => {
   };
 
   return (
-    <Card className={`fixed bottom-4 right-4 w-[95%] sm:w-96 transition-all duration-300 ease-in-out glass-card shadow-xl ${
-      isMinimized ? 'h-12' : 'h-[600px]'
-    }`}>
-      <CardHeader className="p-3 flex flex-row items-center justify-between border-b border-white/10">
+    <Card className={`fixed bottom-4 right-4 w-[95%] sm:w-96 transition-all duration-300 ease-in-out shadow-xl
+      ${isMinimized ? 'h-12' : 'h-[600px]'}
+      bg-background/95 backdrop-blur-lg border border-border/20
+      dark:bg-background/90 dark:border-border/10`}>
+      <CardHeader className="p-3 flex flex-row items-center justify-between border-b border-border/10">
         <CardTitle className="text-sm font-medium flex items-center gap-2">
           <Brain className="h-4 w-4 text-primary animate-pulse" />
           CTNL AI Assistant
@@ -83,7 +84,7 @@ export const ChatBox = () => {
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8 hover:bg-white/10"
+          className="h-8 w-8 hover:bg-background/20"
           onClick={() => setIsMinimized(!isMinimized)}
         >
           {isMinimized ? <Maximize2 className="h-4 w-4" /> : <Minimize2 className="h-4 w-4" />}
@@ -99,13 +100,15 @@ export const ChatBox = () => {
                   className={`flex ${msg.isUser ? 'justify-end' : 'justify-start'}`}
                 >
                   <div
-                    className={`chat-message ${
-                      msg.isUser
-                        ? 'bg-primary/10 ml-12 text-left'
-                        : 'bg-secondary/10 mr-12 text-left'
-                    } shadow-lg hover:bg-opacity-90 transition-all duration-200`}
+                    className={`max-w-[85%] p-3 rounded-xl text-left shadow-lg
+                      ${msg.isUser 
+                        ? 'bg-primary/10 ml-4 rounded-tr-sm' 
+                        : 'bg-secondary/10 mr-4 rounded-tl-sm'}
+                      hover:bg-opacity-90 transition-all duration-200`}
                   >
-                    <p className="text-sm leading-relaxed">{msg.content}</p>
+                    <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">
+                      {msg.content}
+                    </p>
                     <span className="text-xs text-muted-foreground mt-2 block opacity-75">
                       {msg.timestamp.toLocaleTimeString()}
                     </span>
@@ -113,7 +116,7 @@ export const ChatBox = () => {
                 </div>
               ))}
               {isThinking && (
-                <div className="ai-thinking shadow-lg">
+                <div className="flex items-center gap-4 p-4 bg-secondary/5 rounded-xl shadow-lg">
                   <Loader className="h-5 w-5 animate-spin" />
                   <div className="flex-1">
                     <p className="text-sm mb-2 text-left font-medium">CTNL AI is Thinking...</p>
@@ -123,13 +126,13 @@ export const ChatBox = () => {
               )}
             </div>
           </ScrollArea>
-          <div className="flex gap-2">
+          <div className="flex gap-2 pt-2 border-t border-border/10">
             <Input
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder="Ask CTNL AI anything..."
-              className="flex-1 bg-white/5 border-white/10 text-left"
+              className="flex-1 bg-background/50 border-border/20 text-left"
             />
             <Button 
               size="icon" 
