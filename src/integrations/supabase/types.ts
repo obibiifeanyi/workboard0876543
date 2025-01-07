@@ -159,6 +159,8 @@ export type Database = {
       }
       reports: {
         Row: {
+          ai_analysis: Json | null
+          analysis_status: string | null
           content: Json
           created_at: string
           created_by: string | null
@@ -170,6 +172,8 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          ai_analysis?: Json | null
+          analysis_status?: string | null
           content: Json
           created_at?: string
           created_by?: string | null
@@ -181,6 +185,8 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          ai_analysis?: Json | null
+          analysis_status?: string | null
           content?: Json
           created_at?: string
           created_by?: string | null

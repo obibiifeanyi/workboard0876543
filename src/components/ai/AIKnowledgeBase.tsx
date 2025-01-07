@@ -1,9 +1,11 @@
 import { useState } from "react";
-import { FileUp, File, Trash2, Brain, Database, Lock } from "lucide-react";
+import { Brain, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { FileUploadSection } from "./FileUploadSection";
+import { AIAnalysisStatus } from "./AIAnalysisStatus";
+import { StorageStatus } from "./StorageStatus";
 
 interface UploadedFile {
   id: string;
@@ -19,7 +21,6 @@ export const AIKnowledgeBase = ({ userRole }: { userRole?: string }) => {
   const [trainingProgress, setTrainingProgress] = useState(0);
   const { toast } = useToast();
 
-  // Check if user has access (admin or manager)
   const hasAccess = userRole === 'admin' || userRole === 'manager';
 
   if (!hasAccess) {
@@ -48,7 +49,6 @@ export const AIKnowledgeBase = ({ userRole }: { userRole?: string }) => {
 
     setFiles((prev) => [...prev, ...newFiles]);
 
-    // Simulate upload progress
     newFiles.forEach((file) => {
       const interval = setInterval(() => {
         setFiles((prev) =>
@@ -97,104 +97,34 @@ export const AIKnowledgeBase = ({ userRole }: { userRole?: string }) => {
   };
 
   return (
-    <div className="space-y-6 h-full overflow-y-auto">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="glass-card p-4 space-y-2">
-          <div className="flex items-center gap-2 text-primary">
-            <Database className="h-5 w-5" />
-            <h3 className="font-semibold">Storage Status</h3>
-          </div>
-          <p className="text-2xl font-bold">
-            {files.length} Files
-          </p>
-          <p className="text-sm text-muted-foreground">
-            Total documents in knowledge base
-          </p>
-        </div>
+    <div className="space-y-6 h-full overflow-y-auto animate-fade-in">
+      <StorageStatus
+        filesCount={files.length}
+        isTraining={isTraining}
+        trainingProgress={trainingProgress}
+      />
 
-        <div className="glass-card p-4 space-y-2">
-          <div className="flex items-center gap-2 text-primary">
-            <Brain className="h-5 w-5" />
-            <h3 className="font-semibold">Learning Status</h3>
-          </div>
-          <p className="text-2xl font-bold">
-            {isTraining ? `${trainingProgress}%` : "Ready"}
-          </p>
-          <p className="text-sm text-muted-foreground">
-            AI training progress
-          </p>
-        </div>
+      <FileUploadSection
+        files={files}
+        onFileUpload={handleFileUpload}
+        onDelete={handleDelete}
+      />
+
+      <div className="flex justify-end">
+        <Button
+          onClick={handleTrain}
+          disabled={files.length === 0 || isTraining}
+          className="bg-secondary hover:bg-secondary/90"
+        >
+          <Brain className="h-4 w-4 mr-2" />
+          Analyze Documents
+        </Button>
       </div>
 
-      <div className="glass-card p-6 space-y-4">
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold">Upload Documents</h3>
-          <div className="flex gap-2">
-            <Button
-              onClick={() => document.getElementById("file-upload")?.click()}
-              className="bg-primary hover:bg-primary/90"
-            >
-              <FileUp className="h-4 w-4 mr-2" />
-              Upload Files
-            </Button>
-            <Button
-              onClick={handleTrain}
-              disabled={files.length === 0 || isTraining}
-              className="bg-secondary hover:bg-secondary/90"
-            >
-              <Brain className="h-4 w-4 mr-2" />
-              Train AI
-            </Button>
-          </div>
-        </div>
-
-        <input
-          type="file"
-          id="file-upload"
-          multiple
-          accept=".pdf,.doc,.docx,.xls,.xlsx,.csv"
-          className="hidden"
-          onChange={handleFileUpload}
-        />
-
-        <div className="space-y-4">
-          {files.map((file) => (
-            <div
-              key={file.id}
-              className="flex items-center gap-4 p-4 glass-card"
-            >
-              <File className="h-8 w-8 text-primary" />
-              <div className="flex-1 min-w-0">
-                <p className="font-medium truncate">{file.name}</p>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <span>{file.type}</span>
-                  <span>•</span>
-                  <span>{file.size}</span>
-                </div>
-                <Progress value={file.progress} className="mt-2" />
-              </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => handleDelete(file.id)}
-                className="text-destructive hover:text-destructive/90"
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {isTraining && (
-        <div className="glass-card p-4 space-y-2">
-          <div className="flex items-center gap-2">
-            <Brain className="h-5 w-5 text-primary animate-pulse" />
-            <p>Training in Progress...</p>
-          </div>
-          <Progress value={trainingProgress} />
-        </div>
-      )}
+      <AIAnalysisStatus
+        isTraining={isTraining}
+        trainingProgress={trainingProgress}
+      />
     </div>
   );
 };
