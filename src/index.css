@@ -28,7 +28,7 @@
  
   .dark {
     --background: 0 0% 0%;
-    --foreground: 0 0% 100%;
+    --foreground: 210 40% 98%;
     --card: 0 0% 0%;
     --card-foreground: 210 40% 98%;
     --popover: 0 0% 0%;
@@ -64,6 +64,23 @@
            bg-secondary/10 dark:bg-secondary/5
            rounded-xl backdrop-blur-lg
            animate-pulse;
+  }
+
+  /* New futuristic UI classes */
+  .neo-glow {
+    @apply relative;
+    &::before {
+      content: '';
+      @apply absolute inset-0 -z-10 blur-xl opacity-50
+             bg-gradient-to-r from-primary via-secondary to-primary
+             animate-pulse;
+    }
+  }
+
+  .neo-border {
+    @apply border border-white/10 dark:border-white/5
+           shadow-lg hover:shadow-primary/5
+           transition-all duration-300;
   }
 }
 

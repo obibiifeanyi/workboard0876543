@@ -13,14 +13,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { LoginForm } from "@/components/login/LoginForm";
 import { PasswordChangeDialog } from "@/components/login/PasswordChangeDialog";
-import { AIKnowledgeBase } from "@/components/ai/AIKnowledgeBase";
+import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 
 const Login = () => {
   const [isFirstLogin, setIsFirstLogin] = useState(false);
-  const [showKnowledgeBase, setShowKnowledgeBase] = useState(false);
 
   const handlePasswordChange = () => {
     setIsFirstLogin(false);
@@ -32,26 +30,25 @@ const Login = () => {
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-secondary/5 to-primary/5 animate-pulse-glow" />
       <div className="absolute inset-0 backdrop-blur-3xl" />
       
-      <Card className="w-full max-w-[400px] glass-card animate-scale-in relative z-10">
+      {/* Theme Switcher positioned at top-right */}
+      <div className="fixed top-4 right-4 z-50">
+        <ThemeSwitcher />
+      </div>
+      
+      <Card className="w-full max-w-[400px] glass-card animate-scale-in relative z-10 
+        border border-white/10 dark:border-white/5 
+        shadow-2xl hover:shadow-primary/5 transition-all duration-300
+        bg-white/10 dark:bg-black/20 backdrop-blur-xl">
         <CardHeader className="space-y-1 text-center">
-          <CardTitle className="text-2xl">
+          <CardTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
             Login
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-foreground/70">
             Enter your credentials to access your dashboard
           </CardDescription>
         </CardHeader>
         <CardContent>
           <LoginForm onFirstLogin={setIsFirstLogin} />
-          <div className="mt-6 text-center">
-            <Button
-              variant="ghost"
-              onClick={() => setShowKnowledgeBase(true)}
-              className="text-sm text-muted-foreground hover:text-primary"
-            >
-              Access AI Knowledge Base
-            </Button>
-          </div>
         </CardContent>
       </Card>
 
@@ -60,18 +57,6 @@ const Login = () => {
         onOpenChange={setIsFirstLogin}
         onPasswordChange={handlePasswordChange}
       />
-
-      <Dialog open={showKnowledgeBase} onOpenChange={setShowKnowledgeBase}>
-        <DialogContent className="glass-card max-w-4xl h-[80vh]">
-          <DialogHeader>
-            <DialogTitle>AI Knowledge Base</DialogTitle>
-            <DialogDescription>
-              Upload documents to enhance AI learning capabilities
-            </DialogDescription>
-          </DialogHeader>
-          <AIKnowledgeBase userRole={localStorage.getItem("userRole")} />
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
