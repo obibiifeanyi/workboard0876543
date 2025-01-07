@@ -25,7 +25,7 @@ export default {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: "#ea384c",
+          DEFAULT: "#fc0404",
           foreground: "hsl(var(--primary-foreground))",
         },
         secondary: {
@@ -78,6 +78,14 @@ export default {
           "0%": { transform: "scale(0.95)", opacity: "0" },
           "100%": { transform: "scale(1)", opacity: "1" },
         },
+        "pulse-beacon": {
+          "0%, 100%": { opacity: "1", transform: "scale(1)" },
+          "50%": { opacity: "0.5", transform: "scale(1.1)" },
+        },
+        "slide-in-bottom": {
+          "0%": { transform: "translateY(100%)", opacity: "0" },
+          "100%": { transform: "translateY(0)", opacity: "1" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -86,6 +94,8 @@ export default {
         "pulse-glow": "pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
         "slide-in": "slide-in 0.3s ease-out",
         "scale-in": "scale-in 0.2s ease-out",
+        "pulse-beacon": "pulse-beacon 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+        "slide-in-bottom": "slide-in-bottom 0.3s ease-out",
       },
     },
   },

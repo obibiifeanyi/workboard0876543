@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { TaskList } from "@/components/staff/TaskList";
 import { LeaveApplication } from "@/components/staff/LeaveApplication";
 import { ProfileSection } from "@/components/staff/ProfileSection";
+import { EnhancedNotificationCenter } from "@/components/notifications/EnhancedNotificationCenter";
 
 const StaffDashboard = () => {
   const [date, setDate] = useState<Date | undefined>(new Date());
@@ -40,38 +41,11 @@ const StaffDashboard = () => {
     },
   ];
 
-  const tasks = [
-    {
-      id: 1,
-      task: "Equipment Check",
-      deadline: "2024-03-20",
-      status: "In Progress",
-    },
-    {
-      id: 2,
-      task: "Data Entry",
-      deadline: "2024-03-25",
-      status: "Pending",
-    },
-    {
-      id: 3,
-      task: "Site Inspection",
-      deadline: "2024-03-22",
-      status: "Completed",
-    },
-  ];
-
-  const handleLeaveRequest = () => {
-    if (date) {
-      toast({
-        title: "Leave Request Submitted",
-        description: `Your leave request for ${date.toLocaleDateString()} has been submitted.`,
-      });
-    }
-  };
-
   return (
     <DashboardLayout title="Staff Dashboard">
+      <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
+        <EnhancedNotificationCenter />
+      </div>
       <div className="space-y-6 p-4 md:p-6 max-w-7xl mx-auto">
         <div className="grid gap-4 md:gap-6">
           <StatsCards stats={stats} />
@@ -88,10 +62,12 @@ const StaffDashboard = () => {
             <TabsContent value="tasks" className="space-y-4 mt-0">
               <Card className="border-none shadow-lg">
                 <CardHeader>
-                  <CardTitle className="text-xl md:text-2xl">Current Tasks</CardTitle>
+                  <CardTitle className="text-xl md:text-2xl">
+                    Current Tasks
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <TaskList tasks={tasks} />
+                  <TaskList tasks={[]} />
                 </CardContent>
               </Card>
             </TabsContent>
@@ -100,7 +76,12 @@ const StaffDashboard = () => {
               <LeaveApplication
                 date={date}
                 onDateSelect={setDate}
-                onLeaveRequest={handleLeaveRequest}
+                onLeaveRequest={() => {
+                  toast({
+                    title: "Leave Request Submitted",
+                    description: `Your leave request for ${date?.toLocaleDateString()} has been submitted.`,
+                  });
+                }}
               />
             </TabsContent>
 
