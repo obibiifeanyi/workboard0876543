@@ -14,7 +14,7 @@ interface TelecomSite {
   location: string;
   manager: string;
   clients: number;
-  status: "active" | "maintenance" | "offline";
+  status: "active" | "maintenance" | "inactive";
   performance?: number;
 }
 
