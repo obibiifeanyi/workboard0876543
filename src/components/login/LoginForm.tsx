@@ -6,7 +6,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Key } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { AuthError } from "@supabase/supabase-js";
+import { AuthError, AuthApiError } from "@supabase/supabase-js";
 
 interface LoginFormProps {
   onLogin: (email: string, password: string) => Promise<void>;
@@ -21,26 +21,48 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
   const [rememberMe, setRememberMe] = useState(false);
   const { toast } = useToast();
 
+  const getErrorMessage = (error: AuthError) => {
+    if (error instanceof AuthApiError) {
+      switch (error.status) {
+        case 400:
+          return "Invalid email or password. Please check your credentials and try again.";
+        case 422:
+          return "Please enter valid email and password.";
+        default:
+          return error.message;
+      }
+    }
+    return "An unexpected error occurred. Please try again.";
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      if (email && password) {
-        if (rememberMe) {
-          localStorage.setItem("rememberedEmail", email);
-        } else {
-          localStorage.removeItem("rememberedEmail");
-        }
-
-        await onLogin(email, password);
-      } else {
+      if (!email || !password) {
         toast({
           title: "Error",
           description: "Please enter both email and password",
           variant: "destructive",
         });
+        return;
       }
+
+      if (rememberMe) {
+        localStorage.setItem("rememberedEmail", email);
+      } else {
+        localStorage.removeItem("rememberedEmail");
+      }
+
+      await onLogin(email, password);
+    } catch (error) {
+      const authError = error as AuthError;
+      toast({
+        title: "Login Failed",
+        description: getErrorMessage(authError),
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
@@ -68,7 +90,7 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
       const authError = error as AuthError;
       toast({
         title: "Error",
-        description: authError.message,
+        description: getErrorMessage(authError),
         variant: "destructive",
       });
     }
