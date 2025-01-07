@@ -21,7 +21,6 @@ export const ThemeSwitcher = () => {
   const [showThemeDialog, setShowThemeDialog] = useState(false);
 
   useEffect(() => {
-    // Show the dialog only once when the component mounts
     const hasSeenThemeDialog = localStorage.getItem('hasSeenThemeDialog');
     if (!hasSeenThemeDialog) {
       setShowThemeDialog(true);
@@ -39,13 +38,14 @@ export const ThemeSwitcher = () => {
               size="icon"
               onClick={toggleTheme}
               className="w-10 h-10 rounded-full 
-                bg-background/50 backdrop-blur-sm
-                border border-border/50
-                hover:bg-accent
+                bg-black/90 text-white
+                dark:bg-white dark:text-black
+                border-none
+                hover:bg-black/80
+                dark:hover:bg-white/90
                 transition-all duration-300
                 shadow-lg hover:shadow-accent/25
-                dark:hover:shadow-accent/10
-                animate-pulse-beacon"
+                dark:hover:shadow-accent/10"
             >
               <Sun className="h-5 w-5 rotate-0 scale-100 transition-all duration-300 
                 dark:-rotate-90 dark:scale-0" />

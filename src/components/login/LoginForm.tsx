@@ -4,11 +4,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Key } from "lucide-react";
 
 export const LoginForm = ({ onFirstLogin }: { onFirstLogin: (value: boolean) => void }) => {
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(() => {
+    return localStorage.getItem("rememberedEmail") || "";
+  });
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -18,6 +23,12 @@ export const LoginForm = ({ onFirstLogin }: { onFirstLogin: (value: boolean) => 
 
     try {
       if (email && password) {
+        if (rememberMe) {
+          localStorage.setItem("rememberedEmail", email);
+        } else {
+          localStorage.removeItem("rememberedEmail");
+        }
+
         const mockFirstLogin = email.includes("new");
         
         if (mockFirstLogin) {
@@ -69,6 +80,22 @@ export const LoginForm = ({ onFirstLogin }: { onFirstLogin: (value: boolean) => 
     }
   };
 
+  const handleForgotPassword = () => {
+    if (!email) {
+      toast({
+        title: "Email Required",
+        description: "Please enter your email address first",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    toast({
+      title: "Password Reset Link Sent",
+      description: "Please check your email for further instructions",
+    });
+  };
+
   return (
     <form onSubmit={handleLogin} className="space-y-4">
       <div className="space-y-2">
@@ -94,6 +121,30 @@ export const LoginForm = ({ onFirstLogin }: { onFirstLogin: (value: boolean) => 
           required
           className="bg-black/5 dark:bg-white/5 border-none placeholder:text-muted-foreground/50"
         />
+      </div>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-2">
+          <Checkbox 
+            id="remember" 
+            checked={rememberMe}
+            onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+          />
+          <label
+            htmlFor="remember"
+            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+          >
+            Remember me
+          </label>
+        </div>
+        <Button
+          type="button"
+          variant="ghost"
+          className="text-sm text-primary hover:text-primary/90 flex items-center gap-1"
+          onClick={handleForgotPassword}
+        >
+          <Key className="h-3 w-3" />
+          Forgot password?
+        </Button>
       </div>
       <Button 
         type="submit" 
