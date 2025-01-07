@@ -25,10 +25,10 @@ export const NeuralNetwork = () => {
       canvas.height = window.innerHeight;
     };
 
-    // Initialize nodes
+    // Initialize nodes with increased count
     const initNodes = () => {
       const nodes: Node[] = [];
-      const numNodes = 15;
+      const numNodes = 25; // Increased from 15 to 25
       
       for (let i = 0; i < numNodes; i++) {
         nodes.push({
@@ -42,7 +42,7 @@ export const NeuralNetwork = () => {
 
       // Create connections
       nodes.forEach((node, i) => {
-        const numConnections = Math.floor(Math.random() * 3) + 1;
+        const numConnections = Math.floor(Math.random() * 4) + 2; // Increased connections
         for (let j = 0; j < numConnections; j++) {
           const target = Math.floor(Math.random() * numNodes);
           if (target !== i && !node.connections.includes(target)) {
@@ -55,27 +55,17 @@ export const NeuralNetwork = () => {
     };
 
     const drawNode = (x: number, y: number, isHovered: boolean) => {
-      const gradient = ctx.createRadialGradient(x, y, 0, x, y, isHovered ? 12 : 8);
-      gradient.addColorStop(0, '#ea384c');
-      gradient.addColorStop(1, '#0EA5E9');
-      
       ctx.beginPath();
       ctx.arc(x, y, isHovered ? 12 : 8, 0, Math.PI * 2);
-      ctx.fillStyle = gradient;
+      ctx.fillStyle = '#ea384c'; // System red color
       ctx.fill();
-      
-      // Add glow effect
-      ctx.shadowColor = '#ea384c';
-      ctx.shadowBlur = isHovered ? 15 : 10;
-      ctx.fill();
-      ctx.shadowBlur = 0;
     };
 
     const drawConnection = (x1: number, y1: number, x2: number, y2: number, alpha: number) => {
       ctx.beginPath();
       ctx.moveTo(x1, y1);
       ctx.lineTo(x2, y2);
-      ctx.strokeStyle = `rgba(234, 56, 76, ${alpha})`;
+      ctx.strokeStyle = `rgba(234, 56, 76, ${alpha})`; // System red color with alpha
       ctx.lineWidth = 0.5;
       ctx.stroke();
     };
@@ -83,17 +73,13 @@ export const NeuralNetwork = () => {
     const animate = (time: number) => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       
-      // Update and draw nodes
       nodesRef.current.forEach((node, i) => {
-        // Update position
         node.x += node.vx;
         node.y += node.vy;
 
-        // Bounce off walls
         if (node.x < 0 || node.x > canvas.width) node.vx *= -1;
         if (node.y < 0 || node.y > canvas.height) node.vy *= -1;
 
-        // Draw connections
         node.connections.forEach(targetIndex => {
           const target = nodesRef.current[targetIndex];
           const distance = Math.hypot(target.x - node.x, target.y - node.y);
@@ -105,21 +91,20 @@ export const NeuralNetwork = () => {
           }
         });
 
-        // Draw node
-        const isHovered = false; // TODO: Add hover detection if needed
-        drawNode(node.x, node.y, isHovered);
+        drawNode(node.x, node.y, false);
       });
 
       frameRef.current = requestAnimationFrame(animate);
     };
 
-    // Setup
     resizeCanvas();
     nodesRef.current = initNodes();
     frameRef.current = requestAnimationFrame(animate);
 
-    // Cleanup
+    window.addEventListener('resize', resizeCanvas);
+
     return () => {
+      window.removeEventListener('resize', resizeCanvas);
       if (frameRef.current) {
         cancelAnimationFrame(frameRef.current);
       }
@@ -130,7 +115,7 @@ export const NeuralNetwork = () => {
     <canvas
       ref={canvasRef}
       className="absolute inset-0 w-full h-full"
-      style={{ opacity: 0.6 }}
+      style={{ opacity: 0.8 }} // Increased opacity
     />
   );
 };

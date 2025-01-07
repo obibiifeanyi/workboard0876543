@@ -11,7 +11,6 @@ const Index = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Simulate initial loading
     const timer = setTimeout(() => {
       setIsLoading(false);
     }, 2000);
