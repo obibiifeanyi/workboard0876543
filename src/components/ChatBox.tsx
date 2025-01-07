@@ -47,7 +47,7 @@ export const ChatBox = () => {
     // Simulate AI response
     setTimeout(() => {
       const aiResponse = {
-        content: "I've analyzed your request and here's my response based on the available information...",
+        content: "I've analyzed the data and here's my response based on the system's knowledge base...",
         isUser: false,
         timestamp: new Date(),
       };
@@ -58,7 +58,7 @@ export const ChatBox = () => {
 
       toast({
         title: "AI Response Ready",
-        description: "The AI has processed your request",
+        description: "The AI has processed your request using the knowledge base",
         duration: 3000,
       });
     }, 2000);
@@ -72,11 +72,10 @@ export const ChatBox = () => {
   };
 
   return (
-    <Card className={`fixed bottom-4 right-4 w-[95%] sm:w-96 transition-all duration-300 ease-in-out shadow-xl
-      ${isMinimized ? 'h-12' : 'h-[600px]'}
-      bg-background/95 backdrop-blur-lg border border-border/20
-      dark:bg-background/90 dark:border-border/10`}>
-      <CardHeader className="p-3 flex flex-row items-center justify-between border-b border-border/10">
+    <Card className={`fixed bottom-4 right-4 w-96 transition-all duration-300 ease-in-out glass-card ${
+      isMinimized ? 'h-12' : 'h-[600px]'
+    }`}>
+      <CardHeader className="p-3 flex flex-row items-center justify-between border-b border-white/10">
         <CardTitle className="text-sm font-medium flex items-center gap-2">
           <Brain className="h-4 w-4 text-primary animate-pulse" />
           CTNL AI Assistant
@@ -84,7 +83,7 @@ export const ChatBox = () => {
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8 hover:bg-background/20"
+          className="h-8 w-8 hover:bg-white/10"
           onClick={() => setIsMinimized(!isMinimized)}
         >
           {isMinimized ? <Maximize2 className="h-4 w-4" /> : <Minimize2 className="h-4 w-4" />}
@@ -100,45 +99,43 @@ export const ChatBox = () => {
                   className={`flex ${msg.isUser ? 'justify-end' : 'justify-start'}`}
                 >
                   <div
-                    className={`max-w-[85%] p-3 rounded-xl text-left shadow-lg
-                      ${msg.isUser 
-                        ? 'bg-primary/10 ml-4 rounded-tr-sm' 
-                        : 'bg-secondary/10 mr-4 rounded-tl-sm'}
-                      hover:bg-opacity-90 transition-all duration-200`}
+                    className={`chat-message ${
+                      msg.isUser
+                        ? 'bg-primary/10 ml-12'
+                        : 'bg-secondary/10 mr-12'
+                    }`}
                   >
-                    <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">
-                      {msg.content}
-                    </p>
-                    <span className="text-xs text-muted-foreground mt-2 block opacity-75">
+                    <p className="text-sm">{msg.content}</p>
+                    <span className="text-xs text-muted-foreground mt-2 block">
                       {msg.timestamp.toLocaleTimeString()}
                     </span>
                   </div>
                 </div>
               ))}
               {isThinking && (
-                <div className="flex items-center gap-4 p-4 bg-secondary/5 rounded-xl shadow-lg">
+                <div className="ai-thinking">
                   <Loader className="h-5 w-5 animate-spin" />
                   <div className="flex-1">
-                    <p className="text-sm mb-2 text-left font-medium">CTNL AI is Thinking...</p>
+                    <p className="text-sm mb-2">CTNL AI is Thinking...</p>
                     <Progress value={learningProgress} className="h-1" />
                   </div>
                 </div>
               )}
             </div>
           </ScrollArea>
-          <div className="flex gap-2 pt-2 border-t border-border/10">
+          <div className="flex gap-2">
             <Input
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder="Ask CTNL AI anything..."
-              className="flex-1 bg-background/50 border-border/20 text-left"
+              className="flex-1 bg-white/5 border-white/10"
             />
             <Button 
               size="icon" 
               onClick={handleSend}
               disabled={isThinking}
-              className="bg-primary hover:bg-primary/90 shadow-lg"
+              className="bg-primary hover:bg-primary/90"
             >
               <Send className="h-4 w-4" />
             </Button>
