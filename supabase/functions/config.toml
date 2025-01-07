@@ -1,0 +1,9 @@
+project_id = "ckzystwcwufvarektakc"
+
+[global]
+[global.env]
+OPENROUTER_API_KEY = "{{env.OPENROUTER_API_KEY}}"
+
+[[functions]]
+name = "analyze-document"
+verify_jwt = true
