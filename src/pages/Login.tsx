@@ -1,27 +1,83 @@
-import { useState } from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { LoginForm } from "@/components/login/LoginForm";
 import { PasswordChangeDialog } from "@/components/login/PasswordChangeDialog";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const Login = () => {
-  const [isFirstLogin, setIsFirstLogin] = useState(false);
+  const navigate = useNavigate();
+  const { toast } = useToast();
 
-  const handlePasswordChange = () => {
-    setIsFirstLogin(false);
+  useEffect(() => {
+    // Check if user is already logged in
+    const checkUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', session.user.id)
+          .single();
+
+        const role = profile?.role || 'staff';
+        switch (role) {
+          case 'admin':
+            navigate('/admin/dashboard');
+            break;
+          case 'manager':
+            navigate('/manager/dashboard');
+            break;
+          default:
+            navigate('/staff/dashboard');
+        }
+      }
+    };
+
+    checkUser();
+  }, [navigate]);
+
+  const handleLogin = async (email: string, password: string) => {
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) throw error;
+
+      if (data.session) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', data.session.user.id)
+          .single();
+
+        const role = profile?.role || 'staff';
+        toast({
+          title: "Login Successful",
+          description: `Welcome back!`,
+        });
+
+        switch (role) {
+          case 'admin':
+            navigate('/admin/dashboard');
+            break;
+          case 'manager':
+            navigate('/manager/dashboard');
+            break;
+          default:
+            navigate('/staff/dashboard');
+        }
+      }
+    } catch (error: any) {
+      toast({
+        title: "Login Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -35,28 +91,20 @@ const Login = () => {
         <ThemeSwitcher />
       </div>
       
-      <Card className="w-full max-w-[400px] glass-card animate-scale-in relative z-10 
+      <div className="w-full max-w-[400px] glass-card animate-scale-in relative z-10 
         border border-white/10 dark:border-white/5 
         shadow-2xl hover:shadow-primary/5 transition-all duration-300
-        bg-white/10 dark:bg-black/20 backdrop-blur-xl">
-        <CardHeader className="space-y-1 text-center">
-          <CardTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-            Login
-          </CardTitle>
-          <CardDescription className="text-foreground/70">
-            Enter your credentials to access your dashboard
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <LoginForm onFirstLogin={setIsFirstLogin} />
-        </CardContent>
-      </Card>
-
-      <PasswordChangeDialog
-        open={isFirstLogin}
-        onOpenChange={setIsFirstLogin}
-        onPasswordChange={handlePasswordChange}
-      />
+        bg-white/10 dark:bg-black/20 backdrop-blur-xl rounded-xl p-6">
+        <div className="text-center mb-6">
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+            Welcome Back
+          </h1>
+          <p className="text-foreground/70 mt-2">
+            Sign in to access your dashboard
+          </p>
+        </div>
+        <LoginForm onLogin={handleLogin} />
+      </div>
     </div>
   );
 };

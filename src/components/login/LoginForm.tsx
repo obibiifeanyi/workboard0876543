@@ -1,23 +1,25 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Key } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
-export const LoginForm = ({ onFirstLogin }: { onFirstLogin: (value: boolean) => void }) => {
+interface LoginFormProps {
+  onLogin: (email: string, password: string) => Promise<void>;
+}
+
+export const LoginForm = ({ onLogin }: LoginFormProps) => {
   const [email, setEmail] = useState(() => {
     return localStorage.getItem("rememberedEmail") || "";
   });
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
-  const navigate = useNavigate();
   const { toast } = useToast();
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
@@ -29,38 +31,7 @@ export const LoginForm = ({ onFirstLogin }: { onFirstLogin: (value: boolean) => 
           localStorage.removeItem("rememberedEmail");
         }
 
-        const mockFirstLogin = email.includes("new");
-        
-        if (mockFirstLogin) {
-          onFirstLogin(true);
-          setLoading(false);
-          return;
-        }
-
-        let role = "staff";
-        if (email.toLowerCase().includes("admin")) {
-          role = "admin";
-        } else if (email.toLowerCase().includes("manager")) {
-          role = "manager";
-        }
-
-        localStorage.setItem("userRole", role);
-
-        toast({
-          title: "Login Successful",
-          description: `Welcome back, ${role}!`,
-        });
-
-        switch (role) {
-          case "admin":
-            navigate("/admin/dashboard");
-            break;
-          case "manager":
-            navigate("/manager/dashboard");
-            break;
-          default:
-            navigate("/staff/dashboard");
-        }
+        await onLogin(email, password);
       } else {
         toast({
           title: "Error",
@@ -68,19 +39,12 @@ export const LoginForm = ({ onFirstLogin }: { onFirstLogin: (value: boolean) => 
           variant: "destructive",
         });
       }
-    } catch (error) {
-      console.error("Login error:", error);
-      toast({
-        title: "Login Failed",
-        description: "Invalid credentials. Please try again.",
-        variant: "destructive",
-      });
     } finally {
       setLoading(false);
     }
   };
 
-  const handleForgotPassword = () => {
+  const handleForgotPassword = async () => {
     if (!email) {
       toast({
         title: "Email Required",
@@ -90,14 +54,25 @@ export const LoginForm = ({ onFirstLogin }: { onFirstLogin: (value: boolean) => 
       return;
     }
 
-    toast({
-      title: "Password Reset Link Sent",
-      description: "Please check your email for further instructions",
-    });
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email);
+      if (error) throw error;
+
+      toast({
+        title: "Password Reset Link Sent",
+        description: "Please check your email for further instructions",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
   };
 
   return (
-    <form onSubmit={handleLogin} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
         <Label htmlFor="email">Email</Label>
         <Input
