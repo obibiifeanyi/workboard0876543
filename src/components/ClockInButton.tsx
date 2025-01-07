@@ -58,17 +58,17 @@ export const ClockInButton = () => {
       className="w-32 h-32 rounded-full 
         bg-gradient-to-br from-primary via-primary/90 to-primary/80
         hover:bg-primary/90 text-white
-        shadow-[0_0_20px_rgba(234,56,76,0.3),
-                0_0_40px_rgba(234,56,76,0.2),
-                0_0_60px_rgba(234,56,76,0.1),
+        shadow-[0_0_20px_rgba(252,4,4,0.3),
+                0_0_40px_rgba(252,4,4,0.2),
+                0_0_60px_rgba(252,4,4,0.1),
                 inset_0_0_15px_rgba(255,255,255,0.1)]
-        hover:shadow-[0_0_25px_rgba(234,56,76,0.4),
-                     0_0_50px_rgba(234,56,76,0.3),
-                     0_0_75px_rgba(234,56,76,0.2),
+        hover:shadow-[0_0_25px_rgba(252,4,4,0.4),
+                     0_0_50px_rgba(252,4,4,0.3),
+                     0_0_75px_rgba(252,4,4,0.2),
                      inset_0_0_20px_rgba(255,255,255,0.2)]
-        active:shadow-[0_0_15px_rgba(234,56,76,0.3),
-                      0_0_30px_rgba(234,56,76,0.2),
-                      0_0_45px_rgba(234,56,76,0.1),
+        active:shadow-[0_0_15px_rgba(252,4,4,0.3),
+                      0_0_30px_rgba(252,4,4,0.2),
+                      0_0_45px_rgba(252,4,4,0.1),
                       inset_0_0_10px_rgba(255,255,255,0.1)]
         active:transform active:scale-95
         transition-all duration-300 ease-in-out
