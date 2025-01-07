@@ -76,7 +76,7 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="space-y-2">
+      <div className="space-y-2 text-left">
         <Label htmlFor="email">Email</Label>
         <Input
           id="email"
@@ -88,7 +88,7 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
           className="bg-black/5 dark:bg-white/5 border-none placeholder:text-muted-foreground/50"
         />
       </div>
-      <div className="space-y-2">
+      <div className="space-y-2 text-left">
         <Label htmlFor="password">Password</Label>
         <Input
           id="password"
