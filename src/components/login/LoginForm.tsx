@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Key } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { AuthError } from "@supabase/supabase-js";
 
 interface LoginFormProps {
   onLogin: (email: string, password: string) => Promise<void>;
@@ -62,10 +64,11 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
         title: "Password Reset Link Sent",
         description: "Please check your email for further instructions",
       });
-    } catch (error: any) {
+    } catch (error) {
+      const authError = error as AuthError;
       toast({
         title: "Error",
-        description: error.message,
+        description: authError.message,
         variant: "destructive",
       });
     }

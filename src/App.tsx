@@ -1,55 +1,19 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Index from "@/pages/Index";
-import Login from "@/pages/Login";
-import AdminDashboard from "@/pages/admin/AdminDashboard";
-import ManagerDashboard from "@/pages/manager/ManagerDashboard";
-import StaffDashboard from "@/pages/staff/StaffDashboard";
-import AccountPage from "@/pages/account/AccountPage";
-import DocumentsPage from "@/pages/documents/DocumentsPage";
-import SettingsPage from "@/pages/settings/SettingsPage";
-import { RoleBasedRoute } from "@/components/RoleBasedRoute";
+import { BrowserRouter } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import "./App.css";
+import Login from "@/pages/Login"; // Assuming you have a Login page
+
+const queryClient = new QueryClient();
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Index />} />
-        <Route path="/login" element={<Login />} />
-        <Route
-          path="/admin/*"
-          element={
-            <RoleBasedRoute
-              element={<AdminDashboard />}
-              allowedRoles={["admin"]}
-            />
-          }
-        />
-        <Route
-          path="/manager/*"
-          element={
-            <RoleBasedRoute
-              element={<ManagerDashboard />}
-              allowedRoles={["manager"]}
-            />
-          }
-        />
-        <Route
-          path="/staff/*"
-          element={
-            <RoleBasedRoute
-              element={<StaffDashboard />}
-              allowedRoles={["staff"]}
-            />
-          }
-        />
-        <Route path="/account" element={<AccountPage />} />
-        <Route path="/documents" element={<DocumentsPage />} />
-        <Route path="/settings" element={<SettingsPage />} />
-      </Routes>
-      <Toaster />
-    </Router>
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <Toaster />
+        <Login />
+      </BrowserRouter>
+    </QueryClientProvider>
   );
 }
 
