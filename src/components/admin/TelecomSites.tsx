@@ -1,9 +1,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { MapPin, Users, BarChart3, AlertCircle } from "lucide-react";
+import { MapPin, Users, BarChart3 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
+import { TelecomStatsCard } from "../telecom/TelecomStatsCard";
+import { TelecomStatusBadge } from "../telecom/TelecomStatusBadge";
+import { TelecomPerformanceIndicator } from "../telecom/TelecomPerformanceIndicator";
 
 interface TelecomSite {
   id: number;
@@ -11,7 +14,7 @@ interface TelecomSite {
   location: string;
   manager: string;
   clients: number;
-  status: "Active" | "Maintenance" | "Offline";
+  status: "active" | "maintenance" | "offline";
   performance?: number;
 }
 
@@ -22,7 +25,7 @@ const mockSites: TelecomSite[] = [
     location: "Downtown Metro",
     manager: "John Doe",
     clients: 5,
-    status: "Active",
+    status: "active",
     performance: 92,
   },
   {
@@ -31,7 +34,7 @@ const mockSites: TelecomSite[] = [
     location: "Suburban Area",
     manager: "Jane Smith",
     clients: 3,
-    status: "Maintenance",
+    status: "maintenance",
     performance: 78,
   },
   {
@@ -40,7 +43,7 @@ const mockSites: TelecomSite[] = [
     location: "Industrial Zone",
     manager: "Mike Johnson",
     clients: 7,
-    status: "Active",
+    status: "active",
     performance: 95,
   },
 ];
@@ -68,37 +71,21 @@ export const TelecomSites = () => {
       <CardContent>
         <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card className="bg-gradient-card border-white/10">
-              <CardContent className="pt-6">
-                <div className="flex items-center justify-between">
-                  <p className="text-sm font-medium text-white/70">Total Sites</p>
-                  <MapPin className="h-4 w-4 text-emerald" />
-                </div>
-                <p className="text-2xl font-bold text-emerald mt-2">{mockSites.length}</p>
-              </CardContent>
-            </Card>
-            <Card className="bg-gradient-card border-white/10">
-              <CardContent className="pt-6">
-                <div className="flex items-center justify-between">
-                  <p className="text-sm font-medium text-white/70">Active Managers</p>
-                  <Users className="h-4 w-4 text-emerald" />
-                </div>
-                <p className="text-2xl font-bold text-emerald mt-2">
-                  {new Set(mockSites.map(site => site.manager)).size}
-                </p>
-              </CardContent>
-            </Card>
-            <Card className="bg-gradient-card border-white/10">
-              <CardContent className="pt-6">
-                <div className="flex items-center justify-between">
-                  <p className="text-sm font-medium text-white/70">Total Clients</p>
-                  <BarChart3 className="h-4 w-4 text-emerald" />
-                </div>
-                <p className="text-2xl font-bold text-emerald mt-2">
-                  {mockSites.reduce((sum, site) => sum + site.clients, 0)}
-                </p>
-              </CardContent>
-            </Card>
+            <TelecomStatsCard
+              title="Total Sites"
+              value={mockSites.length}
+              icon={MapPin}
+            />
+            <TelecomStatsCard
+              title="Active Managers"
+              value={new Set(mockSites.map(site => site.manager)).size}
+              icon={Users}
+            />
+            <TelecomStatsCard
+              title="Total Clients"
+              value={mockSites.reduce((sum, site) => sum + site.clients, 0)}
+              icon={BarChart3}
+            />
           </div>
 
           <Table>
@@ -119,28 +106,10 @@ export const TelecomSites = () => {
                   <TableCell className="text-white">{site.location}</TableCell>
                   <TableCell className="text-white">{site.manager}</TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-2">
-                      <div className="w-24 h-2 bg-white/10 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-emerald rounded-full"
-                          style={{ width: `${site.performance}%` }}
-                        />
-                      </div>
-                      <span className="text-sm text-white/70">{site.performance}%</span>
-                    </div>
+                    <TelecomPerformanceIndicator performance={site.performance || 0} />
                   </TableCell>
                   <TableCell>
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs ${
-                        site.status === "Active"
-                          ? "bg-emerald/20 text-emerald"
-                          : site.status === "Maintenance"
-                          ? "bg-yellow-500/20 text-yellow-500"
-                          : "bg-red-500/20 text-red-500"
-                      }`}
-                    >
-                      {site.status}
-                    </span>
+                    <TelecomStatusBadge status={site.status} />
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-2">
