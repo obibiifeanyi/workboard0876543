@@ -2,8 +2,6 @@ import { ClockInButton } from "@/components/ClockInButton";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 import { Card } from "@/components/ui/card";
 import { NeuralNetwork } from "@/components/NeuralNetwork";
-import { NotificationCenter } from "@/components/NotificationCenter";
-import { ChatBox } from "@/components/ChatBox";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Loader } from "lucide-react";
@@ -42,8 +40,7 @@ const Index = () => {
         <NeuralNetwork />
       </div>
 
-      <div className="fixed top-4 right-4 z-50 flex items-center gap-4">
-        <NotificationCenter />
+      <div className="fixed top-4 right-4 z-50">
         <ThemeSwitcher />
       </div>
 
@@ -75,10 +72,6 @@ const Index = () => {
           </div>
         </div>
       </Card>
-
-      <div className="fixed bottom-4 right-4 z-50">
-        <ChatBox />
-      </div>
     </div>
   );
 };
