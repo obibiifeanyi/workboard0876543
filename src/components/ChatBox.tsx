@@ -72,7 +72,7 @@ export const ChatBox = () => {
   };
 
   return (
-    <Card className={`fixed bottom-4 right-4 w-96 transition-all duration-300 ease-in-out glass-card ${
+    <Card className={`fixed bottom-4 right-4 w-[95%] sm:w-96 transition-all duration-300 ease-in-out glass-card shadow-xl ${
       isMinimized ? 'h-12' : 'h-[600px]'
     }`}>
       <CardHeader className="p-3 flex flex-row items-center justify-between border-b border-white/10">
@@ -101,22 +101,22 @@ export const ChatBox = () => {
                   <div
                     className={`chat-message ${
                       msg.isUser
-                        ? 'bg-primary/10 ml-12'
-                        : 'bg-secondary/10 mr-12'
-                    }`}
+                        ? 'bg-primary/10 ml-12 text-left'
+                        : 'bg-secondary/10 mr-12 text-left'
+                    } shadow-lg hover:bg-opacity-90 transition-all duration-200`}
                   >
-                    <p className="text-sm">{msg.content}</p>
-                    <span className="text-xs text-muted-foreground mt-2 block">
+                    <p className="text-sm leading-relaxed">{msg.content}</p>
+                    <span className="text-xs text-muted-foreground mt-2 block opacity-75">
                       {msg.timestamp.toLocaleTimeString()}
                     </span>
                   </div>
                 </div>
               ))}
               {isThinking && (
-                <div className="ai-thinking">
+                <div className="ai-thinking shadow-lg">
                   <Loader className="h-5 w-5 animate-spin" />
                   <div className="flex-1">
-                    <p className="text-sm mb-2">CTNL AI is Thinking...</p>
+                    <p className="text-sm mb-2 text-left font-medium">CTNL AI is Thinking...</p>
                     <Progress value={learningProgress} className="h-1" />
                   </div>
                 </div>
@@ -129,13 +129,13 @@ export const ChatBox = () => {
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder="Ask CTNL AI anything..."
-              className="flex-1 bg-white/5 border-white/10"
+              className="flex-1 bg-white/5 border-white/10 text-left"
             />
             <Button 
               size="icon" 
               onClick={handleSend}
               disabled={isThinking}
-              className="bg-primary hover:bg-primary/90"
+              className="bg-primary hover:bg-primary/90 shadow-lg"
             >
               <Send className="h-4 w-4" />
             </Button>
