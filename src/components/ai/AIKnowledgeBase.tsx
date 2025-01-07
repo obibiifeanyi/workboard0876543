@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { FileUp, File, Trash2, Brain, Database } from "lucide-react";
+import { FileUp, File, Trash2, Brain, Database, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 interface UploadedFile {
   id: string;
@@ -12,11 +13,26 @@ interface UploadedFile {
   progress: number;
 }
 
-export const AIKnowledgeBase = () => {
+export const AIKnowledgeBase = ({ userRole }: { userRole?: string }) => {
   const [files, setFiles] = useState<UploadedFile[]>([]);
   const [isTraining, setIsTraining] = useState(false);
   const [trainingProgress, setTrainingProgress] = useState(0);
   const { toast } = useToast();
+
+  // Check if user has access (admin or manager)
+  const hasAccess = userRole === 'admin' || userRole === 'manager';
+
+  if (!hasAccess) {
+    return (
+      <Alert variant="destructive">
+        <Lock className="h-4 w-4" />
+        <AlertTitle>Access Restricted</AlertTitle>
+        <AlertDescription>
+          Only administrators and managers have access to the AI Knowledge Base.
+        </AlertDescription>
+      </Alert>
+    );
+  }
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const fileList = event.target.files;

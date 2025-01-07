@@ -57,9 +57,6 @@ const Index = () => {
             <h1 className="text-2xl sm:text-4xl font-bold tracking-tight bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent animate-fade-in">
               CTNL AI WORK-BOARD
             </h1>
-            <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto animate-fade-in delay-100">
-              Welcome to Communication Towers Nigeria Limited Artificial Intelligence Enabled Work-Board System. Dear Esteemed Staff please clock in to start your working.
-            </p>
           </div>
 
           <div className="flex flex-col items-center gap-6 sm:gap-8">
