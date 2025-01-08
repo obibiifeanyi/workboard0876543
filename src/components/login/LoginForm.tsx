@@ -3,10 +3,19 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Key } from "lucide-react";
+import { Key, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { AuthError, AuthApiError } from "@supabase/supabase-js";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface LoginFormProps {
   onLogin: (email: string, password: string) => Promise<void>;
@@ -19,15 +28,21 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
   const getErrorMessage = (error: AuthError) => {
     if (error instanceof AuthApiError) {
       switch (error.status) {
         case 400:
-          return "Invalid email or password. Please check your credentials and try again.";
-        case 422:
+          if (error.message.includes("Invalid login credentials")) {
+            return "Invalid email or password. Please check your credentials and try again.";
+          }
           return "Please enter valid email and password.";
+        case 422:
+          return "Invalid email format. Please enter a valid email address.";
+        case 429:
+          return "Too many login attempts. Please try again later.";
         default:
           return error.message;
       }
@@ -37,15 +52,12 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
     setLoading(true);
 
     try {
       if (!email || !password) {
-        toast({
-          title: "Error",
-          description: "Please enter both email and password",
-          variant: "destructive",
-        });
+        setError("Please enter both email and password");
         return;
       }
 
@@ -56,8 +68,28 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
       }
 
       await onLogin(email, password);
-    } catch (error) {
+
+      // Send login notification email
+      const { error: notificationError } = await supabase.functions.invoke('send-notification', {
+        body: {
+          email,
+          subject: 'New Login to AI Work-Board',
+          content: `
+            <h2>New Login Detected</h2>
+            <p>A new login was detected for your account.</p>
+            <p>Time: ${new Date().toLocaleString()}</p>
+            <p>If this wasn't you, please contact support immediately.</p>
+          `
+        }
+      });
+
+      if (notificationError) {
+        console.error('Failed to send login notification:', notificationError);
+      }
+
+    } catch (error: any) {
       const authError = error as AuthError;
+      setError(getErrorMessage(authError));
       toast({
         title: "Login Failed",
         description: getErrorMessage(authError),
@@ -70,11 +102,7 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
 
   const handleForgotPassword = async () => {
     if (!email) {
-      toast({
-        title: "Email Required",
-        description: "Please enter your email address first",
-        variant: "destructive",
-      });
+      setError("Please enter your email address first");
       return;
     }
 
@@ -86,18 +114,19 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
         title: "Password Reset Link Sent",
         description: "Please check your email for further instructions",
       });
-    } catch (error) {
+    } catch (error: any) {
       const authError = error as AuthError;
-      toast({
-        title: "Error",
-        description: getErrorMessage(authError),
-        variant: "destructive",
-      });
+      setError(getErrorMessage(authError));
     }
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      {error && (
+        <Alert variant="destructive" className="mb-4">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
       <div className="space-y-2 text-left">
         <Label htmlFor="email">Email</Label>
         <Input
@@ -108,6 +137,7 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
           onChange={(e) => setEmail(e.target.value)}
           required
           className="bg-black/5 dark:bg-white/5 border-none placeholder:text-muted-foreground/50"
+          disabled={loading}
         />
       </div>
       <div className="space-y-2 text-left">
@@ -120,6 +150,7 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
           onChange={(e) => setPassword(e.target.value)}
           required
           className="bg-black/5 dark:bg-white/5 border-none placeholder:text-muted-foreground/50"
+          disabled={loading}
         />
       </div>
       <div className="flex items-center justify-between">
@@ -128,6 +159,7 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
             id="remember" 
             checked={rememberMe}
             onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+            disabled={loading}
           />
           <label
             htmlFor="remember"
@@ -141,6 +173,7 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
           variant="ghost"
           className="text-sm text-primary hover:text-primary/90 flex items-center gap-1"
           onClick={handleForgotPassword}
+          disabled={loading}
         >
           <Key className="h-3 w-3" />
           Forgot password?
@@ -151,7 +184,14 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
         className="w-full bg-primary hover:bg-primary/90" 
         disabled={loading}
       >
-        {loading ? "Signing in..." : "Sign in"}
+        {loading ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Signing in...
+          </>
+        ) : (
+          "Sign in"
+        )}
       </Button>
     </form>
   );
