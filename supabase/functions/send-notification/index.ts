@@ -6,7 +6,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-const SENDGRID_API_KEY = Deno.env.get('SENDGRID_API_KEY')
+const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')
 const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')
 
@@ -23,22 +23,22 @@ serve(async (req) => {
 
     const { email, subject, content } = await req.json()
 
-    const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
+    const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${SENDGRID_API_KEY}`,
+        'Authorization': `Bearer ${RESEND_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        personalizations: [{ to: [{ email }] }],
-        from: { email: 'notifications@your-domain.com', name: 'AI Work-Board' },
+        from: 'AI Work-Board <notifications@your-domain.com>',
+        to: [email],
         subject,
-        content: [{ type: 'text/html', value: content }],
+        html: content,
       }),
     })
 
     if (!response.ok) {
-      throw new Error(`SendGrid API error: ${response.statusText}`)
+      throw new Error(`Resend API error: ${response.statusText}`)
     }
 
     return new Response(
@@ -49,6 +49,7 @@ serve(async (req) => {
       },
     )
   } catch (error) {
+    console.error('Error sending notification:', error)
     return new Response(
       JSON.stringify({ error: error.message }),
       { 
