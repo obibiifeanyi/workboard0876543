@@ -7,14 +7,6 @@ import { Key, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { AuthError, AuthApiError } from "@supabase/supabase-js";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface LoginFormProps {

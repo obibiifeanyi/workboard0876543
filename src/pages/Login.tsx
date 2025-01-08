@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Auth } from "@supabase/auth-ui-react";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { AuthError } from "@supabase/supabase-js";
+import { LoginForm } from "@/components/login/LoginForm";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -53,14 +53,13 @@ const Login = () => {
     };
   }, [navigate]);
 
-  const handleError = (error: AuthError) => {
-    console.error('Auth error:', error);
-    setError(error.message);
-    toast({
-      title: "Authentication Error",
-      description: error.message,
-      variant: "destructive",
+  const handleLogin = async (email: string, password: string) => {
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
     });
+
+    if (error) throw error;
   };
 
   return (
@@ -85,27 +84,7 @@ const Login = () => {
           </p>
         </div>
         
-        {error && (
-          <div className="mb-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
-            {error}
-          </div>
-        )}
-
-        <Auth
-          supabaseClient={supabase}
-          appearance={{
-            theme: 'dark',
-            variables: {
-              default: {
-                colors: {
-                  brand: 'rgb(var(--primary))',
-                  brandAccent: 'rgb(var(--primary))',
-                },
-              },
-            },
-          }}
-          providers={[]}
-        />
+        <LoginForm onLogin={handleLogin} />
       </div>
     </div>
   );
