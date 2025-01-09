@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 import { EnhancedNotificationCenter } from "@/components/notifications/EnhancedNotificationCenter";
 import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+import { User, Settings } from "lucide-react";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -26,8 +28,24 @@ export const DashboardLayout = ({ children, title }: DashboardLayoutProps) => {
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <h1 className="text-2xl font-bold text-foreground">{title}</h1>
           <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate("/staff/profile")}
+              className="hover:bg-white/10"
+            >
+              <User className="h-5 w-5" />
+            </Button>
             <EnhancedNotificationCenter />
             <ThemeSwitcher />
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate("/account")}
+              className="hover:bg-white/10"
+            >
+              <Settings className="h-5 w-5" />
+            </Button>
           </div>
         </div>
       </header>

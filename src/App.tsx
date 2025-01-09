@@ -5,10 +5,17 @@ import { RoleBasedRoute } from "@/components/RoleBasedRoute";
 import Index from "@/pages/Index";
 import Login from "@/pages/Login";
 import StaffDashboard from "@/pages/staff/StaffDashboard";
+import CurrentTasks from "@/pages/staff/CurrentTasks";
+import MyTasks from "@/pages/staff/MyTasks";
+import Memos from "@/pages/staff/Memos";
+import Reports from "@/pages/staff/Reports";
+import TelecomReports from "@/pages/staff/TelecomReports";
+import BatteryReports from "@/pages/staff/BatteryReports";
+import Meetings from "@/pages/staff/Meetings";
+import StaffProfile from "@/pages/staff/StaffProfile";
 import ManagerDashboard from "@/pages/manager/ManagerDashboard";
 import AdminDashboard from "@/pages/admin/AdminDashboard";
 import AccountPage from "@/pages/account/AccountPage";
-import { useAuth } from "@/hooks/useAuth";
 
 function App() {
   return (
@@ -19,10 +26,90 @@ function App() {
           <Route path="/login" element={<Login />} />
           
           <Route
-            path="/staff/*"
+            path="/staff"
             element={
               <RoleBasedRoute
                 element={<StaffDashboard />}
+                allowedRoles={["staff", "manager", "admin"]}
+              />
+            }
+          />
+          
+          <Route
+            path="/staff/current-tasks"
+            element={
+              <RoleBasedRoute
+                element={<CurrentTasks />}
+                allowedRoles={["staff", "manager", "admin"]}
+              />
+            }
+          />
+          
+          <Route
+            path="/staff/my-tasks"
+            element={
+              <RoleBasedRoute
+                element={<MyTasks />}
+                allowedRoles={["staff", "manager", "admin"]}
+              />
+            }
+          />
+          
+          <Route
+            path="/staff/memos"
+            element={
+              <RoleBasedRoute
+                element={<Memos />}
+                allowedRoles={["staff", "manager", "admin"]}
+              />
+            }
+          />
+          
+          <Route
+            path="/staff/reports"
+            element={
+              <RoleBasedRoute
+                element={<Reports />}
+                allowedRoles={["staff", "manager", "admin"]}
+              />
+            }
+          />
+          
+          <Route
+            path="/staff/telecom-reports"
+            element={
+              <RoleBasedRoute
+                element={<TelecomReports />}
+                allowedRoles={["staff", "manager", "admin"]}
+              />
+            }
+          />
+          
+          <Route
+            path="/staff/battery-reports"
+            element={
+              <RoleBasedRoute
+                element={<BatteryReports />}
+                allowedRoles={["staff", "manager", "admin"]}
+              />
+            }
+          />
+          
+          <Route
+            path="/staff/meetings"
+            element={
+              <RoleBasedRoute
+                element={<Meetings />}
+                allowedRoles={["staff", "manager", "admin"]}
+              />
+            }
+          />
+          
+          <Route
+            path="/staff/profile"
+            element={
+              <RoleBasedRoute
+                element={<StaffProfile />}
                 allowedRoles={["staff", "manager", "admin"]}
               />
             }

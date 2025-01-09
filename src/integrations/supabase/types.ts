@@ -9,6 +9,57 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      ct_power_reports: {
+        Row: {
+          battery_status: string | null
+          created_at: string | null
+          created_by: string | null
+          id: string
+          power_reading: number | null
+          report_number: string | null
+          site_id: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          battery_status?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          power_reading?: number | null
+          report_number?: string | null
+          site_id?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          battery_status?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          power_reading?: number | null
+          report_number?: string | null
+          site_id?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ct_power_reports_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ct_power_reports_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "telecom_sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       meeting_attendees: {
         Row: {
           meeting_id: string
@@ -96,6 +147,7 @@ export type Database = {
           created_by: string | null
           department: string | null
           id: string
+          memo_number: string | null
           title: string
           updated_at: string
         }
@@ -105,6 +157,7 @@ export type Database = {
           created_by?: string | null
           department?: string | null
           id?: string
+          memo_number?: string | null
           title: string
           updated_at?: string
         }
@@ -114,6 +167,7 @@ export type Database = {
           created_by?: string | null
           department?: string | null
           id?: string
+          memo_number?: string | null
           title?: string
           updated_at?: string
         }
@@ -207,6 +261,45 @@ export type Database = {
           },
         ]
       }
+      site_assignments: {
+        Row: {
+          assigned_at: string | null
+          id: string
+          role: string
+          site_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          assigned_at?: string | null
+          id?: string
+          role: string
+          site_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          assigned_at?: string | null
+          id?: string
+          role?: string
+          site_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "site_assignments_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "telecom_sites"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "site_assignments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tasks: {
         Row: {
           assigned_to: string | null
@@ -255,6 +348,47 @@ export type Database = {
           {
             foreignKeyName: "tasks_created_by_fkey"
             columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      telecom_sites: {
+        Row: {
+          created_at: string | null
+          id: string
+          location: string
+          manager_id: string | null
+          name: string
+          site_number: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          location: string
+          manager_id?: string | null
+          name: string
+          site_number?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          location?: string
+          manager_id?: string | null
+          name?: string
+          site_number?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "telecom_sites_manager_id_fkey"
+            columns: ["manager_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
