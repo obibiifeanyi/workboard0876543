@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -53,6 +53,23 @@ export const BatterySales = () => {
       return data as BatterySale[];
     },
   });
+
+  useEffect(() => {
+    const channel = supabase
+      .channel('sales-changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'battery_sales' },
+        () => {
+          refetchSales();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [refetchSales]);
 
   const handleAddSale = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

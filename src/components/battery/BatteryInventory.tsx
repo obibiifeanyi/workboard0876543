@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -35,6 +35,23 @@ export const BatteryInventory = () => {
       return data as BatteryItem[];
     },
   });
+
+  useEffect(() => {
+    const channel = supabase
+      .channel('battery-changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'battery_inventory' },
+        () => {
+          refetch();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [refetch]);
 
   const handleAddBattery = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
