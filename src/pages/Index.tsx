@@ -15,8 +15,14 @@ const Index = () => {
       setIsLoading(false);
     }, 2000);
 
+    // Check if user is already logged in
+    const userRole = localStorage.getItem('userRole');
+    if (userRole) {
+      navigate(`/${userRole.toLowerCase()}`);
+    }
+
     return () => clearTimeout(timer);
-  }, []);
+  }, [navigate]);
 
   if (isLoading) {
     return (
@@ -38,10 +44,14 @@ const Index = () => {
         <ThemeSwitcher />
       </div>
 
-      <Card className="w-full max-w-4xl mx-auto p-6 sm:p-8 animate-fade-in glass relative z-10 bg-background/80 backdrop-blur-xl">
+      <Card className="w-full max-w-4xl mx-auto p-6 sm:p-8 animate-fade-in glass relative z-10 
+                      bg-background/80 backdrop-blur-xl border-primary/20 hover:border-primary/40
+                      transition-all duration-300">
         <div className="space-y-8 sm:space-y-12">
           <div className="text-center space-y-4">
-            <h1 className="text-2xl sm:text-4xl font-bold tracking-tight bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent animate-fade-in">
+            <h1 className="text-2xl sm:text-4xl font-bold tracking-tight 
+                         bg-gradient-to-r from-primary via-primary/80 to-primary 
+                         bg-clip-text text-transparent animate-fade-in">
               CTNL AI WORK-BOARD
             </h1>
           </div>

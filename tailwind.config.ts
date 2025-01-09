@@ -25,24 +25,24 @@ export default {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: "#9b87f5", // Updated to purple for admin theme
+          DEFAULT: "#ea384c", // Updated to the specified red color
           foreground: "hsl(var(--primary-foreground))",
         },
         secondary: {
-          DEFAULT: "#0FA0CE", // Kept bright blue for contrast
+          DEFAULT: "#0FA0CE",
           foreground: "hsl(var(--secondary-foreground))",
         },
         admin: {
-          primary: "#6E59A5",    // Dark purple
-          secondary: "#8B5CF6",  // Vivid purple
-          accent: "#D6BCFA",     // Light purple
-          muted: "#1A1F2C",      // Dark purple background
+          primary: "#6E59A5",
+          secondary: "#8B5CF6",
+          accent: "#D6BCFA",
+          muted: "#1A1F2C",
         },
         manager: {
-          primary: "#0EA5E9",    // Ocean blue
-          secondary: "#33C3F0",  // Sky blue
-          accent: "#D3E4FD",     // Soft blue
-          muted: "#F1F0FB",      // Soft gray
+          primary: "#0EA5E9",
+          secondary: "#33C3F0",
+          accent: "#D3E4FD",
+          muted: "#F1F0FB",
         },
         destructive: {
           DEFAULT: "hsl(var(--destructive))",
