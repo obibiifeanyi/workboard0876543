@@ -22,7 +22,7 @@ export const DepartmentManagement = () => {
           profiles:manager_id (full_name)
         `);
       if (error) throw error;
-      return data;
+      return data as DepartmentRow[];
     },
   });
 

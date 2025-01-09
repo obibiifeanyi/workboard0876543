@@ -16,7 +16,7 @@ export const ActivityOverview = () => {
         .limit(10);
       
       if (error) throw error;
-      return data;
+      return data as SystemActivityRow[];
     },
   });
 

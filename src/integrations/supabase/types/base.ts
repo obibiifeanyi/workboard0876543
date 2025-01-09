@@ -1,8 +1,3 @@
-import { AIKnowledgeBaseRow, AIResultsRow } from './ai';
-import { BatteryInventoryRow, BatterySalesRow } from './battery';
-import { TelecomSiteRow, CTPowerReportRow } from './telecom';
-import { DepartmentRow, ProjectAssignmentRow, DocumentArchiveRow } from './organization';
-
 export type Json =
   | string
   | number
@@ -14,51 +9,848 @@ export type Json =
 export interface Database {
   public: {
     Tables: {
+      system_activities: {
+        Row: {
+          id: string;
+          type: string;
+          description: string;
+          user_id: string | null;
+          metadata: Json | null;
+          created_at: string;
+        };
+        Insert: {
+          type: string;
+          description: string;
+          user_id?: string | null;
+          metadata?: Json | null;
+          created_at?: string;
+        };
+      };
       ai_knowledge_base: {
-        Row: AIKnowledgeBaseRow;
-        Insert: Omit<AIKnowledgeBaseRow, 'id' | 'created_at' | 'updated_at'>;
-        Update: Partial<Omit<AIKnowledgeBaseRow, 'id'>>;
-      };
+        Row: {
+          category: string | null
+          content: string
+          created_at: string
+          created_by: string | null
+          id: string
+          tags: string[] | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          content: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          content?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_knowledge_base_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ai_results: {
-        Row: AIResultsRow;
-        Insert: Omit<AIResultsRow, 'id' | 'created_at' | 'updated_at'>;
-        Update: Partial<Omit<AIResultsRow, 'id'>>;
-      };
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          model_used: string
+          query_text: string
+          result_data: Json
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          model_used: string
+          query_text: string
+          result_data: Json
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          model_used?: string
+          query_text?: string
+          result_data?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_results_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       battery_inventory: {
-        Row: BatteryInventoryRow;
-        Insert: Omit<BatteryInventoryRow, 'id' | 'created_at' | 'updated_at'>;
-        Update: Partial<Omit<BatteryInventoryRow, 'id'>>;
-      };
+        Row: {
+          capacity: string
+          created_at: string | null
+          id: string
+          manufacturer: string
+          model_name: string
+          purchase_date: string | null
+          purchase_price: number
+          status: string | null
+          updated_at: string | null
+          voltage: string
+        }
+        Insert: {
+          capacity: string
+          created_at?: string | null
+          id?: string
+          manufacturer: string
+          model_name: string
+          purchase_date?: string | null
+          purchase_price: number
+          status?: string | null
+          updated_at?: string | null
+          voltage: string
+        }
+        Update: {
+          capacity?: string
+          created_at?: string | null
+          id?: string
+          manufacturer?: string
+          model_name?: string
+          purchase_date?: string | null
+          purchase_price?: number
+          status?: string | null
+          updated_at?: string | null
+          voltage?: string
+        }
+        Relationships: []
+      }
       battery_sales: {
-        Row: BatterySalesRow;
-        Insert: Omit<BatterySalesRow, 'id' | 'created_at' | 'updated_at'>;
-        Update: Partial<Omit<BatterySalesRow, 'id'>>;
-      };
+        Row: {
+          battery_id: string | null
+          client_id: string
+          created_at: string | null
+          created_by: string | null
+          id: string
+          sale_date: string | null
+          sale_price: number
+          updated_at: string | null
+        }
+        Insert: {
+          battery_id?: string | null
+          client_id: string
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          sale_date?: string | null
+          sale_price: number
+          updated_at?: string | null
+        }
+        Update: {
+          battery_id?: string | null
+          client_id?: string
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          sale_date?: string | null
+          sale_price?: number
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "battery_sales_battery_id_fkey"
+            columns: ["battery_id"]
+            isOneToOne: false
+            referencedRelation: "battery_inventory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "battery_sales_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ct_power_reports: {
-        Row: CTPowerReportRow;
-        Insert: Omit<CTPowerReportRow, 'id' | 'created_at' | 'updated_at'>;
-        Update: Partial<Omit<CTPowerReportRow, 'id'>>;
-      };
+        Row: {
+          battery_status: string | null
+          comments: string | null
+          created_at: string | null
+          created_by: string | null
+          diesel_level: number | null
+          generator_runtime: number | null
+          id: string
+          power_reading: number | null
+          report_datetime: string | null
+          report_number: string | null
+          site_id: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          battery_status?: string | null
+          comments?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          diesel_level?: number | null
+          generator_runtime?: number | null
+          id?: string
+          power_reading?: number | null
+          report_datetime?: string | null
+          report_number?: string | null
+          site_id?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          battery_status?: string | null
+          comments?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          diesel_level?: number | null
+          generator_runtime?: number | null
+          id?: string
+          power_reading?: number | null
+          report_datetime?: string | null
+          report_number?: string | null
+          site_id?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ct_power_reports_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ct_power_reports_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "telecom_sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       departments: {
-        Row: DepartmentRow;
-        Insert: Omit<DepartmentRow, 'id' | 'created_at' | 'updated_at'>;
-        Update: Partial<Omit<DepartmentRow, 'id'>>;
-      };
-      project_assignments: {
-        Row: ProjectAssignmentRow;
-        Insert: Omit<ProjectAssignmentRow, 'id' | 'created_at' | 'updated_at'>;
-        Update: Partial<Omit<ProjectAssignmentRow, 'id'>>;
-      };
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          manager_id: string | null
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          manager_id?: string | null
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          manager_id?: string | null
+          name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "departments_manager_id_fkey"
+            columns: ["manager_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       document_archive: {
-        Row: DocumentArchiveRow;
-        Insert: Omit<DocumentArchiveRow, 'id' | 'created_at' | 'updated_at'>;
-        Update: Partial<Omit<DocumentArchiveRow, 'id'>>;
-      };
+        Row: {
+          created_at: string
+          department_id: string | null
+          description: string | null
+          file_path: string
+          file_size: number
+          file_type: string
+          id: string
+          is_archived: boolean
+          tags: string[] | null
+          title: string
+          updated_at: string
+          uploaded_by: string
+        }
+        Insert: {
+          created_at?: string
+          department_id?: string | null
+          description?: string | null
+          file_path: string
+          file_size: number
+          file_type: string
+          id?: string
+          is_archived?: boolean
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+          uploaded_by: string
+        }
+        Update: {
+          created_at?: string
+          department_id?: string | null
+          description?: string | null
+          file_path?: string
+          file_size?: number
+          file_type?: string
+          id?: string
+          is_archived?: boolean
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+          uploaded_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_archive_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_archive_uploaded_by_fkey"
+            columns: ["uploaded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invoices: {
+        Row: {
+          amount: number
+          client_name: string
+          created_at: string
+          created_by: string | null
+          due_date: string | null
+          id: string
+          invoice_number: string | null
+          items: Json
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          client_name: string
+          created_at?: string
+          created_by?: string | null
+          due_date?: string | null
+          id?: string
+          invoice_number?: string | null
+          items: Json
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          client_name?: string
+          created_at?: string
+          created_by?: string | null
+          due_date?: string | null
+          id?: string
+          invoice_number?: string | null
+          items?: Json
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      meeting_attendees: {
+        Row: {
+          meeting_id: string
+          status: string | null
+          user_id: string
+        }
+        Insert: {
+          meeting_id: string
+          status?: string | null
+          user_id: string
+        }
+        Update: {
+          meeting_id?: string
+          status?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meeting_attendees_meeting_id_fkey"
+            columns: ["meeting_id"]
+            isOneToOne: false
+            referencedRelation: "meetings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "meeting_attendees_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      meetings: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          end_time: string
+          id: string
+          location: string | null
+          meeting_type: string | null
+          start_time: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          end_time: string
+          id?: string
+          location?: string | null
+          meeting_type?: string | null
+          start_time: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          end_time?: string
+          id?: string
+          location?: string | null
+          meeting_type?: string | null
+          start_time?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meetings_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      memos: {
+        Row: {
+          content: string
+          created_at: string
+          created_by: string | null
+          department: string | null
+          id: string
+          memo_number: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          created_by?: string | null
+          department?: string | null
+          id?: string
+          memo_number?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          created_by?: string | null
+          department?: string | null
+          id?: string
+          memo_number?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "memos_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          link: string | null
+          message: string
+          read: boolean | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id: string
+          link?: string | null
+          message: string
+          read?: boolean | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          link?: string | null
+          message?: string
+          read?: boolean | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          department: string | null
+          full_name: string | null
+          id: string
+          role: string | null
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          department?: string | null
+          full_name?: string | null
+          id: string
+          role?: string | null
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          department?: string | null
+          full_name?: string | null
+          id?: string
+          role?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      project_assignments: {
+        Row: {
+          assigned_to: string
+          created_at: string
+          department_id: string
+          description: string | null
+          end_date: string | null
+          id: string
+          priority: string
+          project_name: string
+          start_date: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_to: string
+          created_at?: string
+          department_id: string
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          priority?: string
+          project_name: string
+          start_date: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string
+          created_at?: string
+          department_id?: string
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          priority?: string
+          project_name?: string
+          start_date?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_assignments_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_assignments_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reports: {
+        Row: {
+          ai_analysis: Json | null
+          analysis_status: string | null
+          content: Json
+          created_at: string
+          created_by: string | null
+          id: string
+          status: string | null
+          submitted_at: string
+          title: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          ai_analysis?: Json | null
+          analysis_status?: string | null
+          content: Json
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          status?: string | null
+          submitted_at?: string
+          title: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          ai_analysis?: Json | null
+          analysis_status?: string | null
+          content?: Json
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          status?: string | null
+          submitted_at?: string
+          title?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reports_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      site_assignments: {
+        Row: {
+          assigned_at: string | null
+          id: string
+          role: string
+          site_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          assigned_at?: string | null
+          id?: string
+          role: string
+          site_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          assigned_at?: string | null
+          id?: string
+          role?: string
+          site_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "site_assignments_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "telecom_sites"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "site_assignments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tasks: {
+        Row: {
+          assigned_to: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          due_date: string | null
+          id: string
+          priority: string | null
+          status: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          priority?: string | null
+          status?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          priority?: string | null
+          status?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tasks_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       telecom_sites: {
-        Row: TelecomSiteRow;
-        Insert: Omit<TelecomSiteRow, 'id' | 'created_at' | 'updated_at'>;
-        Update: Partial<Omit<TelecomSiteRow, 'id'>>;
-      };
-    };
-  };
+        Row: {
+          address: string | null
+          client_list: string[] | null
+          created_at: string | null
+          id: string
+          location: string
+          manager_id: string | null
+          name: string
+          region: string | null
+          site_number: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          address?: string | null
+          client_list?: string[] | null
+          created_at?: string | null
+          id?: string
+          location: string
+          manager_id?: string | null
+          name: string
+          region?: string | null
+          site_number?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          address?: string | null
+          client_list?: string[] | null
+          created_at?: string | null
+          id?: string
+          location?: string
+          manager_id?: string | null
+          name?: string
+          region?: string | null
+          site_number?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "telecom_sites_manager_id_fkey"
+            columns: ["manager_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      [_ in never]: never
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
 }
