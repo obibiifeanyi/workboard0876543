@@ -27,13 +27,9 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
     if (error instanceof AuthApiError) {
       switch (error.status) {
         case 400:
-          if (error.message.includes("Invalid login credentials")) {
-            return "Invalid email or password. Please check your credentials and try again.";
-          }
-          if (error.message.includes("Email not confirmed")) {
-            return "Please verify your email address before signing in.";
-          }
-          return "Please enter valid email and password.";
+          return "Invalid email or password. Please check your credentials and try again.";
+        case 401:
+          return "Unauthorized access. Please verify your credentials.";
         case 422:
           return "Invalid email format. Please enter a valid email address.";
         case 429:
@@ -53,7 +49,6 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
     try {
       if (!email || !password) {
         setError("Please enter both email and password");
-        setLoading(false);
         return;
       }
 
@@ -61,7 +56,6 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(email)) {
         setError("Please enter a valid email address");
-        setLoading(false);
         return;
       }
 
@@ -83,15 +77,19 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
           title: "Welcome Admin",
           description: "You have successfully logged in as an administrator.",
         });
-      } else {
-        // If not admin, proceed with regular login
-        await onLogin(email, password);
+        return;
       }
+
+      // If not admin or admin auth failed, proceed with regular login
+      await onLogin(email, password);
+      toast({
+        title: "Login Successful",
+        description: "You have successfully logged in.",
+      });
 
     } catch (error: any) {
       console.error('Login error:', error);
-      const authError = error as AuthError;
-      const errorMessage = getErrorMessage(authError);
+      const errorMessage = error instanceof AuthError ? getErrorMessage(error) : error.message;
       setError(errorMessage);
       toast({
         title: "Login Failed",

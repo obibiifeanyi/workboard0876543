@@ -17,10 +17,20 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    // Get user data from request
     const { email, password } = await req.json()
 
-    // Sign in user
+    // First, verify if the user exists and has admin role
+    const { data: existingUser, error: userError } = await supabaseClient
+      .from('profiles')
+      .select('id, role')
+      .eq('email', email)
+      .single()
+
+    if (userError || !existingUser || existingUser.role !== 'admin') {
+      throw new Error('Invalid admin credentials')
+    }
+
+    // Attempt to sign in
     const { data: { user }, error: signInError } = await supabaseClient.auth.signInWithPassword({
       email,
       password,
@@ -28,20 +38,7 @@ serve(async (req) => {
 
     if (signInError) throw signInError
 
-    // Verify admin role
-    const { data: profile, error: profileError } = await supabaseClient
-      .from('profiles')
-      .select('role')
-      .eq('id', user?.id)
-      .single()
-
-    if (profileError) throw profileError
-
-    if (profile.role !== 'admin') {
-      throw new Error('Unauthorized: User is not an admin')
-    }
-
-    // Create system activity log
+    // Log successful admin login
     await supabaseClient.from('system_activities').insert({
       type: 'auth',
       description: 'Admin login successful',
@@ -49,22 +46,53 @@ serve(async (req) => {
       metadata: {
         email: user?.email,
         timestamp: new Date().toISOString(),
+        ip: req.headers.get('x-forwarded-for') || 'unknown',
+        userAgent: req.headers.get('user-agent') || 'unknown'
       }
     })
 
     return new Response(
-      JSON.stringify({ user, profile }),
+      JSON.stringify({ 
+        user, 
+        profile: { role: 'admin' },
+        message: 'Admin authentication successful'
+      }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
       }
     )
   } catch (error) {
+    console.error('Admin auth error:', error)
+    
+    // Log failed admin login attempt
+    try {
+      const supabaseClient = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      )
+      
+      await supabaseClient.from('system_activities').insert({
+        type: 'auth_error',
+        description: 'Admin login failed',
+        metadata: {
+          error: error.message,
+          timestamp: new Date().toISOString(),
+          ip: req.headers.get('x-forwarded-for') || 'unknown'
+        }
+      })
+    } catch (logError) {
+      console.error('Failed to log admin auth error:', logError)
+    }
+
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: 'Invalid admin credentials',
+        details: error.message
+      }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400,
+        status: 401,
       }
     )
   }
