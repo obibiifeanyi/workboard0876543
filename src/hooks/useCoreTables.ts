@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import type { Department, ProjectAssignment, DocumentArchive } from '@/types/department';
 
 export const useCoreTables = () => {
   const { toast } = useToast();
@@ -15,18 +16,14 @@ export const useCoreTables = () => {
           .from('departments')
           .select('*');
         if (error) throw error;
-        return data;
+        return data as Department[];
       },
     });
   };
 
   const useCreateDepartment = () => {
     return useMutation({
-      mutationFn: async (newDepartment: {
-        name: string;
-        description?: string;
-        manager_id?: string;
-      }) => {
+      mutationFn: async (newDepartment: Omit<Department, 'id' | 'created_at' | 'updated_at'>) => {
         const { data, error } = await supabase
           .from('departments')
           .insert(newDepartment)
@@ -42,7 +39,7 @@ export const useCoreTables = () => {
           description: 'Department created successfully',
         });
       },
-      onError: (error) => {
+      onError: (error: Error) => {
         toast({
           title: 'Error',
           description: error.message,
@@ -72,15 +69,7 @@ export const useCoreTables = () => {
 
   const useCreateProjectAssignment = () => {
     return useMutation({
-      mutationFn: async (newAssignment: {
-        project_name: string;
-        description?: string;
-        assigned_to: string;
-        department_id: string;
-        start_date: string;
-        end_date?: string;
-        priority?: 'low' | 'medium' | 'high';
-      }) => {
+      mutationFn: async (newAssignment: Omit<ProjectAssignment, 'id' | 'created_at' | 'updated_at'>) => {
         const { data, error } = await supabase
           .from('project_assignments')
           .insert(newAssignment)
@@ -96,7 +85,7 @@ export const useCoreTables = () => {
           description: 'Project assignment created successfully',
         });
       },
-      onError: (error) => {
+      onError: (error: Error) => {
         toast({
           title: 'Error',
           description: error.message,
@@ -119,7 +108,7 @@ export const useCoreTables = () => {
             profiles (full_name)
           `);
         if (error) throw error;
-        return data;
+        return data as DocumentArchive[];
       },
     });
   };
@@ -131,12 +120,7 @@ export const useCoreTables = () => {
         metadata,
       }: {
         file: File;
-        metadata: {
-          title: string;
-          description?: string;
-          department_id?: string;
-          tags?: string[];
-        };
+        metadata: Omit<DocumentArchive, 'id' | 'created_at' | 'updated_at' | 'file_path' | 'file_size' | 'file_type'>;
       }) => {
         // Upload file to storage
         const { data: fileData, error: uploadError } = await supabase.storage
@@ -168,7 +152,7 @@ export const useCoreTables = () => {
           description: 'Document uploaded successfully',
         });
       },
-      onError: (error) => {
+      onError: (error: Error) => {
         toast({
           title: 'Error',
           description: error.message,
