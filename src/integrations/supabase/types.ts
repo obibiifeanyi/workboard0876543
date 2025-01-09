@@ -242,6 +242,7 @@ export type Database = {
         Row: {
           created_at: string
           description: string | null
+          employee_count: number | null
           id: string
           manager_id: string | null
           name: string
@@ -250,6 +251,7 @@ export type Database = {
         Insert: {
           created_at?: string
           description?: string | null
+          employee_count?: number | null
           id?: string
           manager_id?: string | null
           name: string
@@ -258,6 +260,7 @@ export type Database = {
         Update: {
           created_at?: string
           description?: string | null
+          employee_count?: number | null
           id?: string
           manager_id?: string | null
           name?: string
@@ -711,6 +714,41 @@ export type Database = {
           },
           {
             foreignKeyName: "site_assignments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      system_activities: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          metadata: Json | null
+          type: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          metadata?: Json | null
+          type: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          metadata?: Json | null
+          type?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "system_activities_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
