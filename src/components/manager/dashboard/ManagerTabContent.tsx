@@ -6,6 +6,7 @@ import { TeamTimeManagement } from "@/components/manager/TeamTimeManagement";
 import { EmailNotificationCenter } from "@/components/notifications/EmailNotificationCenter";
 import { ProjectReportForm } from "@/components/reports/ProjectReportForm";
 import { MemoManagement } from "@/components/memos/MemoManagement";
+import { InvoiceManagement } from "@/components/manager/InvoiceManagement";
 import { TabsContent } from "@/components/ui/tabs";
 
 export const ManagerTabContent = () => {
@@ -37,6 +38,10 @@ export const ManagerTabContent = () => {
 
       <TabsContent value="memos" className="space-y-6 mt-0">
         <MemoManagement />
+      </TabsContent>
+
+      <TabsContent value="invoices" className="space-y-6 mt-0">
+        <InvoiceManagement />
       </TabsContent>
 
       <TabsContent value="settings" className="space-y-6 mt-0">
