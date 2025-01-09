@@ -3,32 +3,54 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { Building, Users, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-
-const mockDepartments = [
-  {
-    id: 1,
-    name: "Engineering",
-    head: "John Doe",
-    employees: 12,
-    location: "Floor 3",
-  },
-  {
-    id: 2,
-    name: "Marketing",
-    head: "Jane Smith",
-    employees: 8,
-    location: "Floor 2",
-  },
-];
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 export const DepartmentManagement = () => {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  const handleAction = (id: number, action: string) => {
-    toast({
-      title: "Department Action",
-      description: `${action} department ${id}`,
-    });
+  const { data: departments } = useQuery({
+    queryKey: ['departments'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('departments')
+        .select(`
+          *,
+          profiles:manager_id (full_name)
+        `);
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const createActivityLog = async (description: string) => {
+    const { error } = await supabase
+      .from('system_activities')
+      .insert({
+        type: 'department',
+        description,
+        user_id: (await supabase.auth.getUser()).data.user?.id,
+      });
+    
+    if (error) throw error;
+  };
+
+  const handleAction = async (id: string, action: string) => {
+    try {
+      await createActivityLog(`${action} department ${id}`);
+      toast({
+        title: "Department Action",
+        description: `${action} department ${id}`,
+      });
+      queryClient.invalidateQueries({ queryKey: ['departments'] });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to perform action",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -40,7 +62,7 @@ export const DepartmentManagement = () => {
             Department Management
           </CardTitle>
           <Button
-            onClick={() => handleAction(0, "Add")}
+            onClick={() => handleAction("new", "Add")}
             className="flex items-center gap-2"
           >
             <Plus className="h-4 w-4" />
@@ -57,7 +79,7 @@ export const DepartmentManagement = () => {
                   <p className="text-sm font-medium">Total Departments</p>
                   <Building className="h-4 w-4 text-primary" />
                 </div>
-                <p className="text-2xl font-bold">6</p>
+                <p className="text-2xl font-bold">{departments?.length || 0}</p>
               </CardContent>
             </Card>
             <Card className="bg-primary/10">
@@ -66,7 +88,9 @@ export const DepartmentManagement = () => {
                   <p className="text-sm font-medium">Total Employees</p>
                   <Users className="h-4 w-4 text-primary" />
                 </div>
-                <p className="text-2xl font-bold">45</p>
+                <p className="text-2xl font-bold">
+                  {departments?.reduce((acc, dept) => acc + (dept.employee_count || 0), 0) || 0}
+                </p>
               </CardContent>
             </Card>
           </div>
@@ -76,17 +100,15 @@ export const DepartmentManagement = () => {
                 <TableHead>Department Name</TableHead>
                 <TableHead>Head</TableHead>
                 <TableHead>Employees</TableHead>
-                <TableHead>Location</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {mockDepartments.map((dept) => (
+              {departments?.map((dept) => (
                 <TableRow key={dept.id}>
                   <TableCell>{dept.name}</TableCell>
-                  <TableCell>{dept.head}</TableCell>
-                  <TableCell>{dept.employees}</TableCell>
-                  <TableCell>{dept.location}</TableCell>
+                  <TableCell>{dept.profiles?.full_name || 'Not assigned'}</TableCell>
+                  <TableCell>{dept.employee_count || 0}</TableCell>
                   <TableCell>
                     <div className="flex space-x-2">
                       <Button
