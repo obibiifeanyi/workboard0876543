@@ -59,20 +59,28 @@ export const BatterySales = () => {
     const formData = new FormData(e.currentTarget);
     
     try {
+      const batteryId = formData.get('battery_id')?.toString();
+      const clientId = formData.get('client_id')?.toString();
+      const salePrice = parseFloat(formData.get('sale_price')?.toString() || '0');
+
+      if (!batteryId || !clientId || !salePrice) {
+        throw new Error('Missing required fields');
+      }
+
       const { error: saleError } = await supabase
         .from('battery_sales')
-        .insert([{
-          battery_id: formData.get('battery_id'),
-          client_id: formData.get('client_id'),
-          sale_price: formData.get('sale_price'),
-        }]);
+        .insert({
+          battery_id: batteryId,
+          client_id: clientId,
+          sale_price: salePrice,
+        });
 
       if (saleError) throw saleError;
 
       const { error: updateError } = await supabase
         .from('battery_inventory')
         .update({ status: 'sold' })
-        .eq('id', formData.get('battery_id'));
+        .eq('id', batteryId);
 
       if (updateError) throw updateError;
 

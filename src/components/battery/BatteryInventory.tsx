@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Battery, Plus, ShoppingCart } from "lucide-react";
+import { Battery, Plus } from "lucide-react";
 
 interface BatteryItem {
   id: string;
@@ -43,13 +43,13 @@ export const BatteryInventory = () => {
     try {
       const { error } = await supabase
         .from('battery_inventory')
-        .insert([{
-          model_name: formData.get('model_name'),
-          capacity: formData.get('capacity'),
-          voltage: formData.get('voltage'),
-          manufacturer: formData.get('manufacturer'),
-          purchase_price: formData.get('purchase_price'),
-        }]);
+        .insert({
+          model_name: formData.get('model_name')?.toString() || '',
+          capacity: formData.get('capacity')?.toString() || '',
+          voltage: formData.get('voltage')?.toString() || '',
+          manufacturer: formData.get('manufacturer')?.toString() || '',
+          purchase_price: parseFloat(formData.get('purchase_price')?.toString() || '0'),
+        });
 
       if (error) throw error;
 
