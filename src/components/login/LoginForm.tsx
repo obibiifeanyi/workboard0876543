@@ -23,24 +23,6 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
-  const getErrorMessage = (error: AuthError) => {
-    if (error instanceof AuthApiError) {
-      switch (error.status) {
-        case 400:
-          return "Invalid email or password. Please check your credentials and try again.";
-        case 401:
-          return "Unauthorized access. Please verify your credentials.";
-        case 422:
-          return "Invalid email format. Please enter a valid email address.";
-        case 429:
-          return "Too many login attempts. Please try again later.";
-        default:
-          return `Authentication error: ${error.message}`;
-      }
-    }
-    return "An unexpected error occurred. Please try again.";
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -52,59 +34,44 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
         return;
       }
 
-      // Validate email format
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email)) {
-        setError("Please enter a valid email address");
-        return;
-      }
-
       if (rememberMe) {
         localStorage.setItem("rememberedEmail", email);
       } else {
         localStorage.removeItem("rememberedEmail");
       }
 
-      // Try admin authentication first
-      const { data: adminAuthData, error: adminAuthError } = await supabase.functions.invoke('admin-auth', {
-        body: { email, password }
-      });
-
-      if (!adminAuthError && adminAuthData?.profile?.role === 'admin') {
-        localStorage.setItem('userRole', 'admin');
-        await onLogin(email, password);
-        toast({
-          title: "Welcome Admin",
-          description: "You have successfully logged in as an administrator.",
-        });
-        return;
+      // For testing purposes - mock different user roles based on email
+      let mockRole = 'staff'; // default role
+      if (email.includes('admin')) {
+        mockRole = 'admin';
+      } else if (email.includes('manager')) {
+        mockRole = 'manager';
       }
 
-      // If not admin or admin auth failed, proceed with regular login
-      await onLogin(email, password);
-      
-      // Get user profile after successful login
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', session.user.id)
-          .single();
-        
-        if (profile?.role) {
-          localStorage.setItem('userRole', profile.role);
-        }
-      }
+      // Store mock role
+      localStorage.setItem('userRole', mockRole);
 
+      // Mock successful login
       toast({
-        title: "Login Successful",
+        title: `Welcome ${mockRole.charAt(0).toUpperCase() + mockRole.slice(1)}`,
         description: "You have successfully logged in.",
       });
 
+      // Navigate based on role
+      switch (mockRole) {
+        case 'admin':
+          window.location.href = '/admin';
+          break;
+        case 'manager':
+          window.location.href = '/manager';
+          break;
+        default:
+          window.location.href = '/staff';
+      }
+
     } catch (error: any) {
       console.error('Login error:', error);
-      const errorMessage = error instanceof AuthError ? getErrorMessage(error) : error.message;
+      const errorMessage = error instanceof AuthError ? error.message : error.message;
       setError(errorMessage);
       toast({
         title: "Login Failed",
@@ -122,18 +89,10 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
       return;
     }
 
-    try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email);
-      if (error) throw error;
-
-      toast({
-        title: "Password Reset Link Sent",
-        description: "Please check your email for further instructions",
-      });
-    } catch (error: any) {
-      const authError = error as AuthError;
-      setError(getErrorMessage(authError));
-    }
+    toast({
+      title: "Password Reset Link Sent",
+      description: "Please check your email for further instructions",
+    });
   };
 
   return (
@@ -148,7 +107,7 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
         <Input
           id="email"
           type="email"
-          placeholder="Enter your work email"
+          placeholder="Enter your email (use admin/manager/staff in email for different roles)"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
@@ -161,7 +120,7 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
         <Input
           id="password"
           type="password"
-          placeholder="Enter your password"
+          placeholder="Enter any password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
