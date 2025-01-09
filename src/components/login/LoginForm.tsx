@@ -82,6 +82,21 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
 
       // If not admin or admin auth failed, proceed with regular login
       await onLogin(email, password);
+      
+      // Get user profile after successful login
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', session.user.id)
+          .single();
+        
+        if (profile?.role) {
+          localStorage.setItem('userRole', profile.role);
+        }
+      }
+
       toast({
         title: "Login Successful",
         description: "You have successfully logged in.",
