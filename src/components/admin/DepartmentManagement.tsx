@@ -5,12 +5,14 @@ import { Building, Users, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import type { DepartmentRow } from "@/integrations/supabase/types/department";
+import type { SystemActivityInsert } from "@/integrations/supabase/types/system";
 
 export const DepartmentManagement = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: departments } = useQuery({
+  const { data: departments } = useQuery<DepartmentRow[]>({
     queryKey: ['departments'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -25,13 +27,15 @@ export const DepartmentManagement = () => {
   });
 
   const createActivityLog = async (description: string) => {
+    const activityData: SystemActivityInsert = {
+      type: 'department',
+      description,
+      user_id: (await supabase.auth.getUser()).data.user?.id,
+    };
+
     const { error } = await supabase
       .from('system_activities')
-      .insert({
-        type: 'department',
-        description,
-        user_id: (await supabase.auth.getUser()).data.user?.id,
-      });
+      .insert(activityData);
     
     if (error) throw error;
   };

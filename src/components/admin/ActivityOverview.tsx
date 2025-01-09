@@ -3,9 +3,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Activity, User, Building, Radio } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import type { SystemActivityRow } from "@/integrations/supabase/types/system";
 
 export const ActivityOverview = () => {
-  const { data: activities } = useQuery({
+  const { data: activities } = useQuery<SystemActivityRow[]>({
     queryKey: ['admin-activities'],
     queryFn: async () => {
       const { data, error } = await supabase
