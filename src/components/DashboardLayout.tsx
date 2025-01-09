@@ -1,10 +1,7 @@
 import { ReactNode } from "react";
-import { useNavigate } from "react-router-dom";
-import { ThemeSwitcher } from "@/components/ThemeSwitcher";
-import { EnhancedNotificationCenter } from "@/components/notifications/EnhancedNotificationCenter";
-import { useToast } from "@/hooks/use-toast";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { User, Settings } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -13,43 +10,28 @@ interface DashboardLayoutProps {
 
 export const DashboardLayout = ({ children, title }: DashboardLayoutProps) => {
   const navigate = useNavigate();
-  const { toast } = useToast();
-
-  const handleEmailNotification = (emailData: any) => {
-    toast({
-      title: "Email Notification",
-      description: "New email notification received",
-    });
-  };
+  const location = useLocation();
+  const showBackButton = location.pathname !== "/staff";
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-background/80">
-      <header className="border-b border-white/10 backdrop-blur-xl sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-foreground">{title}</h1>
-          <div className="flex items-center gap-4">
+    <div className="min-h-screen bg-background">
+      <header className="border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container flex h-14 max-w-screen-2xl items-center">
+          {showBackButton && (
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => navigate("/staff/profile")}
-              className="hover:bg-white/10"
+              className="mr-4 hover:bg-primary/10"
+              onClick={() => navigate(-1)}
             >
-              <User className="h-5 w-5" />
+              <ArrowLeft className="h-5 w-5" />
+              <span className="sr-only">Go back</span>
             </Button>
-            <EnhancedNotificationCenter />
-            <ThemeSwitcher />
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate("/account")}
-              className="hover:bg-white/10"
-            >
-              <Settings className="h-5 w-5" />
-            </Button>
-          </div>
+          )}
+          <h1 className="text-xl font-semibold">{title}</h1>
         </div>
       </header>
-      <main className="container mx-auto px-4 py-6">
+      <main className="flex-1">
         {children}
       </main>
     </div>
