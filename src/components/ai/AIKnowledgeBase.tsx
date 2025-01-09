@@ -6,6 +6,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { FileUploadSection } from "./FileUploadSection";
 import { AIAnalysisStatus } from "./AIAnalysisStatus";
 import { StorageStatus } from "./StorageStatus";
+import { useAIOperations } from "@/hooks/useAIOperations";
 
 interface UploadedFile {
   id: string;
@@ -20,6 +21,9 @@ export const AIKnowledgeBase = ({ userRole }: { userRole?: string }) => {
   const [isTraining, setIsTraining] = useState(false);
   const [trainingProgress, setTrainingProgress] = useState(0);
   const { toast } = useToast();
+  const { useKnowledgeBase, useCreateKnowledgeEntry } = useAIOperations();
+  const { data: knowledgeBase, isLoading: isLoadingKB } = useKnowledgeBase();
+  const createEntry = useCreateKnowledgeEntry();
 
   const hasAccess = userRole === 'admin' || userRole === 'manager';
 
@@ -35,7 +39,7 @@ export const AIKnowledgeBase = ({ userRole }: { userRole?: string }) => {
     );
   }
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const fileList = event.target.files;
     if (!fileList) return;
 
@@ -49,7 +53,8 @@ export const AIKnowledgeBase = ({ userRole }: { userRole?: string }) => {
 
     setFiles((prev) => [...prev, ...newFiles]);
 
-    newFiles.forEach((file) => {
+    // Process each file and add to knowledge base
+    for (const file of newFiles) {
       const interval = setInterval(() => {
         setFiles((prev) =>
           prev.map((f) =>
@@ -60,14 +65,32 @@ export const AIKnowledgeBase = ({ userRole }: { userRole?: string }) => {
         );
       }, 500);
 
-      setTimeout(() => {
+      try {
+        // Here we would normally process the file content
+        // For now, we'll just create a basic entry
+        await createEntry.mutateAsync({
+          title: file.name,
+          content: `Content from ${file.name}`,
+          category: 'uploaded',
+          tags: ['document'],
+          created_by: null,
+        });
+
         clearInterval(interval);
         toast({
-          title: "File Uploaded",
-          description: `${file.name} has been uploaded successfully`,
+          title: "File Processed",
+          description: `${file.name} has been processed and added to the knowledge base`,
         });
-      }, 5000);
-    });
+      } catch (error) {
+        clearInterval(interval);
+        console.error('Error processing file:', error);
+        toast({
+          title: "Error",
+          description: `Failed to process ${file.name}`,
+          variant: "destructive",
+        });
+      }
+    }
   };
 
   const handleDelete = (id: string) => {
