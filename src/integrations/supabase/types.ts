@@ -9,6 +9,93 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      battery_inventory: {
+        Row: {
+          capacity: string
+          created_at: string | null
+          id: string
+          manufacturer: string
+          model_name: string
+          purchase_date: string | null
+          purchase_price: number
+          status: string | null
+          updated_at: string | null
+          voltage: string
+        }
+        Insert: {
+          capacity: string
+          created_at?: string | null
+          id?: string
+          manufacturer: string
+          model_name: string
+          purchase_date?: string | null
+          purchase_price: number
+          status?: string | null
+          updated_at?: string | null
+          voltage: string
+        }
+        Update: {
+          capacity?: string
+          created_at?: string | null
+          id?: string
+          manufacturer?: string
+          model_name?: string
+          purchase_date?: string | null
+          purchase_price?: number
+          status?: string | null
+          updated_at?: string | null
+          voltage?: string
+        }
+        Relationships: []
+      }
+      battery_sales: {
+        Row: {
+          battery_id: string | null
+          client_id: string
+          created_at: string | null
+          created_by: string | null
+          id: string
+          sale_date: string | null
+          sale_price: number
+          updated_at: string | null
+        }
+        Insert: {
+          battery_id?: string | null
+          client_id: string
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          sale_date?: string | null
+          sale_price: number
+          updated_at?: string | null
+        }
+        Update: {
+          battery_id?: string | null
+          client_id?: string
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          sale_date?: string | null
+          sale_price?: number
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "battery_sales_battery_id_fkey"
+            columns: ["battery_id"]
+            isOneToOne: false
+            referencedRelation: "battery_inventory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "battery_sales_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ct_power_reports: {
         Row: {
           battery_status: string | null

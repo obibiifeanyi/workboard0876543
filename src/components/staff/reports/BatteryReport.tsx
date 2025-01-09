@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Battery, Upload } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { BatteryInventory } from "@/components/battery/BatteryInventory";
+import { BatterySales } from "@/components/battery/BatterySales";
 import {
   Select,
   SelectContent,
@@ -11,6 +13,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
 
 export const BatteryReport = () => {
   const [selectedBattery, setSelectedBattery] = useState("");
@@ -27,15 +35,23 @@ export const BatteryReport = () => {
   };
 
   return (
-    <Card className="bg-black/10 dark:bg-white/5 backdrop-blur-lg border-none">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-lg font-medium">
-          <Battery className="h-5 w-5 text-primary" />
-          Solar Battery Report
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmitReport} className="space-y-4">
+    <Tabs defaultValue="report" className="space-y-6">
+      <TabsList className="grid w-full grid-cols-3">
+        <TabsTrigger value="report">Battery Report</TabsTrigger>
+        <TabsTrigger value="inventory">Inventory</TabsTrigger>
+        <TabsTrigger value="sales">Sales</TabsTrigger>
+      </TabsList>
+
+      <TabsContent value="report">
+        <Card className="bg-black/10 dark:bg-white/5 backdrop-blur-lg border-none">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-lg font-medium">
+              <Battery className="h-5 w-5 text-primary" />
+              Solar Battery Report
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmitReport} className="space-y-4">
           <div className="space-y-2">
             <label className="text-sm font-medium">Select Battery</label>
             <Select
@@ -106,8 +122,18 @@ export const BatteryReport = () => {
           <Button type="submit" className="w-full md:w-auto">
             Submit Battery Report
           </Button>
-        </form>
-      </CardContent>
-    </Card>
+            </form>
+          </CardContent>
+        </Card>
+      </TabsContent>
+
+      <TabsContent value="inventory">
+        <BatteryInventory />
+      </TabsContent>
+
+      <TabsContent value="sales">
+        <BatterySales />
+      </TabsContent>
+    </Tabs>
   );
 };
