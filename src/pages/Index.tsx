@@ -22,11 +22,6 @@ const Index = () => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center space-y-4">
-          <img 
-            src="/lovable-uploads/72968663-d83e-449d-a8c5-5097fe0015d9.png" 
-            alt="CT Communication Towers"
-            className="h-24 w-auto mx-auto animate-logo-pulse"
-          />
           <Loader className="h-8 w-8 animate-spin text-primary mx-auto" />
         </div>
       </div>
@@ -46,13 +41,6 @@ const Index = () => {
       <Card className="w-full max-w-4xl mx-auto p-6 sm:p-8 animate-fade-in glass relative z-10 bg-background/80 backdrop-blur-xl">
         <div className="space-y-8 sm:space-y-12">
           <div className="text-center space-y-4">
-            <div className="flex justify-center mb-6">
-              <img 
-                src="/lovable-uploads/72968663-d83e-449d-a8c5-5097fe0015d9.png" 
-                alt="CT Communication Towers" 
-                className="h-16 sm:h-24 w-auto animate-fade-in hover:scale-105 transition-transform duration-300"
-              />
-            </div>
             <h1 className="text-2xl sm:text-4xl font-bold tracking-tight bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent animate-fade-in">
               CTNL AI WORK-BOARD
             </h1>
