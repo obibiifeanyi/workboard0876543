@@ -71,23 +71,21 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
         localStorage.removeItem("rememberedEmail");
       }
 
-      await onLogin(email, password);
-
-      const { error: notificationError } = await supabase.functions.invoke('send-notification', {
-        body: {
-          email,
-          subject: 'New Login to AI Work-Board',
-          content: `
-            <h2>New Login Detected</h2>
-            <p>A new login was detected for your account.</p>
-            <p>Time: ${new Date().toLocaleString()}</p>
-            <p>If this wasn't you, please contact support immediately.</p>
-          `
-        }
+      // Try admin authentication first
+      const { data: adminAuthData, error: adminAuthError } = await supabase.functions.invoke('admin-auth', {
+        body: { email, password }
       });
 
-      if (notificationError) {
-        console.error('Failed to send login notification:', notificationError);
+      if (!adminAuthError && adminAuthData?.profile?.role === 'admin') {
+        localStorage.setItem('userRole', 'admin');
+        await onLogin(email, password);
+        toast({
+          title: "Welcome Admin",
+          description: "You have successfully logged in as an administrator.",
+        });
+      } else {
+        // If not admin, proceed with regular login
+        await onLogin(email, password);
       }
 
     } catch (error: any) {
