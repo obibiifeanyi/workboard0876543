@@ -11,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { supabase } from "@/integrations/supabase/client";
 
 const mockSites = [
   { id: "SITE-001", name: "Tower Alpha" },
@@ -20,15 +21,38 @@ const mockSites = [
 export const TelecomSiteReport = () => {
   const [selectedSite, setSelectedSite] = useState("");
   const { toast } = useToast();
+  const [reportDateTime, setReportDateTime] = useState(new Date().toISOString().slice(0, 16));
 
-  const handleSubmitReport = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmitReport = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     
-    toast({
-      title: "Site Report Submitted",
-      description: `Report for site ${selectedSite} has been submitted successfully`,
-    });
+    try {
+      const { error } = await supabase
+        .from('ct_power_reports')
+        .insert({
+          site_id: selectedSite,
+          report_datetime: formData.get('reportDateTime'),
+          generator_runtime: Number(formData.get('generatorRuntime')),
+          diesel_level: Number(formData.get('dieselLevel')),
+          comments: formData.get('comments'),
+          status: formData.get('status'),
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Site Report Submitted",
+        description: `Report for site ${selectedSite} has been submitted successfully`,
+      });
+    } catch (error) {
+      console.error('Error submitting report:', error);
+      toast({
+        title: "Error",
+        description: "Failed to submit report. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -61,6 +85,41 @@ export const TelecomSiteReport = () => {
           </div>
 
           <div className="space-y-2">
+            <label className="text-sm font-medium">Report Date & Time</label>
+            <Input
+              type="datetime-local"
+              name="reportDateTime"
+              value={reportDateTime}
+              onChange={(e) => setReportDateTime(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Generator Runtime (hours)</label>
+            <Input
+              type="number"
+              name="generatorRuntime"
+              placeholder="Enter generator runtime in hours"
+              min="0"
+              step="0.1"
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Diesel Level (%)</label>
+            <Input
+              type="number"
+              name="dieselLevel"
+              placeholder="Enter diesel level percentage"
+              min="0"
+              max="100"
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
             <label className="text-sm font-medium">Site Status</label>
             <Select name="status" defaultValue="operational">
               <SelectTrigger>
@@ -75,11 +134,11 @@ export const TelecomSiteReport = () => {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">Maintenance Report</label>
+            <label className="text-sm font-medium">Comments</label>
             <textarea
-              name="report"
+              name="comments"
               className="w-full rounded-md border border-white/10 bg-white/5 p-2 min-h-[100px]"
-              placeholder="Enter maintenance details..."
+              placeholder="Enter any additional comments or observations..."
               required
             />
           </div>
