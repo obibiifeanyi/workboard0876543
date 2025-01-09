@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { StatsCards } from "@/components/StatsCards";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { 
   Clock, CalendarIcon, CheckCircle, Bell, User, ListTodo, 
@@ -10,10 +11,21 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ChatBox } from "@/components/ChatBox";
+import { TaskList } from "@/components/staff/TaskList";
+import { LeaveApplication } from "@/components/staff/LeaveApplication";
+import { ProfileSection } from "@/components/staff/ProfileSection";
+import { ProjectTracking } from "@/components/staff/ProjectTracking";
+import { PerformanceMetrics } from "@/components/staff/PerformanceMetrics";
+import { MemoGeneration } from "@/components/staff/MemoGeneration";
+import { WeeklyReport } from "@/components/staff/reports/WeeklyReport";
+import { TelecomSiteReport } from "@/components/staff/reports/TelecomSiteReport";
+import { ProjectReport } from "@/components/staff/reports/ProjectReport";
+import { MeetingCenter } from "@/components/staff/MeetingCenter";
 
 const StaffDashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [date, setDate] = useState<Date | undefined>(new Date());
 
   const stats = [
     {
@@ -47,6 +59,7 @@ const StaffDashboard = () => {
       <div className="space-y-6 p-4 md:p-6 max-w-7xl mx-auto">
         <div className="grid gap-4 md:gap-6">
           <StatsCards stats={stats} />
+          <PerformanceMetrics />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -122,6 +135,57 @@ const StaffDashboard = () => {
             Profile
           </Button>
         </div>
+
+        <Tabs defaultValue="overview" className="space-y-4">
+          <TabsList className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-2">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="tasks">Tasks</TabsTrigger>
+            <TabsTrigger value="reports">Reports</TabsTrigger>
+            <TabsTrigger value="memos">Memos</TabsTrigger>
+            <TabsTrigger value="meetings">Meetings</TabsTrigger>
+            <TabsTrigger value="profile">Profile</TabsTrigger>
+          </TabsList>
+
+          <div className="mt-6 bg-black/5 dark:bg-black/20 rounded-3xl p-4 md:p-6">
+            <TabsContent value="overview" className="space-y-4">
+              <ProjectTracking />
+            </TabsContent>
+
+            <TabsContent value="tasks" className="space-y-4">
+              <TaskList tasks={[]} />
+            </TabsContent>
+
+            <TabsContent value="reports" className="space-y-4">
+              <div className="grid gap-6">
+                <WeeklyReport />
+                <ProjectReport />
+                <TelecomSiteReport />
+              </div>
+            </TabsContent>
+
+            <TabsContent value="memos" className="space-y-4">
+              <MemoGeneration />
+            </TabsContent>
+
+            <TabsContent value="meetings" className="space-y-4">
+              <MeetingCenter />
+            </TabsContent>
+
+            <TabsContent value="profile" className="space-y-4">
+              <ProfileSection />
+              <LeaveApplication
+                date={date}
+                onDateSelect={setDate}
+                onLeaveRequest={() => {
+                  toast({
+                    title: "Leave Request Submitted",
+                    description: `Your leave request for ${date?.toLocaleDateString()} has been submitted.`,
+                  });
+                }}
+              />
+            </TabsContent>
+          </div>
+        </Tabs>
 
         <ChatBox />
       </div>
