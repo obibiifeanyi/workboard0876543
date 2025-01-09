@@ -30,13 +30,16 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
           if (error.message.includes("Invalid login credentials")) {
             return "Invalid email or password. Please check your credentials and try again.";
           }
+          if (error.message.includes("Email not confirmed")) {
+            return "Please verify your email address before signing in.";
+          }
           return "Please enter valid email and password.";
         case 422:
           return "Invalid email format. Please enter a valid email address.";
         case 429:
           return "Too many login attempts. Please try again later.";
         default:
-          return error.message;
+          return `Authentication error: ${error.message}`;
       }
     }
     return "An unexpected error occurred. Please try again.";
@@ -50,6 +53,15 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
     try {
       if (!email || !password) {
         setError("Please enter both email and password");
+        setLoading(false);
+        return;
+      }
+
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        setError("Please enter a valid email address");
+        setLoading(false);
         return;
       }
 
@@ -79,11 +91,13 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
       }
 
     } catch (error: any) {
+      console.error('Login error:', error);
       const authError = error as AuthError;
-      setError(getErrorMessage(authError));
+      const errorMessage = getErrorMessage(authError);
+      setError(errorMessage);
       toast({
         title: "Login Failed",
-        description: getErrorMessage(authError),
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
