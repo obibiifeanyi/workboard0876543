@@ -1,7 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import type { Department, ProjectAssignment, DocumentArchive } from '@/types/department';
+import type { Database } from '@/integrations/supabase/types/base';
+import type { DepartmentRow, ProjectAssignmentRow, DocumentArchiveRow } from '@/integrations/supabase/types/department';
 
 export const useCoreTables = () => {
   const { toast } = useToast();
@@ -16,14 +17,14 @@ export const useCoreTables = () => {
           .from('departments')
           .select('*');
         if (error) throw error;
-        return data as Department[];
+        return data as DepartmentRow[];
       },
     });
   };
 
   const useCreateDepartment = () => {
     return useMutation({
-      mutationFn: async (newDepartment: Omit<Department, 'id' | 'created_at' | 'updated_at'>) => {
+      mutationFn: async (newDepartment: Database['public']['Tables']['departments']['Insert']) => {
         const { data, error } = await supabase
           .from('departments')
           .insert(newDepartment)
@@ -62,14 +63,17 @@ export const useCoreTables = () => {
             profiles (full_name)
           `);
         if (error) throw error;
-        return data;
+        return data as (ProjectAssignmentRow & {
+          departments: { name: string };
+          profiles: { full_name: string };
+        })[];
       },
     });
   };
 
   const useCreateProjectAssignment = () => {
     return useMutation({
-      mutationFn: async (newAssignment: Omit<ProjectAssignment, 'id' | 'created_at' | 'updated_at'>) => {
+      mutationFn: async (newAssignment: Database['public']['Tables']['project_assignments']['Insert']) => {
         const { data, error } = await supabase
           .from('project_assignments')
           .insert(newAssignment)
@@ -108,7 +112,10 @@ export const useCoreTables = () => {
             profiles (full_name)
           `);
         if (error) throw error;
-        return data as DocumentArchive[];
+        return data as (DocumentArchiveRow & {
+          departments: { name: string };
+          profiles: { full_name: string };
+        })[];
       },
     });
   };
@@ -120,7 +127,7 @@ export const useCoreTables = () => {
         metadata,
       }: {
         file: File;
-        metadata: Omit<DocumentArchive, 'id' | 'created_at' | 'updated_at' | 'file_path' | 'file_size' | 'file_type'>;
+        metadata: Omit<Database['public']['Tables']['document_archive']['Insert'], 'file_path' | 'file_size' | 'file_type'>;
       }) => {
         // Upload file to storage
         const { data: fileData, error: uploadError } = await supabase.storage
@@ -137,7 +144,6 @@ export const useCoreTables = () => {
             file_path: fileData.path,
             file_type: file.type,
             file_size: file.size,
-            uploaded_by: (await supabase.auth.getUser()).data.user?.id,
           })
           .select()
           .single();
