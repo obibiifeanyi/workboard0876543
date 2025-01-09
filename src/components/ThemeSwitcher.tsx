@@ -38,19 +38,16 @@ export const ThemeSwitcher = () => {
               size="icon"
               onClick={toggleTheme}
               className="w-10 h-10 rounded-full 
-                bg-black/90 text-white
-                dark:bg-white dark:text-black
-                border-none
-                hover:bg-black/80
-                dark:hover:bg-white/90
+                bg-background/90 dark:bg-background/90
+                text-foreground dark:text-foreground
+                border border-primary/20
+                hover:bg-primary/10 dark:hover:bg-primary/10
+                hover:text-primary dark:hover:text-primary
                 transition-all duration-300
-                shadow-lg hover:shadow-accent/25
-                dark:hover:shadow-accent/10"
+                shadow-lg hover:shadow-primary/25"
             >
-              <Sun className="h-5 w-5 rotate-0 scale-100 transition-all duration-300 
-                dark:-rotate-90 dark:scale-0" />
-              <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all duration-300
-                dark:rotate-0 dark:scale-100" />
+              <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+              <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
               <span className="sr-only">Toggle theme</span>
             </Button>
           </TooltipTrigger>
@@ -61,7 +58,7 @@ export const ThemeSwitcher = () => {
       </TooltipProvider>
 
       <Dialog open={showThemeDialog} onOpenChange={setShowThemeDialog}>
-        <DialogContent className="sm:max-w-md animate-scale-in">
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Theme Preference</DialogTitle>
             <DialogDescription>

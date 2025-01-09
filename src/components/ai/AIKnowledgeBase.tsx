@@ -53,7 +53,6 @@ export const AIKnowledgeBase = ({ userRole }: { userRole?: string }) => {
 
     setFiles((prev) => [...prev, ...newFiles]);
 
-    // Process each file and add to knowledge base
     for (const file of newFiles) {
       const interval = setInterval(() => {
         setFiles((prev) =>
@@ -66,8 +65,6 @@ export const AIKnowledgeBase = ({ userRole }: { userRole?: string }) => {
       }, 500);
 
       try {
-        // Here we would normally process the file content
-        // For now, we'll just create a basic entry
         await createEntry.mutateAsync({
           title: file.name,
           content: `Content from ${file.name}`,
@@ -120,7 +117,7 @@ export const AIKnowledgeBase = ({ userRole }: { userRole?: string }) => {
   };
 
   return (
-    <div className="space-y-6 h-full overflow-y-auto animate-fade-in">
+    <div className="space-y-6 h-full overflow-y-auto animate-fade-in bg-background/50 dark:bg-background/50 backdrop-blur-sm rounded-lg p-6">
       <StorageStatus
         filesCount={files.length}
         isTraining={isTraining}
@@ -137,7 +134,7 @@ export const AIKnowledgeBase = ({ userRole }: { userRole?: string }) => {
         <Button
           onClick={handleTrain}
           disabled={files.length === 0 || isTraining}
-          className="bg-secondary hover:bg-secondary/90"
+          className="bg-secondary hover:bg-secondary/90 text-secondary-foreground"
         >
           <Brain className="h-4 w-4 mr-2" />
           Analyze Documents
