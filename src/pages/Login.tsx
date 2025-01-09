@@ -6,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { AuthError } from "@supabase/supabase-js";
 import { LoginForm } from "@/components/login/LoginForm";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { LoginHeader } from "@/components/login/LoginHeader";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -77,15 +78,7 @@ const Login = () => {
           border border-white/10 dark:border-white/5 
           shadow-2xl hover:shadow-primary/5 transition-all duration-300
           bg-white/10 dark:bg-black/20 backdrop-blur-xl rounded-xl p-6">
-          <div className="text-center mb-6">
-            <h1 className="text-2xl font-bold text-foreground">
-              AI Work-Board
-            </h1>
-            <p className="text-muted-foreground mt-2">
-              Sign in to access your dashboard
-            </p>
-          </div>
-          
+          <LoginHeader />
           <LoginForm onLogin={handleLogin} />
         </div>
       </div>

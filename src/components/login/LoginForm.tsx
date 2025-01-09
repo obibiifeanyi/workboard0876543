@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Key, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { AuthError, AuthApiError } from "@supabase/supabase-js";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { RememberMeCheckbox } from "./RememberMeCheckbox";
+import { ForgotPasswordButton } from "./ForgotPasswordButton";
+import { SubmitButton } from "./SubmitButton";
 
 interface LoginFormProps {
   onLogin: (email: string, password: string) => Promise<void>;
@@ -61,7 +61,6 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
 
       await onLogin(email, password);
 
-      // Send login notification email
       const { error: notificationError } = await supabase.functions.invoke('send-notification', {
         body: {
           email,
@@ -146,45 +145,17 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
         />
       </div>
       <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-2">
-          <Checkbox 
-            id="remember" 
-            checked={rememberMe}
-            onCheckedChange={(checked) => setRememberMe(checked as boolean)}
-            disabled={loading}
-          />
-          <label
-            htmlFor="remember"
-            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-          >
-            Remember me
-          </label>
-        </div>
-        <Button
-          type="button"
-          variant="ghost"
-          className="text-sm text-primary hover:text-primary/90 flex items-center gap-1"
+        <RememberMeCheckbox
+          checked={rememberMe}
+          onCheckedChange={(checked) => setRememberMe(checked)}
+          disabled={loading}
+        />
+        <ForgotPasswordButton
           onClick={handleForgotPassword}
           disabled={loading}
-        >
-          <Key className="h-3 w-3" />
-          Forgot password?
-        </Button>
+        />
       </div>
-      <Button 
-        type="submit" 
-        className="w-full bg-primary hover:bg-primary/90" 
-        disabled={loading}
-      >
-        {loading ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Signing in...
-          </>
-        ) : (
-          "Sign in"
-        )}
-      </Button>
+      <SubmitButton loading={loading} />
     </form>
   );
 };
