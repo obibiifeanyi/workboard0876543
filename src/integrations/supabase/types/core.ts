@@ -1,162 +1,115 @@
-export type Json =
-  | string
-  | number
-  | boolean
-  | null
-  | { [key: string]: Json | undefined }
-  | Json[]
-
 export interface CoreTables {
-  departments: {
+  ai_results: {
     Row: {
-      id: string
-      name: string
-      description: string | null
-      manager_id: string | null
-      created_at: string
-      updated_at: string
-    }
+      id: string;
+      query_text: string;
+      result_data: any;
+      model_used: string;
+      created_by: string | null;
+      created_at: string;
+      updated_at: string;
+    };
     Insert: {
-      id?: string
-      name: string
-      description?: string | null
-      manager_id?: string | null
-      created_at?: string
-      updated_at?: string
-    }
+      id?: string;
+      query_text: string;
+      result_data: any;
+      model_used: string;
+      created_by?: string | null;
+    };
     Update: {
-      id?: string
-      name?: string
-      description?: string | null
-      manager_id?: string | null
-      created_at?: string
-      updated_at?: string
-    }
-    Relationships: [
-      {
-        foreignKeyName: "departments_manager_id_fkey"
-        columns: ["manager_id"]
-        isOneToOne: false
-        referencedRelation: "profiles"
-        referencedColumns: ["id"]
-      }
-    ]
-  }
-  project_assignments: {
+      query_text?: string;
+      result_data?: any;
+      model_used?: string;
+      created_by?: string | null;
+    };
+  };
+  ai_knowledge_base: {
     Row: {
-      id: string
-      project_name: string
-      description: string | null
-      assigned_to: string
-      department_id: string
-      start_date: string
-      end_date: string | null
-      status: "pending" | "in_progress" | "completed" | "cancelled"
-      priority: "low" | "medium" | "high"
-      created_at: string
-      updated_at: string
-    }
+      id: string;
+      title: string;
+      content: string;
+      category: string | null;
+      tags: string[] | null;
+      created_by: string | null;
+      created_at: string;
+      updated_at: string;
+    };
     Insert: {
-      id?: string
-      project_name: string
-      description?: string | null
-      assigned_to: string
-      department_id: string
-      start_date: string
-      end_date?: string | null
-      status?: "pending" | "in_progress" | "completed" | "cancelled"
-      priority?: "low" | "medium" | "high"
-      created_at?: string
-      updated_at?: string
-    }
+      id?: string;
+      title: string;
+      content: string;
+      category?: string | null;
+      tags?: string[] | null;
+      created_by?: string | null;
+    };
     Update: {
-      id?: string
-      project_name?: string
-      description?: string | null
-      assigned_to?: string
-      department_id?: string
-      start_date?: string
-      end_date?: string | null
-      status?: "pending" | "in_progress" | "completed" | "cancelled"
-      priority?: "low" | "medium" | "high"
-      created_at?: string
-      updated_at?: string
-    }
-    Relationships: [
-      {
-        foreignKeyName: "project_assignments_assigned_to_fkey"
-        columns: ["assigned_to"]
-        isOneToOne: false
-        referencedRelation: "profiles"
-        referencedColumns: ["id"]
-      },
-      {
-        foreignKeyName: "project_assignments_department_id_fkey"
-        columns: ["department_id"]
-        isOneToOne: false
-        referencedRelation: "departments"
-        referencedColumns: ["id"]
-      }
-    ]
-  }
-  document_archive: {
+      title?: string;
+      content?: string;
+      category?: string | null;
+      tags?: string[] | null;
+      created_by?: string | null;
+    };
+  };
+  invoices: {
     Row: {
-      id: string
-      title: string
-      description: string | null
-      file_path: string
-      file_type: string
-      file_size: number
-      uploaded_by: string
-      department_id: string | null
-      tags: string[] | null
-      is_archived: boolean
-      created_at: string
-      updated_at: string
-    }
+      id: string;
+      invoice_number: string;
+      client_name: string;
+      amount: number;
+      status: string;
+      due_date: string | null;
+      items: any;
+      created_by: string | null;
+      created_at: string;
+      updated_at: string;
+    };
     Insert: {
-      id?: string
-      title: string
-      description?: string | null
-      file_path: string
-      file_type: string
-      file_size: number
-      uploaded_by: string
-      department_id?: string | null
-      tags?: string[] | null
-      is_archived?: boolean
-      created_at?: string
-      updated_at?: string
-    }
+      id?: string;
+      invoice_number?: string;
+      client_name: string;
+      amount: number;
+      status?: string;
+      due_date?: string | null;
+      items: any;
+      created_by?: string | null;
+    };
     Update: {
-      id?: string
-      title?: string
-      description?: string | null
-      file_path?: string
-      file_type?: string
-      file_size?: number
-      uploaded_by?: string
-      department_id?: string | null
-      tags?: string[] | null
-      is_archived?: boolean
-      created_at?: string
-      updated_at?: string
-    }
-    Relationships: [
-      {
-        foreignKeyName: "document_archive_department_id_fkey"
-        columns: ["department_id"]
-        isOneToOne: false
-        referencedRelation: "departments"
-        referencedColumns: ["id"]
-      },
-      {
-        foreignKeyName: "document_archive_uploaded_by_fkey"
-        columns: ["uploaded_by"]
-        isOneToOne: false
-        referencedRelation: "profiles"
-        referencedColumns: ["id"]
-      }
-    ]
-  }
+      invoice_number?: string;
+      client_name?: string;
+      amount?: number;
+      status?: string;
+      due_date?: string | null;
+      items?: any;
+      created_by?: string | null;
+    };
+  };
+  notifications: {
+    Row: {
+      id: string;
+      user_id: string;
+      title: string;
+      message: string;
+      type: string;
+      read: boolean;
+      link: string | null;
+      created_at: string;
+    };
+    Insert: {
+      id?: string;
+      user_id: string;
+      title: string;
+      message: string;
+      type: string;
+      read?: boolean;
+      link?: string | null;
+    };
+    Update: {
+      user_id?: string;
+      title?: string;
+      message?: string;
+      type?: string;
+      read?: boolean;
+      link?: string | null;
+    };
+  };
 }
