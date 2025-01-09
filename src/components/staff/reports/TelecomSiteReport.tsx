@@ -30,14 +30,14 @@ export const TelecomSiteReport = () => {
     try {
       const { error } = await supabase
         .from('ct_power_reports')
-        .insert({
+        .insert([{  // Wrap the object in an array to match the expected type
           site_id: selectedSite,
-          report_datetime: formData.get('reportDateTime'),
+          report_datetime: formData.get('reportDateTime') as string,
           generator_runtime: Number(formData.get('generatorRuntime')),
           diesel_level: Number(formData.get('dieselLevel')),
-          comments: formData.get('comments'),
-          status: formData.get('status'),
-        });
+          comments: formData.get('comments') as string,
+          status: formData.get('status') as string,
+        }]);
 
       if (error) throw error;
 
