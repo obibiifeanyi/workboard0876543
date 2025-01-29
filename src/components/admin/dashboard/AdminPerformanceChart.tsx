@@ -11,6 +11,15 @@ const data = [
   { name: 'Apr 15', value: 5800 },
 ];
 
+const formatNaira = (value: number) => {
+  return new Intl.NumberFormat('en-NG', {
+    style: 'currency',
+    currency: 'NGN',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(value);
+};
+
 export const AdminPerformanceChart = () => {
   return (
     <Card>
@@ -36,7 +45,7 @@ export const AdminPerformanceChart = () => {
                 fontSize={12}
                 tickLine={false}
                 axisLine={false}
-                tickFormatter={(value) => `$${value}`}
+                tickFormatter={(value) => formatNaira(value)}
               />
               <Tooltip
                 contentStyle={{
@@ -44,6 +53,7 @@ export const AdminPerformanceChart = () => {
                   border: '1px solid var(--border)',
                   borderRadius: '8px',
                 }}
+                formatter={(value: number) => [formatNaira(value), 'Amount']}
               />
               <Line 
                 type="monotone" 
