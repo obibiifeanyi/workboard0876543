@@ -25,7 +25,7 @@ export default {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: "#ff1c04", // Updated to the new red color
+          DEFAULT: "#ff1c04",
           foreground: "hsl(var(--primary-foreground))",
         },
         secondary: {
@@ -33,10 +33,10 @@ export default {
           foreground: "hsl(var(--secondary-foreground))",
         },
         admin: {
-          primary: "#6E59A5",
-          secondary: "#8B5CF6",
-          accent: "#D6BCFA",
-          muted: "#1A1F2C",
+          primary: "#003399",
+          secondary: "#003399",
+          accent: "#E6F0FF",
+          muted: "#F8FAFF",
         },
         manager: {
           primary: "#0EA5E9",
