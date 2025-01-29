@@ -1,18 +1,8 @@
 project_id = "ckzystwcwufvarektakc"
 
 [global]
-[global.env]
-OPENAI_API_KEY = "{{env.OPENAI_API_KEY}}"
-RESEND_API_KEY = "{{env.RESEND_API_KEY}}"
+image_version = "1.0.0"
 
 [[functions]]
-name = "analyze-content"
-verify_jwt = true
-
-[[functions]]
-name = "send-notification"
-verify_jwt = true
-
-[[functions]]
-name = "analyze-document"
+name = "analyze-and-notify"
 verify_jwt = true

@@ -3,9 +3,9 @@ import { Brain, Database, ChartBar, MessageSquare, Loader, Settings, Info, Check
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Message {
   id: string;
@@ -35,36 +35,38 @@ export const AIManagementSystem = () => {
     setInput("");
     setIsLoading(true);
 
-    // Simulate AI learning progress
-    const interval = setInterval(() => {
-      setLearningProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          return 100;
-        }
-        return prev + 10;
+    try {
+      const { data, error } = await supabase.functions.invoke('analyze-and-notify', {
+        body: { content: input, type: 'user_query' }
       });
-    }, 500);
 
-    // Simulate AI response
-    setTimeout(() => {
+      if (error) throw error;
+
       const aiResponse = {
         id: (Date.now() + 1).toString(),
-        content: "I've analyzed the data and here's my response...",
+        content: data.result.result_data,
         isAI: true,
         timestamp: new Date(),
       };
+
       setMessages(prev => [...prev, aiResponse]);
+      
+      toast({
+        title: "Analysis Complete",
+        description: "Managers and admins have been notified of the new analysis.",
+        duration: 5000,
+      });
+    } catch (error) {
+      console.error('Error:', error);
+      toast({
+        title: "Error",
+        description: "Failed to process your request. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
       setIsLoading(false);
       setLearningProgress(0);
-      clearInterval(interval);
-
-      toast({
-        title: "AI Response Ready",
-        description: "The AI has processed your request",
-        duration: 3000,
-      });
-    }, 3000);
+    }
   };
 
   return (
