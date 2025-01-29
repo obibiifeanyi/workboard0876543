@@ -15,14 +15,14 @@ import { Button } from "@/components/ui/button";
 const AdminDashboard = () => {
   return (
     <DashboardLayout title="Dashboard Overview">
-      <div className="space-y-6 p-6 animate-fade-in bg-[#111] min-h-screen">
+      <div className="space-y-6 p-6 animate-fade-in bg-background min-h-screen">
         {/* Date Range and Export Section */}
         <div className="flex justify-between items-center">
-          <div className="flex items-center gap-2 bg-[#1a1a1a] rounded-lg p-2">
+          <div className="flex items-center gap-2 bg-card rounded-lg p-2">
             <CalendarDays className="h-4 w-4 text-primary" />
             <span className="text-sm text-muted-foreground">15 Mar 2024 - 15 Apr 2024</span>
           </div>
-          <Button className="bg-[#86efac] hover:bg-[#86efac]/90 text-black">
+          <Button>
             <Download className="h-4 w-4 mr-2" />
             Export
           </Button>
@@ -36,7 +36,7 @@ const AdminDashboard = () => {
         {/* Charts and Activity Section */}
         <div className="grid gap-6 grid-cols-1 lg:grid-cols-3">
           {/* Activity Overview - Takes 1 column */}
-          <Card className="lg:col-span-1 bg-[#1a1a1a] border-none shadow-xl">
+          <Card className="lg:col-span-1">
             <CardContent className="p-6">
               <ActivityOverview />
             </CardContent>
@@ -44,12 +44,12 @@ const AdminDashboard = () => {
 
           {/* Performance and Work Progress Charts - Take 2 columns */}
           <div className="lg:col-span-2 grid gap-6 grid-cols-1 md:grid-cols-2">
-            <Card className="bg-[#1a1a1a] border-none shadow-xl">
+            <Card>
               <CardContent className="p-6">
                 <AdminPerformanceChart />
               </CardContent>
             </Card>
-            <Card className="bg-[#1a1a1a] border-none shadow-xl">
+            <Card>
               <CardContent className="p-6">
                 <WorkProgressDonut />
               </CardContent>
@@ -59,12 +59,12 @@ const AdminDashboard = () => {
 
         {/* Document Upload and Clock In Section */}
         <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
-          <Card className="bg-[#1a1a1a] border-none shadow-xl">
+          <Card>
             <CardContent className="p-6">
               <AIDocumentUpload />
             </CardContent>
           </Card>
-          <Card className="bg-[#1a1a1a] border-none shadow-xl">
+          <Card>
             <CardContent className="p-6">
               <ClockInMonitor />
             </CardContent>
@@ -73,40 +73,40 @@ const AdminDashboard = () => {
 
         {/* Tabs Section */}
         <Tabs defaultValue="overview" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-4 bg-[#1a1a1a] p-1 rounded-xl">
+          <TabsList className="grid w-full grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-4 bg-card p-1 rounded-xl">
             <TabsTrigger 
               value="overview"
-              className="data-[state=active]:bg-[#86efac] data-[state=active]:text-black"
+              className="data-[state=active]:bg-primary data-[state=active]:text-white"
             >
               Overview
             </TabsTrigger>
             <TabsTrigger 
               value="users"
-              className="data-[state=active]:bg-[#86efac] data-[state=active]:text-black"
+              className="data-[state=active]:bg-primary data-[state=active]:text-white"
             >
               Users
             </TabsTrigger>
             <TabsTrigger 
               value="departments"
-              className="data-[state=active]:bg-[#86efac] data-[state=active]:text-black"
+              className="data-[state=active]:bg-primary data-[state=active]:text-white"
             >
               Departments
             </TabsTrigger>
             <TabsTrigger 
               value="telecom"
-              className="data-[state=active]:bg-[#86efac] data-[state=active]:text-black"
+              className="data-[state=active]:bg-primary data-[state=active]:text-white"
             >
               Telecom Sites
             </TabsTrigger>
             <TabsTrigger 
               value="activity"
-              className="data-[state=active]:bg-[#86efac] data-[state=active]:text-black"
+              className="data-[state=active]:bg-primary data-[state=active]:text-white"
             >
               Activity Log
             </TabsTrigger>
           </TabsList>
 
-          <div className="mt-6 bg-[#1a1a1a] backdrop-blur-xl rounded-3xl p-6 border-none shadow-xl">
+          <div className="mt-6 bg-card backdrop-blur-xl rounded-3xl p-6">
             <AdminTabContent />
           </div>
         </Tabs>

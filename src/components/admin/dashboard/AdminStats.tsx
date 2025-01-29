@@ -32,21 +32,21 @@ export const AdminStats = () => {
   return (
     <>
       {stats.map((stat) => (
-        <Card key={stat.title} className="bg-[#1a1a1a] border-none shadow-xl">
+        <Card key={stat.title} className="border-border">
           <CardContent className="p-6">
             <div className="flex justify-between items-start">
               <div className="space-y-2">
                 <p className="text-sm text-muted-foreground">{stat.title}</p>
                 <div className="flex items-baseline space-x-3">
-                  <p className="text-2xl font-bold">{stat.value}</p>
-                  <span className="flex items-center text-sm text-[#86efac]">
+                  <p className="text-2xl font-bold text-foreground">{stat.value}</p>
+                  <span className="flex items-center text-sm text-primary">
                     {stat.change}
                     <ArrowUpRight className="h-4 w-4 ml-1" />
                   </span>
                 </div>
               </div>
-              <div className="p-2 bg-[#86efac]/10 rounded-lg">
-                <stat.icon className="h-5 w-5 text-[#86efac]" />
+              <div className="p-2 bg-primary/10 rounded-lg">
+                <stat.icon className="h-5 w-5 text-primary" />
               </div>
             </div>
           </CardContent>

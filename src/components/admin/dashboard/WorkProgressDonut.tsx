@@ -8,7 +8,7 @@ const data = [
   { name: "Other Activities", value: 80 },
 ];
 
-const COLORS = ["#003399", "#ff1c04", "#0FA0CE", "#33C3F0"];
+const COLORS = ["#ff1c04", "#0FA0CE", "#003399", "#33C3F0"];
 
 export const WorkProgressDonut = () => {
   const total = data.reduce((sum, item) => sum + item.value, 0);
@@ -42,17 +42,17 @@ export const WorkProgressDonut = () => {
               <Tooltip 
                 formatter={(value: number) => `${value} minutes`}
                 contentStyle={{
-                  backgroundColor: "rgba(0, 0, 0, 0.8)",
-                  border: "none",
-                  borderRadius: "4px",
-                  padding: "8px",
+                  backgroundColor: 'var(--background)',
+                  border: '1px solid var(--border)',
+                  borderRadius: '4px',
+                  padding: '8px',
                 }}
               />
               <Legend 
                 verticalAlign="bottom" 
                 height={36}
                 formatter={(value: string) => (
-                  <span className="text-sm">{value}</span>
+                  <span className="text-sm text-foreground">{value}</span>
                 )}
               />
             </PieChart>

@@ -13,11 +13,11 @@ const data = [
 
 export const AdminPerformanceChart = () => {
   return (
-    <Card className="bg-[#1a1a1a] border-none shadow-xl">
+    <Card>
       <CardHeader>
         <CardTitle className="text-lg font-medium">
           Performance Overview
-          <span className="ml-2 text-sm text-[#86efac]">+25.37%</span>
+          <span className="ml-2 text-sm text-primary">+25.37%</span>
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -26,13 +26,13 @@ export const AdminPerformanceChart = () => {
             <LineChart data={data}>
               <XAxis 
                 dataKey="name" 
-                stroke="#666" 
+                stroke="currentColor" 
                 fontSize={12}
                 tickLine={false}
                 axisLine={false}
               />
               <YAxis 
-                stroke="#666" 
+                stroke="currentColor" 
                 fontSize={12}
                 tickLine={false}
                 axisLine={false}
@@ -40,16 +40,15 @@ export const AdminPerformanceChart = () => {
               />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: '#1a1a1a',
-                  border: 'none',
+                  backgroundColor: 'var(--background)',
+                  border: '1px solid var(--border)',
                   borderRadius: '8px',
-                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
                 }}
               />
               <Line 
                 type="monotone" 
                 dataKey="value" 
-                stroke="#86efac" 
+                stroke="#ff1c04" 
                 strokeWidth={2}
                 dot={false}
               />
