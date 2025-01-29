@@ -16,6 +16,11 @@ import StaffProfile from "@/pages/staff/StaffProfile";
 import ManagerDashboard from "@/pages/manager/ManagerDashboard";
 import AdminDashboard from "@/pages/admin/AdminDashboard";
 import AccountPage from "@/pages/account/AccountPage";
+import TelecomSiteManagement from "@/components/admin/TelecomSiteManagement";
+import TimeManagement from "@/components/admin/TimeManagement";
+import ActivityManagement from "@/components/admin/ActivityManagement";
+import AIManagementSystem from "@/components/ai/AIManagementSystem";
+import AIKnowledgeBase from "@/components/ai/AIKnowledgeBase";
 
 function App() {
   return (
@@ -133,7 +138,13 @@ function App() {
                 allowedRoles={["admin"]}
               />
             }
-          />
+          >
+            <Route path="telecom-sites" element={<TelecomSiteManagement />} />
+            <Route path="time" element={<TimeManagement />} />
+            <Route path="activity" element={<ActivityManagement />} />
+            <Route path="ai" element={<AIManagementSystem />} />
+            <Route path="knowledge" element={<AIKnowledgeBase />} />
+          </Route>
           
           <Route
             path="/account"
