@@ -1,12 +1,18 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { MapPin, Users, BarChart3 } from "lucide-react";
+import { MapPin, Users, BarChart3, MoreVertical } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { TelecomStatsCard } from "../telecom/TelecomStatsCard";
 import { TelecomStatusBadge } from "../telecom/TelecomStatusBadge";
 import { TelecomPerformanceIndicator } from "../telecom/TelecomPerformanceIndicator";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface TelecomSite {
   id: number;
@@ -88,53 +94,81 @@ export const TelecomSites = () => {
             />
           </div>
 
-          <Table>
-            <TableHeader>
-              <TableRow className="border-white/10">
-                <TableHead className="text-white/70">Site Name</TableHead>
-                <TableHead className="text-white/70">Location</TableHead>
-                <TableHead className="text-white/70">Manager</TableHead>
-                <TableHead className="text-white/70">Performance</TableHead>
-                <TableHead className="text-white/70">Status</TableHead>
-                <TableHead className="text-white/70">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {mockSites.map((site) => (
-                <TableRow key={site.id} className="border-white/10">
-                  <TableCell className="text-white">{site.name}</TableCell>
-                  <TableCell className="text-white">{site.location}</TableCell>
-                  <TableCell className="text-white">{site.manager}</TableCell>
-                  <TableCell>
-                    <TelecomPerformanceIndicator performance={site.performance || 0} />
-                  </TableCell>
-                  <TableCell>
-                    <TelecomStatusBadge status={site.status} />
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-emerald hover:bg-emerald/10"
-                        onClick={() => handleAction("View Details", site)}
-                      >
-                        Details
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-yellow-500 hover:bg-yellow-500/10"
-                        onClick={() => handleAction("Maintenance", site)}
-                      >
-                        Maintain
-                      </Button>
-                    </div>
-                  </TableCell>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="border-white/10">
+                  <TableHead className="text-white/70">Site Name</TableHead>
+                  <TableHead className="text-white/70 hidden md:table-cell">Location</TableHead>
+                  <TableHead className="text-white/70 hidden lg:table-cell">Manager</TableHead>
+                  <TableHead className="text-white/70 hidden sm:table-cell">Performance</TableHead>
+                  <TableHead className="text-white/70">Status</TableHead>
+                  <TableHead className="text-white/70">Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {mockSites.map((site) => (
+                  <TableRow key={site.id} className="border-white/10">
+                    <TableCell className="text-white">{site.name}</TableCell>
+                    <TableCell className="text-white hidden md:table-cell">{site.location}</TableCell>
+                    <TableCell className="text-white hidden lg:table-cell">{site.manager}</TableCell>
+                    <TableCell className="hidden sm:table-cell">
+                      <TelecomPerformanceIndicator performance={site.performance || 0} />
+                    </TableCell>
+                    <TableCell>
+                      <TelecomStatusBadge status={site.status} />
+                    </TableCell>
+                    <TableCell>
+                      {/* Desktop view buttons */}
+                      <div className="hidden sm:flex gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-emerald hover:bg-emerald/10"
+                          onClick={() => handleAction("View Details", site)}
+                        >
+                          Details
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-yellow-500 hover:bg-yellow-500/10"
+                          onClick={() => handleAction("Maintenance", site)}
+                        >
+                          Maintain
+                        </Button>
+                      </div>
+
+                      {/* Mobile view dropdown */}
+                      <div className="sm:hidden">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem 
+                              onClick={() => handleAction("View Details", site)}
+                              className="text-emerald"
+                            >
+                              View Details
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              onClick={() => handleAction("Maintenance", site)}
+                              className="text-yellow-500"
+                            >
+                              Maintenance
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </div>
       </CardContent>
     </Card>
