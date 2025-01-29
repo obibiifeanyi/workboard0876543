@@ -32,10 +32,11 @@ export const AdminNavigation = () => {
           key={item.to}
           to={item.to}
           className={({ isActive }) =>
-            `flex items-center gap-2 px-3 py-2 rounded-lg transition-colors
-             ${isActive 
-               ? "bg-primary text-primary-foreground" 
-               : "hover:bg-muted"
+            `flex items-center gap-2 rounded-lg px-3 py-2 transition-colors
+             ${
+               isActive
+                 ? "bg-admin-primary text-white"
+                 : "text-foreground hover:bg-admin-accent hover:text-admin-primary"
              }`
           }
         >
