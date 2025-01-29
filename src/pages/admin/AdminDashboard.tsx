@@ -7,6 +7,7 @@ import { ActivityOverview } from "@/components/admin/ActivityOverview";
 import { AIDocumentUpload } from "@/components/admin/AIDocumentUpload";
 import { ClockInMonitor } from "@/components/admin/ClockInMonitor";
 import { ChatBox } from "@/components/ChatBox";
+import { WorkProgressDonut } from "@/components/admin/dashboard/WorkProgressDonut";
 
 const AdminDashboard = () => {
   return (
@@ -19,6 +20,7 @@ const AdminDashboard = () => {
               <ActivityOverview />
             </CardContent>
           </Card>
+          <WorkProgressDonut />
         </div>
 
         <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
