@@ -53,33 +53,35 @@ export const ClockInButton = () => {
 
   return (
     <div className="relative">
-      {/* Animated layers */}
-      <div className="absolute inset-0 animate-pulse-beacon opacity-30 rounded-full bg-primary scale-110" />
-      <div className="absolute inset-0 animate-pulse-beacon opacity-20 rounded-full bg-primary scale-125 delay-75" />
-      <div className="absolute inset-0 animate-pulse-beacon opacity-10 rounded-full bg-primary scale-150 delay-150" />
-      <div className="absolute inset-0 animate-pulse-beacon opacity-5 rounded-full bg-black scale-[1.75] delay-200" />
+      {/* Enhanced animated layers with new color */}
+      <div className="absolute inset-0 animate-pulse-beacon opacity-40 rounded-full bg-[#ff1c04] scale-110" />
+      <div className="absolute inset-0 animate-pulse-beacon opacity-30 rounded-full bg-[#ff1c04] scale-125 delay-75" />
+      <div className="absolute inset-0 animate-pulse-beacon opacity-20 rounded-full bg-[#ff1c04] scale-150 delay-150" />
+      <div className="absolute inset-0 animate-pulse-beacon opacity-15 rounded-full bg-[#ff1c04] scale-[1.75] delay-200" />
+      <div className="absolute inset-0 animate-pulse-beacon opacity-10 rounded-full bg-[#ff1c04] scale-[2] delay-300" />
+      <div className="absolute inset-0 animate-pulse-beacon opacity-5 rounded-full bg-[#ff1c04] scale-[2.25] delay-400" />
       
       <Button
         onClick={handleClockIn}
         disabled={loading}
         className="w-40 h-40 rounded-full 
-          bg-gradient-to-br from-primary via-primary/90 to-primary/80
-          hover:bg-primary/90 text-white
-          shadow-[0_0_30px_rgba(234,56,76,0.3),
-                  0_0_60px_rgba(234,56,76,0.2),
-                  0_0_90px_rgba(234,56,76,0.1),
+          bg-gradient-to-br from-[#ff1c04] via-[#ff1c04]/90 to-[#ff1c04]/80
+          hover:bg-[#ff1c04]/90 text-white
+          shadow-[0_0_30px_rgba(255,28,4,0.3),
+                  0_0_60px_rgba(255,28,4,0.2),
+                  0_0_90px_rgba(255,28,4,0.1),
                   inset_0_0_20px_rgba(255,255,255,0.1)]
-          hover:shadow-[0_0_35px_rgba(234,56,76,0.4),
-                       0_0_70px_rgba(234,56,76,0.3),
-                       0_0_105px_rgba(234,56,76,0.2),
+          hover:shadow-[0_0_35px_rgba(255,28,4,0.4),
+                       0_0_70px_rgba(255,28,4,0.3),
+                       0_0_105px_rgba(255,28,4,0.2),
                        inset_0_0_25px_rgba(255,255,255,0.2)]
-          active:shadow-[0_0_25px_rgba(234,56,76,0.3),
-                        0_0_50px_rgba(234,56,76,0.2),
-                        0_0_75px_rgba(234,56,76,0.1),
+          active:shadow-[0_0_25px_rgba(255,28,4,0.3),
+                        0_0_50px_rgba(255,28,4,0.2),
+                        0_0_75px_rgba(255,28,4,0.1),
                         inset_0_0_15px_rgba(255,255,255,0.1)]
           active:transform active:scale-95
           transition-all duration-300 ease-in-out
-          border-2 border-primary/20
+          border-2 border-[#ff1c04]/20
           backdrop-blur-sm
           relative
           before:content-['']
