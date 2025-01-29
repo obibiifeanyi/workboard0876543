@@ -1,45 +1,45 @@
-import { ReactNode } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
-import { ThemeSwitcher } from "@/components/ThemeSwitcher";
+import { LogOut } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 
 interface DashboardLayoutProps {
-  children: ReactNode;
-  title: string;
+  children: React.ReactNode;
+  title?: string;
 }
 
 export const DashboardLayout = ({ children, title }: DashboardLayoutProps) => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const showBackButton = location.pathname !== "/staff";
+  const { toast } = useToast();
+
+  const handleLogout = () => {
+    // Clear user data
+    localStorage.removeItem('userRole');
+    
+    // Show success toast
+    toast({
+      title: "Logged Out Successfully",
+      description: "You have been logged out of the system.",
+    });
+
+    // Redirect to login page
+    navigate('/login');
+  };
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-14 max-w-screen-2xl items-center justify-between">
-          <div className="flex items-center gap-4">
-            <img 
-              src="/lovable-uploads/491c7e61-a4fb-46a3-a002-904b84354e48.png" 
-              alt="CT Communication Towers Logo" 
-              className="h-10 w-auto"
-            />
-            {showBackButton && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="hover:bg-primary/10"
-                onClick={() => navigate(-1)}
-              >
-                <ArrowLeft className="h-5 w-5" />
-                <span className="sr-only">Go back</span>
-              </Button>
-            )}
-            <h1 className="text-xl font-semibold">{title}</h1>
-          </div>
-          <div className="flex items-center gap-2">
-            <ThemeSwitcher />
-          </div>
+      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container flex h-14 items-center justify-between">
+          <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={handleLogout}
+            className="flex items-center gap-2 hover:bg-destructive/10 hover:text-destructive"
+          >
+            <LogOut className="h-4 w-4" />
+            Logout
+          </Button>
         </div>
       </header>
       <main className="flex-1">
