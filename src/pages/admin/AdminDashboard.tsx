@@ -14,22 +14,34 @@ const AdminDashboard = () => {
   return (
     <DashboardLayout title="Admin Dashboard">
       <div className="space-y-6 p-6 animate-fade-in bg-admin-muted/5">
+        {/* Top Stats Section */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <AdminStats />
-          <Card className="col-span-full lg:col-span-2 bg-gradient-to-br from-admin-primary/10 to-admin-secondary/5 border-admin-accent/20 shadow-lg">
+        </div>
+
+        {/* Charts and Activity Section */}
+        <div className="grid gap-6 grid-cols-1 lg:grid-cols-3">
+          {/* Activity Overview - Takes 1 column */}
+          <Card className="lg:col-span-1 bg-gradient-to-br from-admin-primary/10 to-admin-secondary/5 border-admin-accent/20 shadow-lg">
             <CardContent className="p-6">
               <ActivityOverview />
             </CardContent>
           </Card>
-          <WorkProgressDonut />
-          <AdminPerformanceChart />
+
+          {/* Performance and Work Progress Charts - Take 2 columns */}
+          <div className="lg:col-span-2 grid gap-6 grid-cols-1 md:grid-cols-2">
+            <AdminPerformanceChart />
+            <WorkProgressDonut />
+          </div>
         </div>
 
+        {/* Document Upload and Clock In Section */}
         <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
           <AIDocumentUpload />
           <ClockInMonitor />
         </div>
 
+        {/* Tabs Section */}
         <Tabs defaultValue="overview" className="space-y-4">
           <TabsList className="grid w-full grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-4 bg-admin-primary/5 p-1 rounded-xl">
             <TabsTrigger 
