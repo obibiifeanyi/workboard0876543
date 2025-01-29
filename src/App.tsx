@@ -16,11 +16,16 @@ import StaffProfile from "@/pages/staff/StaffProfile";
 import ManagerDashboard from "@/pages/manager/ManagerDashboard";
 import AdminDashboard from "@/pages/admin/AdminDashboard";
 import AccountPage from "@/pages/account/AccountPage";
-import TelecomSiteManagement from "@/components/admin/TelecomSiteManagement";
-import TimeManagement from "@/components/admin/TimeManagement";
-import ActivityManagement from "@/components/admin/ActivityManagement";
-import AIManagementSystem from "@/components/ai/AIManagementSystem";
-import AIKnowledgeBase from "@/components/ai/AIKnowledgeBase";
+import { TelecomSiteManagement } from "@/components/admin/TelecomSiteManagement";
+import { TimeManagement } from "@/components/admin/TimeManagement";
+import { ActivityManagement } from "@/components/admin/ActivityManagement";
+import { AIManagementSystem } from "@/components/ai/AIManagementSystem";
+import { AIKnowledgeBase } from "@/components/ai/AIKnowledgeBase";
+import { UserManagement } from "@/components/admin/UserManagement";
+import { DepartmentManagement } from "@/components/admin/DepartmentManagement";
+import { ProjectManagement } from "@/components/admin/ProjectManagement";
+import { LeaveManagement } from "@/components/admin/LeaveManagement";
+import { ClockInMonitor } from "@/components/admin/ClockInMonitor";
 
 function App() {
   return (
@@ -131,7 +136,7 @@ function App() {
           />
           
           <Route
-            path="/admin/*"
+            path="/admin"
             element={
               <RoleBasedRoute
                 element={<AdminDashboard />}
@@ -139,8 +144,13 @@ function App() {
               />
             }
           >
-            <Route path="telecom-sites" element={<TelecomSiteManagement />} />
+            <Route path="users" element={<UserManagement />} />
+            <Route path="departments" element={<DepartmentManagement />} />
+            <Route path="projects" element={<ProjectManagement />} />
+            <Route path="leave" element={<LeaveManagement />} />
             <Route path="time" element={<TimeManagement />} />
+            <Route path="clock-in" element={<ClockInMonitor />} />
+            <Route path="telecom-sites" element={<TelecomSiteManagement />} />
             <Route path="activity" element={<ActivityManagement />} />
             <Route path="ai" element={<AIManagementSystem />} />
             <Route path="knowledge" element={<AIKnowledgeBase />} />

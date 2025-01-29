@@ -1,50 +1,36 @@
-import { Button } from "@/components/ui/button";
-import { LogOut } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { useToast } from "@/hooks/use-toast";
+import { ReactNode } from "react";
+import { cn } from "@/lib/utils";
 
-interface DashboardLayoutProps {
-  children: React.ReactNode;
-  title?: string;
+export interface DashboardLayoutProps {
+  children: ReactNode;
+  title: string;
+  navigation?: ReactNode;
+  className?: string;
 }
 
-export const DashboardLayout = ({ children, title }: DashboardLayoutProps) => {
-  const navigate = useNavigate();
-  const { toast } = useToast();
-
-  const handleLogout = () => {
-    // Clear user data
-    localStorage.removeItem('userRole');
-    
-    // Show success toast
-    toast({
-      title: "Logged Out Successfully",
-      description: "You have been logged out of the system.",
-    });
-
-    // Redirect to login page
-    navigate('/login');
-  };
-
+export const DashboardLayout = ({
+  children,
+  title,
+  navigation,
+  className,
+}: DashboardLayoutProps) => {
   return (
-    <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-14 items-center justify-between">
-          <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={handleLogout}
-            className="flex items-center gap-2 hover:bg-destructive/10 hover:text-destructive"
-          >
-            <LogOut className="h-4 w-4" />
-            Logout
-          </Button>
-        </div>
-      </header>
-      <main className="flex-1">
-        {children}
-      </main>
+    <div className={cn("min-h-screen bg-background", className)}>
+      <div className="flex">
+        {navigation && (
+          <aside className="fixed left-0 top-0 z-40 h-screen w-64 border-r bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            <div className="flex h-full flex-col overflow-y-auto px-3 py-4">
+              {navigation}
+            </div>
+          </aside>
+        )}
+        <main className={cn("flex-1 p-8", navigation && "ml-64")}>
+          <div className="mx-auto max-w-7xl">
+            <h1 className="mb-8 text-3xl font-bold">{title}</h1>
+            {children}
+          </div>
+        </main>
+      </div>
     </div>
   );
 };
