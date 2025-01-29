@@ -49,6 +49,11 @@ const Index = () => {
                       transition-all duration-300">
         <div className="space-y-8 sm:space-y-12">
           <div className="text-center space-y-4">
+            <img 
+              src="/lovable-uploads/491c7e61-a4fb-46a3-a002-904b84354e48.png" 
+              alt="CT Communication Towers Logo" 
+              className="h-24 w-auto mx-auto mb-4"
+            />
             <h1 className="text-2xl sm:text-4xl font-bold tracking-tight 
                          bg-gradient-to-r from-primary via-primary/80 to-primary 
                          bg-clip-text text-transparent animate-fade-in">

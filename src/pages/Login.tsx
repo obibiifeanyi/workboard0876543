@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { AuthError } from "@supabase/supabase-js";
 import { LoginForm } from "@/components/login/LoginForm";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { LoginHeader } from "@/components/login/LoginHeader";
@@ -78,6 +77,11 @@ const Login = () => {
           border border-white/10 dark:border-white/5 
           shadow-2xl hover:shadow-primary/5 transition-all duration-300
           bg-white/10 dark:bg-black/20 backdrop-blur-xl rounded-xl p-6">
+          <img 
+            src="/lovable-uploads/491c7e61-a4fb-46a3-a002-904b84354e48.png" 
+            alt="CT Communication Towers Logo" 
+            className="h-16 w-auto mx-auto mb-6"
+          />
           <LoginHeader />
           <LoginForm onLogin={handleLogin} />
         </div>
