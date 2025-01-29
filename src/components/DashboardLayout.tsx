@@ -2,6 +2,7 @@ import { ReactNode } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
+import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -16,7 +17,7 @@ export const DashboardLayout = ({ children, title }: DashboardLayoutProps) => {
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-14 max-w-screen-2xl items-center">
+        <div className="container flex h-14 max-w-screen-2xl items-center justify-between">
           <div className="flex items-center gap-4">
             <img 
               src="/lovable-uploads/491c7e61-a4fb-46a3-a002-904b84354e48.png" 
@@ -35,6 +36,9 @@ export const DashboardLayout = ({ children, title }: DashboardLayoutProps) => {
               </Button>
             )}
             <h1 className="text-xl font-semibold">{title}</h1>
+          </div>
+          <div className="flex items-center gap-2">
+            <ThemeSwitcher />
           </div>
         </div>
       </header>
