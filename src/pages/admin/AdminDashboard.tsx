@@ -8,12 +8,13 @@ import { AIDocumentUpload } from "@/components/admin/AIDocumentUpload";
 import { ClockInMonitor } from "@/components/admin/ClockInMonitor";
 import { ChatBox } from "@/components/ChatBox";
 import { WorkProgressDonut } from "@/components/admin/dashboard/WorkProgressDonut";
+import { AdminPerformanceChart } from "@/components/admin/dashboard/AdminPerformanceChart";
 
 const AdminDashboard = () => {
   return (
     <DashboardLayout title="Admin Dashboard">
       <div className="space-y-6 p-6 animate-fade-in bg-admin-muted/5">
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <AdminStats />
           <Card className="col-span-full lg:col-span-2 bg-gradient-to-br from-admin-primary/10 to-admin-secondary/5 border-admin-accent/20 shadow-lg">
             <CardContent className="p-6">
@@ -21,6 +22,7 @@ const AdminDashboard = () => {
             </CardContent>
           </Card>
           <WorkProgressDonut />
+          <AdminPerformanceChart />
         </div>
 
         <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
