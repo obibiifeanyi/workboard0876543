@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -6,16 +6,38 @@ import { Input } from "@/components/ui/input";
 import { FileText, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Label } from "@/components/ui/label";
+import { supabase } from "@/integrations/supabase/client";
 
 export const MemoGeneration = () => {
   const [from, setFrom] = useState("");
-  const [to, setTo] = useState("");
+  const [to, setTo] = useState("Manager");
   const [subject, setSubject] = useState("");
   const [date, setDate] = useState("");
   const [purpose, setPurpose] = useState("");
   const [paymentItems, setPaymentItems] = useState([{ description: "", amount: "" }]);
   const [accountDetails, setAccountDetails] = useState("");
+  const [userFullName, setUserFullName] = useState("");
   const { toast } = useToast();
+
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('full_name')
+          .eq('id', user.id)
+          .single();
+        
+        if (profile?.full_name) {
+          setUserFullName(profile.full_name);
+          setFrom(profile.full_name);
+        }
+      }
+    };
+
+    fetchUserProfile();
+  }, []);
 
   const handleAddPaymentItem = () => {
     setPaymentItems([...paymentItems, { description: "", amount: "" }]);
@@ -54,12 +76,10 @@ export const MemoGeneration = () => {
 
     toast({
       title: "Memo Generated",
-      description: "Your memo has been generated and sent successfully",
+      description: "Your memo has been generated and sent to the Manager successfully",
     });
 
     // Reset form
-    setFrom("");
-    setTo("");
     setSubject("");
     setDate("");
     setPurpose("");
@@ -89,6 +109,7 @@ export const MemoGeneration = () => {
               value={from}
               onChange={(e) => setFrom(e.target.value)}
               className="bg-white/5 border-white/10"
+              readOnly
             />
           </div>
 
@@ -97,8 +118,8 @@ export const MemoGeneration = () => {
             <Input
               id="to"
               value={to}
-              onChange={(e) => setTo(e.target.value)}
               className="bg-white/5 border-white/10"
+              readOnly
             />
           </div>
 
@@ -179,10 +200,10 @@ export const MemoGeneration = () => {
 
         <div className="grid grid-cols-2 gap-4 mt-8">
           <div className="border-t border-dashed border-gray-400 pt-2 text-center">
-            Prepared by
+            {userFullName}
           </div>
           <div className="border-t border-dashed border-gray-400 pt-2 text-center">
-            Approved by
+            Manager
           </div>
         </div>
 
