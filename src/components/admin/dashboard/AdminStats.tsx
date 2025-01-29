@@ -32,21 +32,21 @@ export const AdminStats = () => {
   return (
     <>
       {stats.map((stat) => (
-        <Card key={stat.title} className="border-admin-accent bg-white/50 backdrop-blur-sm transition-all hover:border-admin-primary/50">
-          <CardContent className="p-6">
+        <Card key={stat.title} className="border-admin-accent bg-white/50 backdrop-blur-sm transition-all hover:border-admin-primary/50 hover:shadow-lg hover:scale-[1.02] dark:bg-black/50">
+          <CardContent className="p-4 sm:p-6">
             <div className="flex justify-between items-start">
               <div className="space-y-2">
                 <p className="text-sm text-muted-foreground">{stat.title}</p>
                 <div className="flex items-baseline space-x-3">
-                  <p className="text-2xl font-bold text-admin-primary">{stat.value}</p>
-                  <span className="flex items-center text-sm text-admin-secondary">
+                  <p className="text-xl sm:text-2xl font-bold text-admin-primary">{stat.value}</p>
+                  <span className="flex items-center text-xs sm:text-sm text-admin-secondary">
                     {stat.change}
-                    <ArrowUpRight className="h-4 w-4 ml-1" />
+                    <ArrowUpRight className="h-3 w-3 sm:h-4 sm:w-4 ml-1" />
                   </span>
                 </div>
               </div>
               <div className="p-2 bg-admin-accent rounded-lg">
-                <stat.icon className="h-5 w-5 text-admin-primary" />
+                <stat.icon className="h-4 w-4 sm:h-5 sm:w-5 text-admin-primary" />
               </div>
             </div>
           </CardContent>

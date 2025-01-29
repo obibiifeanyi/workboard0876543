@@ -22,15 +22,19 @@ export const DashboardLayout = ({
         <NavBar />
         <div className="flex">
           {navigation && (
-            <aside className="fixed left-0 top-16 z-30 h-[calc(100vh-4rem)] w-64 border-r bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            <aside className="fixed left-0 top-16 z-30 h-[calc(100vh-4rem)] w-64 border-r bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 transition-all duration-300 ease-in-out lg:translate-x-0 translate-x-[-100%] peer-data-[state=expanded]:translate-x-0">
               <div className="flex h-[calc(100%-4rem)] flex-col overflow-y-auto px-3 py-4">
                 {navigation}
               </div>
             </aside>
           )}
-          <main className={cn("flex-1 p-8 mt-16", navigation && "ml-64")}>
+          <main className={cn(
+            "flex-1 p-4 mt-16 transition-all duration-300 ease-in-out",
+            navigation && "lg:ml-64",
+            "sm:p-6 md:p-8"
+          )}>
             <div className="mx-auto max-w-7xl">
-              <h1 className="mb-8 text-3xl font-bold text-admin-primary">{title}</h1>
+              <h1 className="mb-8 text-2xl sm:text-3xl font-bold text-admin-primary">{title}</h1>
               {children}
             </div>
           </main>
