@@ -20,7 +20,7 @@ import { TelecomSiteManagement } from "@/components/admin/TelecomSiteManagement"
 import { TimeManagement } from "@/components/admin/TimeManagement";
 import { ActivityManagement } from "@/components/admin/ActivityManagement";
 import { AIManagementSystem } from "@/components/ai/AIManagementSystem";
-import { AIKnowledgeBase } from "@/components/ai/AIKnowledgeBase";
+import AIKnowledgeBase from "@/components/ai/AIKnowledgeBase";
 import { UserManagement } from "@/components/admin/UserManagement";
 import { DepartmentManagement } from "@/components/admin/DepartmentManagement";
 import { ProjectManagement } from "@/components/admin/ProjectManagement";

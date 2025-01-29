@@ -148,3 +148,6 @@ export const AIKnowledgeBase = ({ userRole }: { userRole?: string }) => {
     </div>
   );
 };
+
+// Add default export
+export default AIKnowledgeBase;
