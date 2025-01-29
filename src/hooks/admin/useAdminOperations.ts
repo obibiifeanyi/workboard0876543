@@ -81,9 +81,16 @@ export const useAdminOperations = () => {
 
   const updateDepartment = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Partial<DepartmentWithManager> }) => {
+      const updateData = {
+        name: data.name,
+        description: data.description,
+        manager_id: data.manager_id,
+        employee_count: data.employee_count,
+      };
+
       const { error } = await supabase
         .from("departments")
-        .update(data)
+        .update(updateData)
         .eq("id", id);
 
       if (error) throw error;

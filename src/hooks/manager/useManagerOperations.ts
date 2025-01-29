@@ -1,46 +1,41 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import type { TeamMember, ProjectWithAssignments, TelecomSiteWithManager } from "@/types/supabase/manager";
+import type { ProjectWithAssignments, TeamMember, ProjectAssignmentInsert } from "@/types/supabase/manager";
 import { useToast } from "@/hooks/use-toast";
 
 export const useManagerOperations = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const useTeamMembers = (departmentId?: string) => {
+  const useTeamMembers = (departmentId: string) => {
     return useQuery({
       queryKey: ["team-members", departmentId],
       queryFn: async () => {
-        const query = supabase
+        const { data, error } = await supabase
           .from("profiles")
           .select(`
             *,
-            tasks(*)
-          `);
+            tasks (*)
+          `)
+          .eq("department", departmentId);
 
-        if (departmentId) {
-          query.eq("department_id", departmentId);
-        }
-
-        const { data, error } = await query;
         if (error) throw error;
         return data as TeamMember[];
       },
-      enabled: !!departmentId,
     });
   };
 
-  const useProjects = () => {
+  const useProjects = (departmentId: string) => {
     return useQuery({
-      queryKey: ["projects"],
+      queryKey: ["projects", departmentId],
       queryFn: async () => {
         const { data, error } = await supabase
           .from("project_assignments")
           .select(`
             *,
-            profiles(full_name),
-            departments(name)
-          `);
+            profiles (*)
+          `)
+          .eq("department_id", departmentId);
 
         if (error) throw error;
         return data as ProjectWithAssignments[];
@@ -48,37 +43,46 @@ export const useManagerOperations = () => {
     });
   };
 
-  const useTelecomSites = () => {
-    return useQuery({
-      queryKey: ["telecom-sites"],
-      queryFn: async () => {
-        const { data, error } = await supabase
-          .from("telecom_sites")
-          .select(`
-            *,
-            profiles(full_name),
-            ct_power_reports(*)
-          `);
-
-        if (error) throw error;
-        return data as TelecomSiteWithManager[];
-      },
-    });
-  };
-
-  const assignProject = useMutation({
-    mutationFn: async (data: Partial<ProjectWithAssignments>) => {
+  const createProject = useMutation({
+    mutationFn: async (projectData: ProjectAssignmentInsert) => {
       const { error } = await supabase
         .from("project_assignments")
-        .insert(data);
+        .insert(projectData);
 
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["projects"] });
       toast({
-        title: "Project Assigned",
-        description: "The project has been successfully assigned.",
+        title: "Project Created",
+        description: "The project has been successfully created.",
+      });
+    },
+  });
+
+  const updateProject = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: Partial<ProjectWithAssignments> }) => {
+      const updateData = {
+        project_name: data.project_name,
+        description: data.description,
+        status: data.status,
+        priority: data.priority,
+        assigned_to: data.assigned_to,
+        end_date: data.end_date,
+      };
+
+      const { error } = await supabase
+        .from("project_assignments")
+        .update(updateData)
+        .eq("id", id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["projects"] });
+      toast({
+        title: "Project Updated",
+        description: "The project has been successfully updated.",
       });
     },
   });
@@ -86,7 +90,7 @@ export const useManagerOperations = () => {
   return {
     useTeamMembers,
     useProjects,
-    useTelecomSites,
-    assignProject,
+    createProject,
+    updateProject,
   };
 };

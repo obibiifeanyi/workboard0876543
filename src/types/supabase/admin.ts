@@ -1,12 +1,5 @@
 import { Database } from "@/integrations/supabase/types";
-
-export interface AdminUser {
-  id: string;
-  email: string;
-  role: "admin";
-  department?: string;
-  created_at: string;
-}
+import { DepartmentWithDetails, ProfileWithDetails } from "./common";
 
 export interface AdminDashboardStats {
   totalUsers: number;
@@ -15,14 +8,20 @@ export interface AdminDashboardStats {
   completedTasks: number;
 }
 
-export interface SystemActivity extends Database["public"]["Tables"]["system_activities"]["Row"] {
+export interface SystemActivity {
+  id: string;
+  type: string;
+  description: string;
+  user_id: string | null;
+  metadata: any | null;
+  created_at: string;
   user?: {
     full_name: string;
   };
 }
 
-export interface DepartmentWithManager extends Database["public"]["Tables"]["departments"]["Row"] {
-  profiles?: {
-    full_name: string;
-  };
+export interface DepartmentWithManager extends DepartmentWithDetails {
+  manager?: ProfileWithDetails;
 }
+
+export type SystemActivityInsert = Database["public"]["Tables"]["system_activities"]["Insert"];

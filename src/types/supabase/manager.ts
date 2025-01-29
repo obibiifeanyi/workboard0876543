@@ -1,29 +1,23 @@
 import { Database } from "@/integrations/supabase/types";
+import { ProfileWithDetails, TaskWithAssignee } from "./common";
 
-export interface ManagerUser {
+export interface ProjectWithAssignments {
   id: string;
-  email: string;
-  role: "manager";
-  department: string;
-  team_size?: number;
+  project_name: string;
+  description: string | null;
+  assigned_to: string;
+  department_id: string;
+  start_date: string;
+  end_date: string | null;
+  status: string;
+  priority: string;
+  created_at: string;
+  updated_at: string;
+  profiles?: ProfileWithDetails;
 }
 
-export interface TeamMember extends Database["public"]["Tables"]["profiles"]["Row"] {
-  tasks?: Database["public"]["Tables"]["tasks"]["Row"][];
+export interface TeamMember extends ProfileWithDetails {
+  tasks?: TaskWithAssignee[];
 }
 
-export interface ProjectWithAssignments extends Database["public"]["Tables"]["project_assignments"]["Row"] {
-  profiles?: {
-    full_name: string;
-  };
-  department?: {
-    name: string;
-  };
-}
-
-export interface TelecomSiteWithManager extends Database["public"]["Tables"]["telecom_sites"]["Row"] {
-  profiles?: {
-    full_name: string;
-  };
-  power_reports?: Database["public"]["Tables"]["ct_power_reports"]["Row"][];
-}
+export type ProjectAssignmentInsert = Database["public"]["Tables"]["project_assignments"]["Insert"];
