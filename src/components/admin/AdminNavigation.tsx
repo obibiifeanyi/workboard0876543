@@ -9,6 +9,8 @@ import {
   Database,
   FileText,
   CalendarClock,
+  Settings,
+  Mail,
 } from "lucide-react";
 
 export const AdminNavigation = () => {
@@ -23,6 +25,8 @@ export const AdminNavigation = () => {
     { to: "/admin/activity", icon: Activity, label: "Activity Log" },
     { to: "/admin/ai", icon: Brain, label: "AI Management" },
     { to: "/admin/knowledge", icon: Database, label: "Knowledge Base" },
+    { to: "/admin/communication", icon: Mail, label: "Communication" },
+    { to: "/admin/settings", icon: Settings, label: "Settings" },
   ];
 
   return (
