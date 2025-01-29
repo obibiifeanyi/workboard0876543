@@ -80,10 +80,8 @@ export const AdminSettings = () => {
   };
 
   return (
-    <DashboardLayout>
+    <DashboardLayout title="Admin Settings">
       <div className="container mx-auto p-6 space-y-6">
-        <h1 className="text-3xl font-bold mb-8">Admin Settings</h1>
-
         <div className="grid gap-6 md:grid-cols-2">
           <Card className="border-none shadow-lg">
             <CardHeader>

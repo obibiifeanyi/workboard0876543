@@ -3,7 +3,7 @@ import { CommunicationCenter } from "@/components/admin/CommunicationCenter";
 
 export const CommunicationPage = () => {
   return (
-    <DashboardLayout>
+    <DashboardLayout title="Communication Center">
       <div className="container mx-auto p-6">
         <CommunicationCenter />
       </div>
