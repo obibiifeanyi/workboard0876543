@@ -198,12 +198,9 @@ export const MemoGeneration = () => {
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-4 mt-8">
-          <div className="border-t border-dashed border-gray-400 pt-2 text-center">
+        <div className="mt-8">
+          <div className="text-center">
             {userFullName}
-          </div>
-          <div className="border-t border-dashed border-gray-400 pt-2 text-center">
-            Manager
           </div>
         </div>
 
