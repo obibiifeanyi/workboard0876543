@@ -41,13 +41,6 @@ export const AdminStats = () => {
 
   return (
     <>
-      <div className="flex items-center justify-between mb-6">
-        <img 
-          src="/lovable-uploads/f2f26f75-4ea0-45bb-b1e1-eecd743ebe0a.png" 
-          alt="CT Communication Towers Logo" 
-          className="h-12 w-auto"
-        />
-      </div>
       {stats.map((stat) => (
         <Card key={stat.title} className="border-admin-accent bg-white/50 backdrop-blur-sm transition-all hover:border-admin-primary/50 hover:shadow-lg hover:scale-[1.02] dark:bg-black/50">
           <CardContent className="p-4 sm:p-6">

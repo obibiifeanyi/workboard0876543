@@ -1,4 +1,3 @@
-import { Building2 } from "lucide-react";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 import { EnhancedNotificationCenter } from "@/components/notifications/EnhancedNotificationCenter";
 import { cn } from "@/lib/utils";
@@ -20,7 +19,11 @@ export const NavBar = ({ className }: NavBarProps) => {
         <div className="flex items-center gap-4">
           <SidebarTrigger className="lg:hidden" />
           <div className="flex items-center gap-2">
-            <Building2 className="h-5 w-5 sm:h-6 sm:w-6 text-admin-primary animate-pulse" />
+            <img 
+              src="/lovable-uploads/f2f26f75-4ea0-45bb-b1e1-eecd743ebe0a.png" 
+              alt="CT Communication Towers Logo" 
+              className="h-8 w-auto"
+            />
             <span className="hidden text-base sm:text-lg font-semibold text-admin-primary md:inline-block">
               Admin Portal
             </span>
