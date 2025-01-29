@@ -3,17 +3,47 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { FileText, Send, Users } from "lucide-react";
+import { FileText, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Label } from "@/components/ui/label";
 
 export const MemoGeneration = () => {
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
   const [subject, setSubject] = useState("");
-  const [recipients, setRecipients] = useState("");
-  const [content, setContent] = useState("");
+  const [date, setDate] = useState("");
+  const [purpose, setPurpose] = useState("");
+  const [paymentItems, setPaymentItems] = useState([{ description: "", amount: "" }]);
+  const [accountDetails, setAccountDetails] = useState("");
   const { toast } = useToast();
 
+  const handleAddPaymentItem = () => {
+    setPaymentItems([...paymentItems, { description: "", amount: "" }]);
+  };
+
+  const handlePaymentItemChange = (index: number, field: "description" | "amount", value: string) => {
+    const newItems = [...paymentItems];
+    newItems[index][field] = value;
+    setPaymentItems(newItems);
+  };
+
+  const calculateTotal = () => {
+    return paymentItems.reduce((sum, item) => {
+      const amount = parseFloat(item.amount.replace(/[^0-9.]/g, "")) || 0;
+      return sum + amount;
+    }, 0);
+  };
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat("en-NG", {
+      style: "currency",
+      currency: "NGN",
+      minimumFractionDigits: 2,
+    }).format(amount);
+  };
+
   const handleSubmit = () => {
-    if (!subject || !recipients || !content) {
+    if (!from || !to || !subject || !date || !purpose) {
       toast({
         title: "Missing Fields",
         description: "Please fill in all required fields",
@@ -28,9 +58,13 @@ export const MemoGeneration = () => {
     });
 
     // Reset form
+    setFrom("");
+    setTo("");
     setSubject("");
-    setRecipients("");
-    setContent("");
+    setDate("");
+    setPurpose("");
+    setPaymentItems([{ description: "", amount: "" }]);
+    setAccountDetails("");
   };
 
   return (
@@ -41,33 +75,118 @@ export const MemoGeneration = () => {
           Generate Memo
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="space-y-2">
-          <Input
-            placeholder="Memo Subject"
-            value={subject}
-            onChange={(e) => setSubject(e.target.value)}
-            className="bg-white/5 border-white/10"
-          />
+      <CardContent className="space-y-6">
+        <div className="text-center font-bold text-xl mb-6">
+          COMMUNICATION TOWERS NIGERIA LIMITED
+          <div className="text-lg mt-1">INTERNAL MEMO</div>
         </div>
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <Users className="h-4 w-4 text-muted-foreground" />
+
+        <div className="grid gap-4">
+          <div className="grid gap-2">
+            <Label htmlFor="from">FROM:</Label>
             <Input
-              placeholder="Recipients (comma separated)"
-              value={recipients}
-              onChange={(e) => setRecipients(e.target.value)}
+              id="from"
+              value={from}
+              onChange={(e) => setFrom(e.target.value)}
+              className="bg-white/5 border-white/10"
+            />
+          </div>
+
+          <div className="grid gap-2">
+            <Label htmlFor="to">TO:</Label>
+            <Input
+              id="to"
+              value={to}
+              onChange={(e) => setTo(e.target.value)}
+              className="bg-white/5 border-white/10"
+            />
+          </div>
+
+          <div className="grid gap-2">
+            <Label htmlFor="subject">SUBJECT:</Label>
+            <Input
+              id="subject"
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+              className="bg-white/5 border-white/10"
+            />
+          </div>
+
+          <div className="grid gap-2">
+            <Label htmlFor="date">DATE:</Label>
+            <Input
+              id="date"
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
               className="bg-white/5 border-white/10"
             />
           </div>
         </div>
-        <Textarea
-          placeholder="Memo Content..."
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          className="min-h-[200px] bg-white/5 border-white/10"
-        />
-        <Button onClick={handleSubmit} className="w-full md:w-auto">
+
+        <div className="grid gap-2">
+          <Label htmlFor="purpose">Purpose:</Label>
+          <Textarea
+            id="purpose"
+            value={purpose}
+            onChange={(e) => setPurpose(e.target.value)}
+            className="min-h-[100px] bg-white/5 border-white/10"
+          />
+        </div>
+
+        <div className="space-y-4">
+          <Label>Payment Details:</Label>
+          {paymentItems.map((item, index) => (
+            <div key={index} className="grid grid-cols-2 gap-2">
+              <Input
+                placeholder="Description"
+                value={item.description}
+                onChange={(e) => handlePaymentItemChange(index, "description", e.target.value)}
+                className="bg-white/5 border-white/10"
+              />
+              <Input
+                placeholder="Amount (₦)"
+                value={item.amount}
+                onChange={(e) => handlePaymentItemChange(index, "amount", e.target.value)}
+                className="bg-white/5 border-white/10"
+              />
+            </div>
+          ))}
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleAddPaymentItem}
+            className="w-full"
+          >
+            Add Payment Item
+          </Button>
+        </div>
+
+        <div className="text-right font-semibold">
+          Total: {formatCurrency(calculateTotal())}
+        </div>
+
+        <div className="grid gap-2">
+          <Label htmlFor="accountDetails">Payment in favor of (Account Details):</Label>
+          <Input
+            id="accountDetails"
+            placeholder="Account #, Bank, Account Name"
+            value={accountDetails}
+            onChange={(e) => setAccountDetails(e.target.value)}
+            className="bg-white/5 border-white/10"
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-4 mt-8">
+          <div className="border-t border-dashed border-gray-400 pt-2 text-center">
+            Prepared by
+          </div>
+          <div className="border-t border-dashed border-gray-400 pt-2 text-center">
+            Approved by
+          </div>
+        </div>
+
+        <Button onClick={handleSubmit} className="w-full md:w-auto mt-6">
           <Send className="h-4 w-4 mr-2" />
           Generate & Send Memo
         </Button>
