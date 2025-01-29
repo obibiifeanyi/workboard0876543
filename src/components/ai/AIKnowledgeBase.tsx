@@ -1,8 +1,7 @@
 import { useState } from "react";
-import { Brain, Lock } from "lucide-react";
+import { Brain } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { FileUploadSection } from "./FileUploadSection";
 import { AIAnalysisStatus } from "./AIAnalysisStatus";
 import { StorageStatus } from "./StorageStatus";
@@ -16,7 +15,7 @@ interface UploadedFile {
   progress: number;
 }
 
-export const AIKnowledgeBase = ({ userRole }: { userRole?: string }) => {
+export const AIKnowledgeBase = () => {
   const [files, setFiles] = useState<UploadedFile[]>([]);
   const [isTraining, setIsTraining] = useState(false);
   const [trainingProgress, setTrainingProgress] = useState(0);
@@ -24,20 +23,6 @@ export const AIKnowledgeBase = ({ userRole }: { userRole?: string }) => {
   const { useKnowledgeBase, useCreateKnowledgeEntry } = useAIOperations();
   const { data: knowledgeBase, isLoading: isLoadingKB } = useKnowledgeBase();
   const createEntry = useCreateKnowledgeEntry();
-
-  const hasAccess = userRole === 'admin' || userRole === 'manager';
-
-  if (!hasAccess) {
-    return (
-      <Alert variant="destructive" className="animate-fade-in">
-        <Lock className="h-4 w-4" />
-        <AlertTitle>Access Restricted</AlertTitle>
-        <AlertDescription>
-          Only administrators and managers have access to the AI Knowledge Base.
-        </AlertDescription>
-      </Alert>
-    );
-  }
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const fileList = event.target.files;
@@ -149,5 +134,4 @@ export const AIKnowledgeBase = ({ userRole }: { userRole?: string }) => {
   );
 };
 
-// Add default export
 export default AIKnowledgeBase;
