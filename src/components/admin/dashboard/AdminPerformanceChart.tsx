@@ -1,51 +1,57 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
 const data = [
-  { name: "Mon", performance: 85 },
-  { name: "Tue", performance: 92 },
-  { name: "Wed", performance: 78 },
-  { name: "Thu", performance: 95 },
-  { name: "Fri", performance: 89 },
-  { name: "Sat", performance: 70 },
-  { name: "Sun", performance: 72 },
+  { name: 'Mar 15', value: 2400 },
+  { name: 'Mar 20', value: 3600 },
+  { name: 'Mar 25', value: 3200 },
+  { name: 'Mar 30', value: 4500 },
+  { name: 'Apr 5', value: 4200 },
+  { name: 'Apr 10', value: 5200 },
+  { name: 'Apr 15', value: 5800 },
 ];
 
 export const AdminPerformanceChart = () => {
   return (
-    <Card className="col-span-full lg:col-span-1">
+    <Card className="bg-[#1a1a1a] border-none shadow-xl">
       <CardHeader>
-        <CardTitle className="text-lg font-medium">Weekly Performance</CardTitle>
+        <CardTitle className="text-lg font-medium">
+          Performance Overview
+          <span className="ml-2 text-sm text-[#86efac]">+25.37%</span>
+        </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="h-[300px] w-full">
+        <div className="h-[200px]">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={data}>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-border/20" />
               <XAxis 
                 dataKey="name" 
-                className="text-xs"
+                stroke="#666" 
+                fontSize={12}
+                tickLine={false}
+                axisLine={false}
               />
               <YAxis 
-                className="text-xs"
-                domain={[0, 100]}
+                stroke="#666" 
+                fontSize={12}
+                tickLine={false}
+                axisLine={false}
+                tickFormatter={(value) => `$${value}`}
               />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: "rgba(0, 0, 0, 0.8)",
-                  border: "none",
-                  borderRadius: "4px",
-                  padding: "8px",
+                  backgroundColor: '#1a1a1a',
+                  border: 'none',
+                  borderRadius: '8px',
+                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
                 }}
-                formatter={(value: number) => [`${value}%`, "Performance"]}
               />
               <Line 
                 type="monotone" 
-                dataKey="performance" 
-                stroke="#003399" 
+                dataKey="value" 
+                stroke="#86efac" 
                 strokeWidth={2}
-                dot={{ fill: "#003399" }}
-                activeDot={{ r: 8, fill: "#ff1c04" }}
+                dot={false}
               />
             </LineChart>
           </ResponsiveContainer>
