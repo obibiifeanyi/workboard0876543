@@ -17,17 +17,21 @@ const ManagerDashboard = () => {
     <DashboardLayout title="Manager Dashboard">
       <div className="space-y-6 animate-fade-in p-6 bg-manager-muted/5">
         <div className="flex items-center justify-between mb-8">
-          <div className="relative w-64">
-            <input
-              type="text"
-              placeholder="Search..."
-              className="w-full px-4 py-2 pl-10 rounded-full bg-white/10 dark:bg-black/5 
-                       border border-manager-accent/20 focus:outline-none focus:ring-2 
-                       focus:ring-manager-primary/50"
-            />
-            <Search className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
+          <div>
+            <h1 className="text-3xl font-bold text-manager-primary">My Dashboard</h1>
+            <p className="text-muted-foreground mt-1">Welcome back to your dashboard</p>
           </div>
           <div className="flex items-center gap-4">
+            <div className="relative w-64">
+              <input
+                type="text"
+                placeholder="Search..."
+                className="w-full px-4 py-2 pl-10 rounded-full bg-white/10 dark:bg-black/5 
+                         border border-manager-accent/20 focus:outline-none focus:ring-2 
+                         focus:ring-manager-primary/50"
+              />
+              <Search className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
+            </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="relative">
