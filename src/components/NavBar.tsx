@@ -24,8 +24,8 @@ export const NavBar = ({ className }: NavBarProps) => {
               alt="CT Communication Towers Logo" 
               className="h-8 w-auto"
             />
-            <span className="hidden text-base sm:text-lg font-semibold text-admin-primary md:inline-block">
-              Admin Portal
+            <span className="hidden text-base sm:text-lg font-semibold text-manager-primary md:inline-block">
+              Manager's Dashboard
             </span>
           </div>
         </div>
