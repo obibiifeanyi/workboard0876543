@@ -1,40 +1,11 @@
-import { Json } from './base';
+import { Database } from './base';
 
-export interface DocumentTypes {
-  documents: {
-    Row: {
-      id: string;
-      title: string;
-      description: string | null;
-      file_url: string | null;
-      file_type: string | null;
-      uploaded_by: string | null;
-      department_id: string | null;
-      access_level: string | null;
-      created_at: string;
-      updated_at: string;
-    };
-    Insert: {
-      id?: string;
-      title: string;
-      description?: string | null;
-      file_url?: string | null;
-      file_type?: string | null;
-      uploaded_by?: string | null;
-      department_id?: string | null;
-      access_level?: string | null;
-      created_at?: string;
-      updated_at?: string;
-    };
-    Update: {
-      title?: string;
-      description?: string | null;
-      file_url?: string | null;
-      file_type?: string | null;
-      uploaded_by?: string | null;
-      department_id?: string | null;
-      access_level?: string | null;
-      updated_at?: string;
-    };
-  };
+export interface DocumentAnalysis extends Database['public']['Tables']['document_analysis']['Row'] {
+  summary?: string;
+  keyPoints?: string[];
+  suggestedActions?: string[];
+  categories?: string[];
 }
+
+export type DocumentInsert = Database['public']['Tables']['documents']['Insert'];
+export type DocumentUpdate = Database['public']['Tables']['documents']['Update'];
