@@ -305,6 +305,45 @@ export type Database = {
         }
         Relationships: []
       }
+      ct_power_reports: {
+        Row: {
+          comments: string | null
+          created_at: string
+          created_by: string | null
+          diesel_level: number | null
+          generator_runtime: number | null
+          id: string
+          report_datetime: string
+          site_id: string
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          comments?: string | null
+          created_at?: string
+          created_by?: string | null
+          diesel_level?: number | null
+          generator_runtime?: number | null
+          id?: string
+          report_datetime: string
+          site_id: string
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          comments?: string | null
+          created_at?: string
+          created_by?: string | null
+          diesel_level?: number | null
+          generator_runtime?: number | null
+          id?: string
+          report_datetime?: string
+          site_id?: string
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       departments: {
         Row: {
           created_at: string | null
@@ -339,6 +378,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      document_analysis: {
+        Row: {
+          analysis_result: Json | null
+          analysis_status: string | null
+          created_at: string
+          created_by: string | null
+          file_name: string
+          file_path: string
+          file_size: number
+          file_type: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          analysis_result?: Json | null
+          analysis_status?: string | null
+          created_at?: string
+          created_by?: string | null
+          file_name: string
+          file_path: string
+          file_size: number
+          file_type: string
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          analysis_result?: Json | null
+          analysis_status?: string | null
+          created_at?: string
+          created_by?: string | null
+          file_name?: string
+          file_path?: string
+          file_size?: number
+          file_type?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       documents: {
         Row: {
@@ -393,6 +471,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      memos: {
+        Row: {
+          content: string
+          created_at: string
+          created_by: string | null
+          department: string | null
+          id: string
+          status: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          created_by?: string | null
+          department?: string | null
+          id?: string
+          status?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          created_by?: string | null
+          department?: string | null
+          id?: string
+          status?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       notifications: {
         Row: {

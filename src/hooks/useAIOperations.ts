@@ -13,7 +13,7 @@ export const useAIOperations = () => {
       queryKey: ['ai_results'],
       queryFn: async () => {
         const { data, error } = await supabase
-          .from('document_analysis')
+          .from('ai_documents')
           .select('*')
           .order('created_at', { ascending: false });
         if (error) throw error;
@@ -26,11 +26,11 @@ export const useAIOperations = () => {
     return useMutation({
       mutationFn: async (newResult: Omit<AIResult, 'id' | 'created_at' | 'updated_at'>) => {
         const { data, error } = await supabase
-          .from('document_analysis')
+          .from('ai_documents')
           .insert({
-            query_text: newResult.query_text,
-            result_data: newResult.result_data,
-            model_used: newResult.model_used,
+            title: newResult.query_text,
+            content: JSON.stringify(newResult.result_data),
+            document_type: newResult.model_used,
             created_by: newResult.created_by
           })
           .select()
@@ -77,8 +77,8 @@ export const useAIOperations = () => {
           .insert({
             title: newEntry.title,
             content: newEntry.content,
-            category: newEntry.category,
-            tags: newEntry.tags,
+            document_type: newEntry.category,
+            analysis: JSON.stringify({ tags: newEntry.tags }),
             created_by: newEntry.created_by
           })
           .select()

@@ -18,10 +18,12 @@ export const analyzeDocument = async (content: string): Promise<DocumentAnalysis
       .from('document_analysis')
       .insert({
         file_name: 'Analyzed Document',
+        file_path: 'temp',
         file_type: 'text',
         file_size: content.length,
         analysis_status: 'completed',
-        analysis_result: data
+        analysis_result: data,
+        created_by: (await supabase.auth.getUser()).data.user?.id
       })
       .select()
       .single();
@@ -31,7 +33,7 @@ export const analyzeDocument = async (content: string): Promise<DocumentAnalysis
       throw dbError;
     }
 
-    return analysisRecord as unknown as DocumentAnalysis;
+    return analysisRecord as DocumentAnalysis;
   } catch (error) {
     console.error('Error in analyzeDocument:', error);
     throw error;
