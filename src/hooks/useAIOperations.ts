@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -12,10 +13,11 @@ export const useAIOperations = () => {
       queryKey: ['ai_results'],
       queryFn: async () => {
         const { data, error } = await supabase
-          .from('ai_results')
-          .select('*');
+          .from('document_analysis')
+          .select('*')
+          .order('created_at', { ascending: false });
         if (error) throw error;
-        return data as AIResult[];
+        return data as unknown as AIResult[];
       },
     });
   };
@@ -24,8 +26,13 @@ export const useAIOperations = () => {
     return useMutation({
       mutationFn: async (newResult: Omit<AIResult, 'id' | 'created_at' | 'updated_at'>) => {
         const { data, error } = await supabase
-          .from('ai_results')
-          .insert(newResult)
+          .from('document_analysis')
+          .insert({
+            query_text: newResult.query_text,
+            result_data: newResult.result_data,
+            model_used: newResult.model_used,
+            created_by: newResult.created_by
+          })
           .select()
           .single();
         if (error) throw error;
@@ -35,7 +42,7 @@ export const useAIOperations = () => {
         queryClient.invalidateQueries({ queryKey: ['ai_results'] });
         toast({
           title: 'Success',
-          description: 'AI result saved successfully',
+          description: 'AI analysis saved successfully',
         });
       },
       onError: (error: Error) => {
@@ -53,10 +60,11 @@ export const useAIOperations = () => {
       queryKey: ['ai_knowledge_base'],
       queryFn: async () => {
         const { data, error } = await supabase
-          .from('ai_knowledge_base')
-          .select('*');
+          .from('ai_documents')
+          .select('*')
+          .order('created_at', { ascending: false });
         if (error) throw error;
-        return data as AIKnowledgeBase[];
+        return data as unknown as AIKnowledgeBase[];
       },
     });
   };
@@ -65,8 +73,14 @@ export const useAIOperations = () => {
     return useMutation({
       mutationFn: async (newEntry: Omit<AIKnowledgeBase, 'id' | 'created_at' | 'updated_at'>) => {
         const { data, error } = await supabase
-          .from('ai_knowledge_base')
-          .insert(newEntry)
+          .from('ai_documents')
+          .insert({
+            title: newEntry.title,
+            content: newEntry.content,
+            category: newEntry.category,
+            tags: newEntry.tags,
+            created_by: newEntry.created_by
+          })
           .select()
           .single();
         if (error) throw error;

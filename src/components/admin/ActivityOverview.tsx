@@ -10,7 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 export const ActivityOverview = () => {
   const { toast } = useToast();
 
-  const { data: activities, isError } = useQuery<SystemActivityRow[]>({
+  const { data: activities, isError } = useQuery({
     queryKey: ['admin-activities'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -24,15 +24,7 @@ export const ActivityOverview = () => {
         throw error;
       }
       return data as SystemActivityRow[];
-    },
-    onError: (error) => {
-      console.error('Query error:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load activities. Please try again later.",
-        variant: "destructive",
-      });
-    },
+    }
   });
 
   const getActivityIcon = (type: string) => {
@@ -60,12 +52,12 @@ export const ActivityOverview = () => {
               <div className="p-4 text-sm text-muted-foreground">
                 Unable to load activities. Please refresh the page.
               </div>
-            ) : activities?.length === 0 ? (
+            ) : !activities || activities.length === 0 ? (
               <div className="p-4 text-sm text-muted-foreground">
                 No recent activities found.
               </div>
             ) : (
-              activities?.map((activity) => (
+              activities.map((activity) => (
                 <div
                   key={activity.id}
                   className="flex items-center gap-4 p-3 rounded-lg bg-background/50 border border-border/50"
