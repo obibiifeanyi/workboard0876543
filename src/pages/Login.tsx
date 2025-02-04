@@ -25,19 +25,26 @@ const Login = () => {
           const role = profile?.role || 'staff';
           localStorage.setItem('userRole', role);
 
+          // Redirect based on role
           switch (role) {
             case 'admin':
-              navigate('/admin/dashboard');
+              navigate('/admin');
               break;
             case 'manager':
-              navigate('/manager/dashboard');
+              navigate('/manager');
               break;
             default:
-              navigate('/staff/dashboard');
+              navigate('/staff');
           }
+
+          toast({
+            title: "Welcome back!",
+            description: "You have successfully logged in.",
+          });
         }
       }
       if (event === 'SIGNED_OUT') {
+        localStorage.removeItem('userRole');
         setError(null);
       }
     });
@@ -45,22 +52,42 @@ const Login = () => {
     // Check if user is already logged in
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
-        navigate('/staff/dashboard');
+        const role = localStorage.getItem('userRole') || 'staff';
+        switch (role) {
+          case 'admin':
+            navigate('/admin');
+            break;
+          case 'manager':
+            navigate('/manager');
+            break;
+          default:
+            navigate('/staff');
+        }
       }
     });
 
     return () => {
       subscription.unsubscribe();
     };
-  }, [navigate]);
+  }, [navigate, toast]);
 
   const handleLogin = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-    if (error) throw error;
+      if (error) throw error;
+    } catch (error) {
+      console.error('Login error:', error);
+      setError(error instanceof Error ? error.message : 'Failed to login');
+      toast({
+        title: "Login Failed",
+        description: error instanceof Error ? error.message : 'Failed to login',
+        variant: "destructive",
+      });
+    }
   };
 
   return (

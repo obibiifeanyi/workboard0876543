@@ -1,5 +1,6 @@
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 import { EnhancedNotificationCenter } from "@/components/notifications/EnhancedNotificationCenter";
+import { LogoutButton } from "@/components/auth/LogoutButton";
 import { cn } from "@/lib/utils";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 
@@ -33,6 +34,7 @@ export const MainNavBar = ({ className }: MainNavBarProps) => {
         <div className="flex items-center gap-2 sm:gap-4">
           <EnhancedNotificationCenter />
           <ThemeSwitcher />
+          <LogoutButton variant="ghost" />
         </div>
       </div>
     </nav>
