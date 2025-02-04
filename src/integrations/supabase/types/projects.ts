@@ -1,12 +1,18 @@
 import { Database } from './base';
 
-export interface Project extends Database['public']['Tables']['projects']['Row'] {
+export interface Project {
+  id: string;
   title: string;
   description: string | null;
   status: string;
+  project_name: string;
+  assigned_to: string;
+  department_id: string;
+  priority: string;
 }
 
-export interface ProjectAssignment extends Database['public']['Tables']['project_assignments']['Row'] {
+export interface ProjectAssignment {
+  id: string;
   project_id: string;
   staff_id: string;
 }
