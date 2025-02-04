@@ -1,3 +1,4 @@
+
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { TeamMember, ProjectWithAssignments } from "@/types/manager";
@@ -30,7 +31,7 @@ export const useManagerOperations = (departmentId: string) => {
         .from("projects")
         .select(`
           *,
-          project_assignments (
+          project_assignments!inner (
             id,
             project_id,
             staff_id,
@@ -43,20 +44,18 @@ export const useManagerOperations = (departmentId: string) => {
 
       if (error) throw error;
       
-      // Transform the data to match ProjectWithAssignments type
-      const transformedData = (data || []).map(project => ({
+      // Transform the data to include proper typing
+      return (data || []).map(project => ({
         ...project,
-        project_assignments: project.project_assignments?.map(assignment => ({
+        project_assignments: project.project_assignments.map(assignment => ({
           id: assignment.id,
           project_id: assignment.project_id,
           staff_id: assignment.staff_id,
           profiles: assignment.profiles ? {
             full_name: assignment.profiles.full_name
           } : undefined
-        })) || []
-      }));
-
-      return transformedData as ProjectWithAssignments[];
+        }))
+      })) as ProjectWithAssignments[];
     },
   });
 
