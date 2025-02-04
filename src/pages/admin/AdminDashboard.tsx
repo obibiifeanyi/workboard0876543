@@ -1,4 +1,3 @@
-
 import { useState, Suspense } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { AdminNavigation } from "@/components/admin/AdminNavigation";
