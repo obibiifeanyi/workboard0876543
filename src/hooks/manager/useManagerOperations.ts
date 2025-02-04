@@ -3,23 +3,25 @@ import { supabase } from "@/integrations/supabase/client";
 import { TeamMember, ProjectWithAssignments } from "@/types/manager";
 import { useToast } from "@/hooks/use-toast";
 
-interface ProjectResponse {
+interface ProjectAssignment {
+  id: string;
+  project_id: string;
+  staff_id: string;
+  profiles?: {
+    id: string;
+    full_name: string | null;
+  } | null;
+}
+
+interface Project {
   id: string;
   title: string;
-  description: string;
-  status: string;
-  start_date: string;
-  end_date: string;
+  description: string | null;
+  status: string | null;
+  start_date: string | null;
+  end_date: string | null;
   department_id: string;
-  project_assignments: Array<{
-    id: string;
-    project_id: string;
-    staff_id: string;
-    profiles?: {
-      id: string;
-      full_name: string;
-    };
-  }>;
+  project_assignments?: ProjectAssignment[];
 }
 
 export const useManagerOperations = (departmentId: string) => {
@@ -50,7 +52,9 @@ export const useManagerOperations = (departmentId: string) => {
         .select(`
           *,
           project_assignments (
-            *,
+            id,
+            project_id,
+            staff_id,
             profiles (
               id,
               full_name
@@ -61,7 +65,7 @@ export const useManagerOperations = (departmentId: string) => {
 
       if (error) throw error;
       
-      return (data || []).map((project) => ({
+      return (data || []).map((project: Project) => ({
         ...project,
         project_assignments: project.project_assignments?.map(assignment => ({
           id: assignment.id,
