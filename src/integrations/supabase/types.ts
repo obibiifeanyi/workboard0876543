@@ -9,262 +9,137 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      ai_knowledge_base: {
+      ai_documents: {
         Row: {
-          category: string | null
+          analysis: string | null
           content: string
-          created_at: string
-          created_by: string | null
-          id: string
-          tags: string[] | null
-          title: string
-          updated_at: string
-        }
-        Insert: {
-          category?: string | null
-          content: string
-          created_at?: string
-          created_by?: string | null
-          id?: string
-          tags?: string[] | null
-          title: string
-          updated_at?: string
-        }
-        Update: {
-          category?: string | null
-          content?: string
-          created_at?: string
-          created_by?: string | null
-          id?: string
-          tags?: string[] | null
-          title?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "ai_knowledge_base_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      ai_results: {
-        Row: {
-          created_at: string
-          created_by: string | null
-          id: string
-          model_used: string
-          query_text: string
-          result_data: Json
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          created_by?: string | null
-          id?: string
-          model_used: string
-          query_text: string
-          result_data: Json
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          created_by?: string | null
-          id?: string
-          model_used?: string
-          query_text?: string
-          result_data?: Json
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "ai_results_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      battery_inventory: {
-        Row: {
-          capacity: string
           created_at: string | null
+          document_type: string | null
+          file_path: string | null
           id: string
-          manufacturer: string
-          model_name: string
-          purchase_date: string | null
-          purchase_price: number
-          status: string | null
+          title: string
           updated_at: string | null
-          voltage: string
         }
         Insert: {
-          capacity: string
+          analysis?: string | null
+          content: string
           created_at?: string | null
+          document_type?: string | null
+          file_path?: string | null
           id?: string
-          manufacturer: string
-          model_name: string
-          purchase_date?: string | null
-          purchase_price: number
-          status?: string | null
+          title: string
           updated_at?: string | null
-          voltage: string
         }
         Update: {
-          capacity?: string
+          analysis?: string | null
+          content?: string
           created_at?: string | null
+          document_type?: string | null
+          file_path?: string | null
           id?: string
-          manufacturer?: string
-          model_name?: string
-          purchase_date?: string | null
-          purchase_price?: number
-          status?: string | null
+          title?: string
           updated_at?: string | null
-          voltage?: string
         }
         Relationships: []
       }
-      battery_sales: {
+      approval_routes: {
         Row: {
-          battery_id: string | null
-          client_id: string
-          created_at: string | null
-          created_by: string | null
-          id: string
-          sale_date: string | null
-          sale_price: number
-          updated_at: string | null
-        }
-        Insert: {
-          battery_id?: string | null
-          client_id: string
-          created_at?: string | null
-          created_by?: string | null
-          id?: string
-          sale_date?: string | null
-          sale_price: number
-          updated_at?: string | null
-        }
-        Update: {
-          battery_id?: string | null
-          client_id?: string
-          created_at?: string | null
-          created_by?: string | null
-          id?: string
-          sale_date?: string | null
-          sale_price?: number
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "battery_sales_battery_id_fkey"
-            columns: ["battery_id"]
-            isOneToOne: false
-            referencedRelation: "battery_inventory"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "battery_sales_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      ct_power_reports: {
-        Row: {
-          battery_status: string | null
+          approver_id: string | null
           comments: string | null
           created_at: string | null
-          created_by: string | null
-          diesel_level: number | null
-          generator_runtime: number | null
           id: string
-          power_reading: number | null
-          report_datetime: string | null
-          report_number: string | null
-          site_id: string | null
+          memo_id: string | null
           status: string | null
           updated_at: string | null
         }
         Insert: {
-          battery_status?: string | null
+          approver_id?: string | null
           comments?: string | null
           created_at?: string | null
-          created_by?: string | null
-          diesel_level?: number | null
-          generator_runtime?: number | null
           id?: string
-          power_reading?: number | null
-          report_datetime?: string | null
-          report_number?: string | null
-          site_id?: string | null
+          memo_id?: string | null
           status?: string | null
           updated_at?: string | null
         }
         Update: {
-          battery_status?: string | null
+          approver_id?: string | null
           comments?: string | null
           created_at?: string | null
-          created_by?: string | null
-          diesel_level?: number | null
-          generator_runtime?: number | null
           id?: string
-          power_reading?: number | null
-          report_datetime?: string | null
-          report_number?: string | null
-          site_id?: string | null
+          memo_id?: string | null
           status?: string | null
           updated_at?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "ct_power_reports_created_by_fkey"
-            columns: ["created_by"]
+            foreignKeyName: "approval_routes_memo_id_fkey"
+            columns: ["memo_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "ct_power_reports_site_id_fkey"
-            columns: ["site_id"]
-            isOneToOne: false
-            referencedRelation: "telecom_sites"
+            referencedRelation: "reports"
             referencedColumns: ["id"]
           },
         ]
       }
+      cell_sites: {
+        Row: {
+          created_at: string | null
+          id: string
+          latitude: number | null
+          location: string
+          longitude: number | null
+          name: string
+          site_id: string
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          latitude?: number | null
+          location: string
+          longitude?: number | null
+          name: string
+          site_id: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          latitude?: number | null
+          location?: string
+          longitude?: number | null
+          name?: string
+          site_id?: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       departments: {
         Row: {
-          created_at: string
+          created_at: string | null
           description: string | null
-          employee_count: number | null
           id: string
           manager_id: string | null
           name: string
-          updated_at: string
+          updated_at: string | null
         }
         Insert: {
-          created_at?: string
+          created_at?: string | null
           description?: string | null
-          employee_count?: number | null
           id?: string
           manager_id?: string | null
           name: string
-          updated_at?: string
+          updated_at?: string | null
         }
         Update: {
-          created_at?: string
+          created_at?: string | null
           description?: string | null
-          employee_count?: number | null
           id?: string
           manager_id?: string | null
           name?: string
-          updated_at?: string
+          updated_at?: string | null
         }
         Relationships: [
           {
@@ -276,228 +151,54 @@ export type Database = {
           },
         ]
       }
-      document_archive: {
+      documents: {
         Row: {
-          created_at: string
+          access_level: string | null
+          created_at: string | null
           department_id: string | null
           description: string | null
-          file_path: string
-          file_size: number
-          file_type: string
+          file_type: string | null
+          file_url: string | null
           id: string
-          is_archived: boolean
-          tags: string[] | null
           title: string
-          updated_at: string
-          uploaded_by: string
+          updated_at: string | null
+          uploaded_by: string | null
         }
         Insert: {
-          created_at?: string
+          access_level?: string | null
+          created_at?: string | null
           department_id?: string | null
           description?: string | null
-          file_path: string
-          file_size: number
-          file_type: string
+          file_type?: string | null
+          file_url?: string | null
           id?: string
-          is_archived?: boolean
-          tags?: string[] | null
           title: string
-          updated_at?: string
-          uploaded_by: string
+          updated_at?: string | null
+          uploaded_by?: string | null
         }
         Update: {
-          created_at?: string
+          access_level?: string | null
+          created_at?: string | null
           department_id?: string | null
           description?: string | null
-          file_path?: string
-          file_size?: number
-          file_type?: string
+          file_type?: string | null
+          file_url?: string | null
           id?: string
-          is_archived?: boolean
-          tags?: string[] | null
           title?: string
-          updated_at?: string
-          uploaded_by?: string
+          updated_at?: string | null
+          uploaded_by?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "document_archive_department_id_fkey"
+            foreignKeyName: "documents_department_id_fkey"
             columns: ["department_id"]
             isOneToOne: false
             referencedRelation: "departments"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "document_archive_uploaded_by_fkey"
+            foreignKeyName: "documents_uploaded_by_fkey"
             columns: ["uploaded_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      invoices: {
-        Row: {
-          amount: number
-          client_name: string
-          created_at: string
-          created_by: string | null
-          due_date: string | null
-          id: string
-          invoice_number: string | null
-          items: Json
-          status: string | null
-          updated_at: string
-        }
-        Insert: {
-          amount: number
-          client_name: string
-          created_at?: string
-          created_by?: string | null
-          due_date?: string | null
-          id?: string
-          invoice_number?: string | null
-          items: Json
-          status?: string | null
-          updated_at?: string
-        }
-        Update: {
-          amount?: number
-          client_name?: string
-          created_at?: string
-          created_by?: string | null
-          due_date?: string | null
-          id?: string
-          invoice_number?: string | null
-          items?: Json
-          status?: string | null
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "invoices_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      meeting_attendees: {
-        Row: {
-          meeting_id: string
-          status: string | null
-          user_id: string
-        }
-        Insert: {
-          meeting_id: string
-          status?: string | null
-          user_id: string
-        }
-        Update: {
-          meeting_id?: string
-          status?: string | null
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "meeting_attendees_meeting_id_fkey"
-            columns: ["meeting_id"]
-            isOneToOne: false
-            referencedRelation: "meetings"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "meeting_attendees_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      meetings: {
-        Row: {
-          created_at: string
-          created_by: string | null
-          description: string | null
-          end_time: string
-          id: string
-          location: string | null
-          meeting_type: string | null
-          start_time: string
-          title: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          created_by?: string | null
-          description?: string | null
-          end_time: string
-          id?: string
-          location?: string | null
-          meeting_type?: string | null
-          start_time: string
-          title: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          created_by?: string | null
-          description?: string | null
-          end_time?: string
-          id?: string
-          location?: string | null
-          meeting_type?: string | null
-          start_time?: string
-          title?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "meetings_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      memos: {
-        Row: {
-          content: string
-          created_at: string
-          created_by: string | null
-          department: string | null
-          id: string
-          memo_number: string | null
-          title: string
-          updated_at: string
-        }
-        Insert: {
-          content: string
-          created_at?: string
-          created_by?: string | null
-          department?: string | null
-          id?: string
-          memo_number?: string | null
-          title: string
-          updated_at?: string
-        }
-        Update: {
-          content?: string
-          created_at?: string
-          created_by?: string | null
-          department?: string | null
-          id?: string
-          memo_number?: string | null
-          title?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "memos_created_by_fkey"
-            columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -506,125 +207,74 @@ export type Database = {
       }
       notifications: {
         Row: {
-          created_at: string
+          content: string
+          created_at: string | null
           id: string
-          link: string | null
-          message: string
           read: boolean | null
+          recipient_id: string | null
           title: string
           type: string
-          user_id: string
+          updated_at: string | null
         }
         Insert: {
-          created_at?: string
+          content: string
+          created_at?: string | null
           id?: string
-          link?: string | null
-          message: string
           read?: boolean | null
+          recipient_id?: string | null
           title: string
           type: string
-          user_id: string
+          updated_at?: string | null
         }
         Update: {
-          created_at?: string
+          content?: string
+          created_at?: string | null
           id?: string
-          link?: string | null
-          message?: string
           read?: boolean | null
+          recipient_id?: string | null
           title?: string
           type?: string
-          user_id?: string
+          updated_at?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "notifications_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       profiles: {
         Row: {
           avatar_url: string | null
-          created_at: string
-          department: string | null
+          created_at: string | null
+          department_id: string | null
+          email: string
           full_name: string | null
           id: string
-          role: string | null
-          updated_at: string
+          role: string
+          status: string | null
+          updated_at: string | null
         }
         Insert: {
           avatar_url?: string | null
-          created_at?: string
-          department?: string | null
+          created_at?: string | null
+          department_id?: string | null
+          email: string
           full_name?: string | null
           id: string
-          role?: string | null
-          updated_at?: string
+          role: string
+          status?: string | null
+          updated_at?: string | null
         }
         Update: {
           avatar_url?: string | null
-          created_at?: string
-          department?: string | null
+          created_at?: string | null
+          department_id?: string | null
+          email?: string
           full_name?: string | null
           id?: string
-          role?: string | null
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      project_assignments: {
-        Row: {
-          assigned_to: string
-          created_at: string
-          department_id: string
-          description: string | null
-          end_date: string | null
-          id: string
-          priority: string
-          project_name: string
-          start_date: string
-          status: string
-          updated_at: string
-        }
-        Insert: {
-          assigned_to: string
-          created_at?: string
-          department_id: string
-          description?: string | null
-          end_date?: string | null
-          id?: string
-          priority?: string
-          project_name: string
-          start_date: string
-          status?: string
-          updated_at?: string
-        }
-        Update: {
-          assigned_to?: string
-          created_at?: string
-          department_id?: string
-          description?: string | null
-          end_date?: string | null
-          id?: string
-          priority?: string
-          project_name?: string
-          start_date?: string
-          status?: string
-          updated_at?: string
+          role?: string
+          status?: string | null
+          updated_at?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "project_assignments_assigned_to_fkey"
-            columns: ["assigned_to"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "project_assignments_department_id_fkey"
+            foreignKeyName: "fk_department"
             columns: ["department_id"]
             isOneToOne: false
             referencedRelation: "departments"
@@ -632,233 +282,225 @@ export type Database = {
           },
         ]
       }
+      project_assignments: {
+        Row: {
+          created_at: string | null
+          id: string
+          project_id: string | null
+          staff_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          project_id?: string | null
+          staff_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          project_id?: string | null
+          staff_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_assignments_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      projects: {
+        Row: {
+          budget: number | null
+          client_name: string | null
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          end_date: string | null
+          id: string
+          location: string | null
+          start_date: string | null
+          status: string | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          budget?: number | null
+          client_name?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          location?: string | null
+          start_date?: string | null
+          status?: string | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          budget?: number | null
+          client_name?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          location?: string | null
+          start_date?: string | null
+          status?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       reports: {
         Row: {
-          ai_analysis: Json | null
-          analysis_status: string | null
-          content: Json
-          created_at: string
+          content: string
+          created_at: string | null
           created_by: string | null
+          data: Json | null
           id: string
           status: string | null
-          submitted_at: string
           title: string
           type: string
-          updated_at: string
+          updated_at: string | null
         }
         Insert: {
-          ai_analysis?: Json | null
-          analysis_status?: string | null
-          content: Json
-          created_at?: string
+          content: string
+          created_at?: string | null
           created_by?: string | null
+          data?: Json | null
           id?: string
           status?: string | null
-          submitted_at?: string
           title: string
           type: string
-          updated_at?: string
+          updated_at?: string | null
         }
         Update: {
-          ai_analysis?: Json | null
-          analysis_status?: string | null
-          content?: Json
-          created_at?: string
+          content?: string
+          created_at?: string | null
           created_by?: string | null
+          data?: Json | null
           id?: string
           status?: string | null
-          submitted_at?: string
           title?: string
           type?: string
-          updated_at?: string
+          updated_at?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "reports_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
-      site_assignments: {
+      site_reports: {
         Row: {
-          assigned_at: string | null
+          comments: string | null
+          created_at: string | null
+          diesel_level: number | null
+          generator_runtime: number | null
           id: string
-          role: string
+          reporter_id: string | null
           site_id: string | null
-          user_id: string | null
+          status: string | null
+          updated_at: string | null
         }
         Insert: {
-          assigned_at?: string | null
+          comments?: string | null
+          created_at?: string | null
+          diesel_level?: number | null
+          generator_runtime?: number | null
           id?: string
-          role: string
+          reporter_id?: string | null
           site_id?: string | null
-          user_id?: string | null
+          status?: string | null
+          updated_at?: string | null
         }
         Update: {
-          assigned_at?: string | null
+          comments?: string | null
+          created_at?: string | null
+          diesel_level?: number | null
+          generator_runtime?: number | null
           id?: string
-          role?: string
+          reporter_id?: string | null
           site_id?: string | null
-          user_id?: string | null
+          status?: string | null
+          updated_at?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "site_assignments_site_id_fkey"
+            foreignKeyName: "site_reports_site_id_fkey"
             columns: ["site_id"]
             isOneToOne: false
-            referencedRelation: "telecom_sites"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "site_assignments_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      system_activities: {
-        Row: {
-          created_at: string
-          description: string
-          id: string
-          metadata: Json | null
-          type: string
-          user_id: string | null
-        }
-        Insert: {
-          created_at?: string
-          description: string
-          id?: string
-          metadata?: Json | null
-          type: string
-          user_id?: string | null
-        }
-        Update: {
-          created_at?: string
-          description?: string
-          id?: string
-          metadata?: Json | null
-          type?: string
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "system_activities_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "cell_sites"
             referencedColumns: ["id"]
           },
         ]
       }
       tasks: {
         Row: {
+          assigned_by: string | null
           assigned_to: string | null
-          created_at: string
-          created_by: string | null
+          created_at: string | null
           description: string | null
           due_date: string | null
           id: string
-          priority: string | null
           status: string | null
           title: string
-          updated_at: string
-        }
-        Insert: {
-          assigned_to?: string | null
-          created_at?: string
-          created_by?: string | null
-          description?: string | null
-          due_date?: string | null
-          id?: string
-          priority?: string | null
-          status?: string | null
-          title: string
-          updated_at?: string
-        }
-        Update: {
-          assigned_to?: string | null
-          created_at?: string
-          created_by?: string | null
-          description?: string | null
-          due_date?: string | null
-          id?: string
-          priority?: string | null
-          status?: string | null
-          title?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "tasks_assigned_to_fkey"
-            columns: ["assigned_to"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "tasks_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      telecom_sites: {
-        Row: {
-          address: string | null
-          client_list: string[] | null
-          created_at: string | null
-          id: string
-          location: string
-          manager_id: string | null
-          name: string
-          region: string | null
-          site_number: string | null
-          status: string | null
           updated_at: string | null
         }
         Insert: {
-          address?: string | null
-          client_list?: string[] | null
+          assigned_by?: string | null
+          assigned_to?: string | null
           created_at?: string | null
+          description?: string | null
+          due_date?: string | null
           id?: string
-          location: string
-          manager_id?: string | null
-          name: string
-          region?: string | null
-          site_number?: string | null
           status?: string | null
+          title: string
           updated_at?: string | null
         }
         Update: {
-          address?: string | null
-          client_list?: string[] | null
+          assigned_by?: string | null
+          assigned_to?: string | null
           created_at?: string | null
+          description?: string | null
+          due_date?: string | null
           id?: string
-          location?: string
-          manager_id?: string | null
-          name?: string
-          region?: string | null
-          site_number?: string | null
           status?: string | null
+          title?: string
           updated_at?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "telecom_sites_manager_id_fkey"
-            columns: ["manager_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
+      }
+      time_logs: {
+        Row: {
+          created_at: string | null
+          end_time: string | null
+          id: string
+          start_time: string
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          end_time?: string | null
+          id?: string
+          start_time: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          end_time?: string | null
+          id?: string
+          start_time?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
       }
     }
     Views: {
