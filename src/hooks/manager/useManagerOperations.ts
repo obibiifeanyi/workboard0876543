@@ -12,7 +12,12 @@ export const useManagerOperations = (departmentId: string) => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("profiles")
-        .select("*, departments!inner(name)")
+        .select(`
+          *,
+          departments (
+            name
+          )
+        `)
         .eq("department_id", departmentId);
 
       if (error) throw error;
@@ -28,9 +33,20 @@ export const useManagerOperations = (departmentId: string) => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("projects")
-        .select(
-          "id, title, description, status, start_date, end_date, project_assignments(staff_id, profiles(full_name))"
-        )
+        .select(`
+          id,
+          title,
+          description,
+          status,
+          start_date,
+          end_date,
+          project_assignments (
+            staff_id,
+            profiles (
+              full_name
+            )
+          )
+        `)
         .eq("department_id", departmentId);
 
       if (error) throw error;
@@ -67,19 +83,9 @@ export const useManagerOperations = (departmentId: string) => {
       id: string;
       data: Partial<ProjectWithAssignments>;
     }) => {
-      const updateData = {
-        title: data.title,
-        description: data.description,
-        department_id: data.department_id,
-        location: data.location,
-        start_date: data.start_date,
-        end_date: data.end_date,
-        status: data.status,
-      };
-
       const { error } = await supabase
         .from("projects")
-        .update(updateData)
+        .update(data)
         .eq("id", id);
 
       if (error) throw error;
