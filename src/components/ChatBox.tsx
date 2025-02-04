@@ -6,6 +6,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Send, Minimize2, Maximize2, Brain, Loader } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Progress } from "@/components/ui/progress";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Message {
   content: string;
@@ -34,7 +35,7 @@ export const ChatBox = () => {
     setIsThinking(true);
 
     try {
-      // Simulate AI learning progress
+      // Start progress animation
       const interval = setInterval(() => {
         setLearningProgress(prev => {
           if (prev >= 100) {
@@ -45,30 +46,45 @@ export const ChatBox = () => {
         });
       }, 300);
 
-      // Simulate AI response
-      setTimeout(() => {
-        const aiResponse = {
-          content: "I've analyzed your request and here's my response based on the available data...",
-          isUser: false,
-          timestamp: new Date(),
-        };
-        setMessages(prev => [...prev, aiResponse]);
-        setIsThinking(false);
-        setLearningProgress(0);
-        clearInterval(interval);
+      // Call the analyze-document function
+      const { data, error } = await supabase.functions.invoke('analyze-document', {
+        body: { content: input, type: 'chat_message' }
+      });
 
-        toast({
-          title: "AI Response Ready",
-          description: "The AI has processed your request",
-          duration: 3000,
-        });
-      }, 2000);
+      if (error) throw error;
+
+      const aiResponse = {
+        content: data.result,
+        isUser: false,
+        timestamp: new Date(),
+      };
+
+      setMessages(prev => [...prev, aiResponse]);
+      
+      toast({
+        title: "AI Response Ready",
+        description: "The AI has processed your request",
+        duration: 3000,
+      });
+
+      // Store the interaction in system activities
+      await supabase.from('system_activities').insert({
+        type: 'ai_chat',
+        description: 'AI Chat interaction',
+        metadata: {
+          user_message: input,
+          ai_response: data.result
+        }
+      });
+
     } catch (error) {
+      console.error('Error:', error);
       toast({
         title: "Error",
         description: "Failed to process your request. Please try again.",
         variant: "destructive",
       });
+    } finally {
       setIsThinking(false);
       setLearningProgress(0);
     }
