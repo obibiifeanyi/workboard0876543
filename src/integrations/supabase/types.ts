@@ -9,6 +9,62 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      accounts_invoices: {
+        Row: {
+          amount: number
+          created_at: string
+          created_by: string | null
+          department_id: string | null
+          description: string | null
+          due_date: string
+          id: string
+          invoice_number: string
+          paid_date: string | null
+          payment_reference: string | null
+          payment_status: string | null
+          updated_at: string
+          vendor_name: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          created_by?: string | null
+          department_id?: string | null
+          description?: string | null
+          due_date: string
+          id?: string
+          invoice_number: string
+          paid_date?: string | null
+          payment_reference?: string | null
+          payment_status?: string | null
+          updated_at?: string
+          vendor_name: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          created_by?: string | null
+          department_id?: string | null
+          description?: string | null
+          due_date?: string
+          id?: string
+          invoice_number?: string
+          paid_date?: string | null
+          payment_reference?: string | null
+          payment_status?: string | null
+          updated_at?: string
+          vendor_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "accounts_invoices_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ai_documents: {
         Row: {
           analysis: string | null
@@ -76,6 +132,62 @@ export type Database = {
             columns: ["memo_id"]
             isOneToOne: false
             referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      assets_inventory: {
+        Row: {
+          asset_name: string
+          asset_type: string
+          assigned_to: string | null
+          condition: string | null
+          created_at: string
+          department_id: string | null
+          id: string
+          notes: string | null
+          purchase_cost: number | null
+          purchase_date: string | null
+          serial_number: string | null
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          asset_name: string
+          asset_type: string
+          assigned_to?: string | null
+          condition?: string | null
+          created_at?: string
+          department_id?: string | null
+          id?: string
+          notes?: string | null
+          purchase_cost?: number | null
+          purchase_date?: string | null
+          serial_number?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          asset_name?: string
+          asset_type?: string
+          assigned_to?: string | null
+          condition?: string | null
+          created_at?: string
+          department_id?: string | null
+          id?: string
+          notes?: string | null
+          purchase_cost?: number | null
+          purchase_date?: string | null
+          serial_number?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assets_inventory_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
             referencedColumns: ["id"]
           },
         ]
