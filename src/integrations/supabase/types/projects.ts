@@ -43,25 +43,15 @@ export interface ProjectTypes {
       updated_at?: string;
     };
   };
-  project_assignments: {
-    Row: {
-      id: string;
-      project_id: string | null;
-      staff_id: string | null;
-      created_at: string;
-      updated_at: string;
-    };
-    Insert: {
-      id?: string;
-      project_id?: string | null;
-      staff_id?: string | null;
-      created_at?: string;
-      updated_at?: string;
-    };
-    Update: {
-      project_id?: string | null;
-      staff_id?: string | null;
-      updated_at?: string;
-    };
-  };
 }
+
+export type ProjectAssignmentInsert = {
+  project_name: string;
+  description?: string;
+  assigned_to: string;
+  department_id: string;
+  start_date: string;
+  end_date?: string;
+  status?: string;
+  priority?: string;
+};
