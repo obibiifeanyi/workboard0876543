@@ -33,6 +33,7 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
     try {
       if (!email || !password) {
         setError("Please enter both email and password");
+        setLoading(false);
         return;
       }
 
@@ -43,18 +44,30 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
       }
 
       const { data: { user }, error: authError } = await supabase.auth.signInWithPassword({
-        email,
-        password
+        email: email.trim(),
+        password: password.trim()
       });
 
-      if (authError) throw authError;
+      if (authError) {
+        if (authError.message === "Invalid login credentials") {
+          setError("Invalid email or password. Please try again.");
+        } else {
+          setError(authError.message);
+        }
+        throw authError;
+      }
 
       if (user) {
-        const { data: profile } = await supabase
+        const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('role, account_type')
           .eq('id', user.id)
           .single();
+
+        if (profileError) {
+          setError("Error fetching user profile");
+          throw profileError;
+        }
 
         // Store role and account type
         localStorage.setItem('userRole', profile?.role || 'staff');

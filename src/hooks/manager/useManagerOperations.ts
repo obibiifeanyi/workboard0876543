@@ -45,7 +45,7 @@ export const useManagerOperations = (departmentId: string) => {
             id,
             project_id,
             staff_id,
-            profiles (
+            profiles:staff_id (
               full_name
             )
           )
@@ -55,15 +55,19 @@ export const useManagerOperations = (departmentId: string) => {
       if (error) throw error;
       
       // Transform the data to match ProjectWithAssignments type
-      return (data || []).map(project => ({
+      const transformedData = (data || []).map(project => ({
         ...project,
         project_assignments: project.project_assignments?.map(assignment => ({
           id: assignment.id,
           project_id: assignment.project_id,
           staff_id: assignment.staff_id,
-          profiles: assignment.profiles
+          profiles: assignment.profiles ? {
+            full_name: assignment.profiles.full_name
+          } : undefined
         })) || []
-      })) as ProjectWithAssignments[];
+      }));
+
+      return transformedData as ProjectWithAssignments[];
     },
   });
 
