@@ -29,11 +29,23 @@ export const useManagerOperations = (departmentId: string) => {
       const { data, error } = await supabase
         .from("projects")
         .select(`
-          *,
-          project_assignments!inner (
+          id,
+          title,
+          description,
+          client_name,
+          budget,
+          location,
+          start_date,
+          end_date,
+          status,
+          created_by,
+          created_at,
+          updated_at,
+          project_assignments (
             id,
+            project_id,
             staff_id,
-            profiles!inner (
+            profiles (
               full_name
             )
           )
@@ -41,7 +53,17 @@ export const useManagerOperations = (departmentId: string) => {
         .eq("department_id", departmentId);
 
       if (error) throw error;
-      return data as ProjectWithAssignments[];
+      
+      // Transform the data to match ProjectWithAssignments type
+      return (data || []).map(project => ({
+        ...project,
+        project_assignments: project.project_assignments?.map(assignment => ({
+          id: assignment.id,
+          project_id: assignment.project_id,
+          staff_id: assignment.staff_id,
+          profiles: assignment.profiles
+        })) || []
+      })) as ProjectWithAssignments[];
     },
   });
 
