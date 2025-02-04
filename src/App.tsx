@@ -1,4 +1,3 @@
-
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -32,7 +31,7 @@ function App() {
           
           {/* Admin Routes */}
           <Route
-            path="/admin"
+            path="/admin/*"
             element={
               <RoleBasedRoute
                 element={<AdminDashboard />}
