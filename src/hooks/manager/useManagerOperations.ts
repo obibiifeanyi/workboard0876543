@@ -36,7 +36,7 @@ export const useManagerOperations = () => {
           .from("projects")
           .select(`
             *,
-            project_assignments!inner(
+            project_assignments(
               id,
               staff_id,
               profiles!project_assignments_staff_id_fkey(full_name)
@@ -51,9 +51,18 @@ export const useManagerOperations = () => {
   };
 
   const createProject = useMutation({
-    mutationFn: async (projectData: ProjectAssignmentInsert) => {
+    mutationFn: async (projectData: {
+      title: string;
+      description: string;
+      client_name?: string;
+      budget?: number;
+      location?: string;
+      start_date?: string;
+      end_date?: string;
+      status?: string;
+    }) => {
       const { error } = await supabase
-        .from("project_assignments")
+        .from("projects")
         .insert(projectData);
 
       if (error) throw error;
@@ -70,16 +79,18 @@ export const useManagerOperations = () => {
   const updateProject = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Partial<ProjectWithAssignments> }) => {
       const updateData = {
-        project_name: data.project_name,
+        title: data.title,
         description: data.description,
-        status: data.status,
-        priority: data.priority,
-        assigned_to: data.assigned_to,
+        client_name: data.client_name,
+        budget: data.budget,
+        location: data.location,
+        start_date: data.start_date,
         end_date: data.end_date,
+        status: data.status
       };
 
       const { error } = await supabase
-        .from("project_assignments")
+        .from("projects")
         .update(updateData)
         .eq("id", id);
 

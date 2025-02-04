@@ -18,6 +18,9 @@ export interface ProjectWithAssignments {
     id: string;
     project_id: string | null;
     staff_id: string | null;
+    profiles?: {
+      full_name: string;
+    };
     created_at: string | null;
     updated_at: string | null;
   }>;
@@ -26,5 +29,3 @@ export interface ProjectWithAssignments {
 export interface TeamMember extends ProfileWithDetails {
   tasks?: TaskWithAssignee[];
 }
-
-export type ProjectAssignmentInsert = Database["public"]["Tables"]["project_assignments"]["Insert"];
