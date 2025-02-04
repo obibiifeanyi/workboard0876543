@@ -71,29 +71,36 @@ export const ClockInButton = () => {
           />
         ))}
         <div className="logo">
-          <Button
-            onClick={handleClockIn}
-            disabled={loading}
-            className="w-40 h-40 rounded-full 
-              bg-gradient-to-br from-[#ff1c04] via-[#ff1c04]/90 to-[#ff1c04]/80
-              hover:bg-[#ff1c04]/90 text-white
-              shadow-[0_0_30px_rgba(255,28,4,0.3)]
-              hover:shadow-[0_0_35px_rgba(255,28,4,0.4)]
-              active:shadow-[0_0_25px_rgba(255,28,4,0.3)]
-              active:transform active:scale-95
-              transition-all duration-300 ease-in-out
-              border-2 border-[#ff1c04]/20
-              backdrop-blur-sm
-              relative
-              flex flex-col items-center justify-center gap-2
-              group
-              z-10"
-          >
-            <Timer className="h-12 w-12 group-hover:scale-110 transition-transform duration-300" />
-            <span className="font-semibold tracking-wide text-lg">
-              {loading ? "Processing..." : "Clock In"}
-            </span>
-          </Button>
+          <div className="relative w-48 h-48 rounded-full bg-white p-2 shadow-lg">
+            <img 
+              src="/lovable-uploads/491c7e61-a4fb-46a3-a002-904b84354e48.png"
+              alt="CT Communication Towers Logo"
+              className="w-24 h-24 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
+            />
+            <Button
+              onClick={handleClockIn}
+              disabled={loading}
+              className="w-full h-full rounded-full 
+                bg-gradient-to-br from-[#ff1c04] via-[#ff1c04]/90 to-[#ff1c04]/80
+                hover:bg-[#ff1c04]/90 text-white
+                shadow-[0_0_30px_rgba(255,28,4,0.3)]
+                hover:shadow-[0_0_35px_rgba(255,28,4,0.4)]
+                active:shadow-[0_0_25px_rgba(255,28,4,0.3)]
+                active:transform active:scale-95
+                transition-all duration-300 ease-in-out
+                border-2 border-[#ff1c04]/20
+                backdrop-blur-sm
+                relative
+                flex flex-col items-center justify-center gap-2
+                group
+                z-10"
+            >
+              <Timer className="h-12 w-12 group-hover:scale-110 transition-transform duration-300" />
+              <span className="font-semibold tracking-wide text-lg">
+                {loading ? "Processing..." : "Clock In"}
+              </span>
+            </Button>
+          </div>
         </div>
       </div>
     </div>
