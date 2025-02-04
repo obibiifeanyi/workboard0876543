@@ -1,10 +1,14 @@
 import React from 'react';
 
-const Loader = () => {
+interface LoaderProps {
+  className?: string;
+}
+
+const Loader: React.FC<LoaderProps> = ({ className = "" }) => {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
+    <div className={className}>
       <main>
-        <svg height="128px" width="128px" viewBox="0 0 128 128" className="pl1 w-32 h-32">
+        <svg height="128px" width="128px" viewBox="0 0 128 128" className="pl1">
           <defs>
             <linearGradient y2={1} x2={1} y1={0} x1={0} id="pl-grad">
               <stop stopColor="#000" offset="0%" />

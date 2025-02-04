@@ -82,7 +82,7 @@ export const useManagerOperations = (departmentId: string) => {
 
       if (error) throw error;
       
-      return (data || []).map((project: Project) => ({
+      return (data as Project[]).map((project) => ({
         ...project,
         project_assignments: project.project_assignments?.map(assignment => ({
           id: assignment.id,
