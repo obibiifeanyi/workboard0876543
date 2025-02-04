@@ -60,22 +60,28 @@ export const ClockInButton = () => {
             key={index}
             className="box"
             style={{
-              '--size': '300px',
+              '--size': '250px',
               '--duration': '3s',
-              '--background': `linear-gradient(0deg, rgba(255, 28, 4, 0.1) 0%, rgba(255, 28, 4, 0.2) 100%)`,
+              '--background': `linear-gradient(0deg, rgba(255, 28, 4, ${(6-index) * 0.05}) 0%, rgba(255, 28, 4, ${(6-index) * 0.1}) 100%)`,
               inset: `${(index - 1) * 10}%`,
               zIndex: 99 - index,
               borderColor: `rgba(255, 28, 4, ${1 - (index - 1) * 0.2})`,
-              animationDelay: `${(index - 1) * 0.2}s`
+              animationDelay: `${(index - 1) * 0.2}s`,
+              position: 'absolute',
+              borderRadius: '50%',
+              borderTop: '1px solid',
+              boxShadow: 'rgba(255, 28, 4, 0.3) 0px 10px 10px -0px',
+              backdropFilter: 'blur(5px)',
+              animation: 'ripple var(--duration) infinite ease-in-out'
             } as React.CSSProperties}
           />
         ))}
-        <div className="logo">
-          <div className="relative w-48 h-48 rounded-full bg-white p-2 shadow-lg">
+        <div className="logo absolute inset-0 grid place-content-center" style={{ padding: '25%', zIndex: 100 }}>
+          <div className="relative w-32 h-32 rounded-full bg-white p-2 shadow-lg">
             <img 
               src="/lovable-uploads/491c7e61-a4fb-46a3-a002-904b84354e48.png"
               alt="CT Communication Towers Logo"
-              className="w-24 h-24 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
+              className="w-20 h-20 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
             />
             <Button
               onClick={handleClockIn}
@@ -95,8 +101,8 @@ export const ClockInButton = () => {
                 group
                 z-10"
             >
-              <Timer className="h-12 w-12 group-hover:scale-110 transition-transform duration-300" />
-              <span className="font-semibold tracking-wide text-lg">
+              <Timer className="h-8 w-8 group-hover:scale-110 transition-transform duration-300" />
+              <span className="font-semibold tracking-wide text-sm">
                 {loading ? "Processing..." : "Clock In"}
               </span>
             </Button>
