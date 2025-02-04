@@ -29,18 +29,7 @@ export const useManagerOperations = (departmentId: string) => {
       const { data, error } = await supabase
         .from("projects")
         .select(`
-          id,
-          title,
-          description,
-          client_name,
-          budget,
-          location,
-          start_date,
-          end_date,
-          status,
-          created_by,
-          created_at,
-          updated_at,
+          *,
           project_assignments (
             id,
             project_id,
