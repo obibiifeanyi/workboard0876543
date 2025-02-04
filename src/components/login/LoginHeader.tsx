@@ -2,7 +2,7 @@ import React from "react";
 
 export const LoginHeader = () => {
   return (
-    <div className="text-center mb-6">
+    <div className="text-left mb-6">
       <h1 className="text-2xl font-bold text-foreground">
         AI Work-Board
       </h1>
