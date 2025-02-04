@@ -1,4 +1,3 @@
-
 export interface DocumentAnalysis {
   id: string;
   file_path: string;
@@ -6,13 +5,13 @@ export interface DocumentAnalysis {
   file_type: string;
   file_size: number;
   analysis_status: 'pending' | 'completed' | 'error';
-  analysis_result?: {
+  analysis_result: {
     summary: string;
     keyPoints: string[];
     suggestedActions: string[];
     categories?: string[];
     risks?: string[];
-  };
+  } | null;
   created_by: string | null;
   created_at: string;
   updated_at: string;

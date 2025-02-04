@@ -36,15 +36,14 @@ export const InvoiceManagement = () => {
       items: any[];
     }) => {
       const { data, error } = await supabase
-        .from('invoices')
+        .from('accounts_invoices')
         .insert({
-          memo_id: formData.memo_id,
-          amount: formData.amount,
-          client_name: formData.client_name,
-          items: formData.items,
-          status: 'pending',
           invoice_number: `INV-${Date.now()}`,
-          created_at: new Date().toISOString(),
+          vendor_name: formData.client_name,
+          amount: formData.amount,
+          due_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+          description: `Invoice for memo ${formData.memo_id}`,
+          created_by: (await supabase.auth.getUser()).data.user?.id
         })
         .select()
         .single();
@@ -53,7 +52,7 @@ export const InvoiceManagement = () => {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['invoices'] });
+      queryClient.invalidateQueries({ queryKey: ['accounts_invoices'] });
       toast({
         title: "Success",
         description: "Invoice created successfully",

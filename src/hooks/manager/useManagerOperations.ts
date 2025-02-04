@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import type { ProjectWithAssignments, TeamMember, ProjectAssignmentInsert } from "@/types/supabase/manager";
+import type { ProjectWithAssignments, TeamMember } from "@/types/supabase/manager";
 import { useToast } from "@/hooks/use-toast";
 
 export const useManagerOperations = () => {
@@ -15,12 +15,15 @@ export const useManagerOperations = () => {
           .from("profiles")
           .select(`
             *,
-            tasks (*)
+            departments!inner (name)
           `)
-          .eq("department", departmentId);
+          .eq("department_id", departmentId);
 
         if (error) throw error;
-        return data as TeamMember[];
+        return data.map(profile => ({
+          ...profile,
+          department: profile.departments.name
+        })) as TeamMember[];
       },
     });
   };
@@ -30,10 +33,14 @@ export const useManagerOperations = () => {
       queryKey: ["projects", departmentId],
       queryFn: async () => {
         const { data, error } = await supabase
-          .from("project_assignments")
+          .from("projects")
           .select(`
             *,
-            profiles (*)
+            project_assignments!inner (
+              id,
+              staff_id,
+              profiles:staff_id (full_name)
+            )
           `)
           .eq("department_id", departmentId);
 

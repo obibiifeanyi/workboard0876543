@@ -56,17 +56,19 @@ export const useCoreTables = () => {
       queryKey: ['project_assignments'],
       queryFn: async () => {
         const { data, error } = await supabase
-          .from('project_assignments')
+          .from('projects')
           .select(`
             *,
-            departments (name),
-            profiles (full_name)
+            project_assignments (
+              id,
+              staff_id,
+              created_at,
+              updated_at
+            ),
+            profiles:staff_id (full_name)
           `);
         if (error) throw error;
-        return data as (ProjectAssignmentRow & {
-          departments: { name: string };
-          profiles: { full_name: string };
-        })[];
+        return data as ProjectAssignmentRow[];
       },
     });
   };
@@ -105,17 +107,14 @@ export const useCoreTables = () => {
       queryKey: ['documents'],
       queryFn: async () => {
         const { data, error } = await supabase
-          .from('document_archive')
+          .from('documents')
           .select(`
             *,
             departments (name),
-            profiles (full_name)
+            profiles:uploaded_by (full_name)
           `);
         if (error) throw error;
-        return data as (DocumentArchiveRow & {
-          departments: { name: string };
-          profiles: { full_name: string };
-        })[];
+        return data as DocumentArchiveRow[];
       },
     });
   };
