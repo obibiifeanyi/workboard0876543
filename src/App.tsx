@@ -1,3 +1,4 @@
+
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -19,6 +20,14 @@ import { AIManagementSystem } from "@/components/ai/AIManagementSystem";
 import { AIKnowledgeBase } from "@/components/ai/AIKnowledgeBase";
 import { CommunicationCenter } from "@/components/admin/CommunicationCenter";
 import { AdminDashboardModule } from "@/components/admin/dashboard/AdminDashboardModule";
+import CurrentTasks from "@/pages/staff/CurrentTasks";
+import MyTasks from "@/pages/staff/MyTasks";
+import Memos from "@/pages/staff/Memos";
+import Reports from "@/pages/staff/Reports";
+import TelecomReports from "@/pages/staff/TelecomReports";
+import BatteryReports from "@/pages/staff/BatteryReports";
+import Meetings from "@/pages/staff/Meetings";
+import StaffProfile from "@/pages/staff/StaffProfile";
 import AccountPage from "@/pages/account/AccountPage";
 
 function App() {
@@ -73,7 +82,17 @@ function App() {
                 allowedRoles={["staff", "manager", "admin"]}
               />
             }
-          />
+          >
+            <Route index element={<StaffDashboard />} />
+            <Route path="current-tasks" element={<CurrentTasks />} />
+            <Route path="my-tasks" element={<MyTasks />} />
+            <Route path="memos" element={<Memos />} />
+            <Route path="reports" element={<Reports />} />
+            <Route path="telecom-reports" element={<TelecomReports />} />
+            <Route path="battery-reports" element={<BatteryReports />} />
+            <Route path="meetings" element={<Meetings />} />
+            <Route path="profile" element={<StaffProfile />} />
+          </Route>
           
           <Route
             path="/account"
