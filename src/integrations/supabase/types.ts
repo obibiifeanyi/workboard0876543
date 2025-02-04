@@ -80,6 +80,83 @@ export type Database = {
           },
         ]
       }
+      battery_inventory: {
+        Row: {
+          capacity: string
+          created_at: string
+          id: string
+          manufacturer: string
+          model_name: string
+          purchase_date: string | null
+          purchase_price: number
+          status: string | null
+          updated_at: string
+          voltage: string
+        }
+        Insert: {
+          capacity: string
+          created_at?: string
+          id?: string
+          manufacturer: string
+          model_name: string
+          purchase_date?: string | null
+          purchase_price: number
+          status?: string | null
+          updated_at?: string
+          voltage: string
+        }
+        Update: {
+          capacity?: string
+          created_at?: string
+          id?: string
+          manufacturer?: string
+          model_name?: string
+          purchase_date?: string | null
+          purchase_price?: number
+          status?: string | null
+          updated_at?: string
+          voltage?: string
+        }
+        Relationships: []
+      }
+      battery_sales: {
+        Row: {
+          battery_id: string
+          client_id: string
+          created_at: string
+          id: string
+          sale_date: string
+          sale_price: number
+          updated_at: string
+        }
+        Insert: {
+          battery_id: string
+          client_id: string
+          created_at?: string
+          id?: string
+          sale_date?: string
+          sale_price: number
+          updated_at?: string
+        }
+        Update: {
+          battery_id?: string
+          client_id?: string
+          created_at?: string
+          id?: string
+          sale_date?: string
+          sale_price?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "battery_sales_battery_id_fkey"
+            columns: ["battery_id"]
+            isOneToOne: false
+            referencedRelation: "battery_inventory"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cell_sites: {
         Row: {
           created_at: string | null
@@ -438,6 +515,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      system_activities: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          metadata: Json | null
+          type: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          metadata?: Json | null
+          type: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          metadata?: Json | null
+          type?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
       }
       tasks: {
         Row: {
