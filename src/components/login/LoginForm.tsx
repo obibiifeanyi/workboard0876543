@@ -3,11 +3,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { AuthError, AuthApiError } from "@supabase/supabase-js";
+import { AuthError } from "@supabase/supabase-js";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { RememberMeCheckbox } from "./RememberMeCheckbox";
 import { ForgotPasswordButton } from "./ForgotPasswordButton";
 import { SubmitButton } from "./SubmitButton";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface LoginFormProps {
   onLogin: (email: string, password: string) => Promise<void>;
@@ -21,6 +22,7 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
   const [loading, setLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [accountType, setAccountType] = useState("staff");
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -40,38 +42,48 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
         localStorage.removeItem("rememberedEmail");
       }
 
-      // For testing purposes - mock different user roles based on email
-      let mockRole = 'staff'; // default role
-      if (email.includes('admin')) {
-        mockRole = 'admin';
-      } else if (email.includes('manager')) {
-        mockRole = 'manager';
-      }
-
-      // Store mock role
-      localStorage.setItem('userRole', mockRole);
-
-      // Mock successful login
-      toast({
-        title: `Welcome ${mockRole.charAt(0).toUpperCase() + mockRole.slice(1)}`,
-        description: "You have successfully logged in.",
+      const { data: { user }, error: authError } = await supabase.auth.signInWithPassword({
+        email,
+        password
       });
 
-      // Navigate based on role
-      switch (mockRole) {
-        case 'admin':
-          window.location.href = '/admin';
-          break;
-        case 'manager':
-          window.location.href = '/manager';
-          break;
-        default:
-          window.location.href = '/staff';
-      }
+      if (authError) throw authError;
 
-    } catch (error: any) {
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role, account_type')
+          .eq('id', user.id)
+          .single();
+
+        // Store role and account type
+        localStorage.setItem('userRole', profile?.role || 'staff');
+        localStorage.setItem('accountType', profile?.account_type || accountType);
+
+        toast({
+          title: "Welcome Back!",
+          description: "You have successfully logged in.",
+        });
+
+        // Navigate based on account type
+        if (profile?.account_type === 'accountant') {
+          window.location.href = '/accountant';
+        } else {
+          switch (profile?.role) {
+            case 'admin':
+              window.location.href = '/admin';
+              break;
+            case 'manager':
+              window.location.href = '/manager';
+              break;
+            default:
+              window.location.href = '/staff';
+          }
+        }
+      }
+    } catch (error) {
       console.error('Login error:', error);
-      const errorMessage = error instanceof AuthError ? error.message : error.message;
+      const errorMessage = error instanceof AuthError ? error.message : 'Failed to login';
       setError(errorMessage);
       toast({
         title: "Login Failed",
@@ -103,11 +115,25 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
         </Alert>
       )}
       <div className="space-y-2 text-left">
+        <Label htmlFor="accountType">Account Type</Label>
+        <Select value={accountType} onValueChange={setAccountType}>
+          <SelectTrigger>
+            <SelectValue placeholder="Select account type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="staff">Staff</SelectItem>
+            <SelectItem value="accountant">Accountant</SelectItem>
+            <SelectItem value="manager">Manager</SelectItem>
+            <SelectItem value="admin">Admin</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="space-y-2 text-left">
         <Label htmlFor="email">Email</Label>
         <Input
           id="email"
           type="email"
-          placeholder="Enter your email (use admin/manager/staff in email for different roles)"
+          placeholder="Enter your email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
@@ -120,7 +146,7 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
         <Input
           id="password"
           type="password"
-          placeholder="Enter any password"
+          placeholder="Enter your password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required

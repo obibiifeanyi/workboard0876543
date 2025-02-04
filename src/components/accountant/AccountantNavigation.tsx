@@ -1,5 +1,5 @@
 import { DashboardNav } from "@/components/navigation/DashboardNav";
-import { FileText, PieChart, FileCheck, Settings } from "lucide-react";
+import { FileText, PieChart, FileCheck, Settings, Package, CreditCard } from "lucide-react";
 
 export const AccountantNavigation = () => {
   const items = [
@@ -19,6 +19,18 @@ export const AccountantNavigation = () => {
       title: "Memo Approval",
       href: "/accountant/memos",
       icon: FileCheck,
+      variant: "default" as const,
+    },
+    {
+      title: "Inventory Management",
+      href: "/accountant/inventory",
+      icon: Package,
+      variant: "default" as const,
+    },
+    {
+      title: "Payment Processing",
+      href: "/accountant/payments",
+      icon: CreditCard,
       variant: "default" as const,
     },
     {

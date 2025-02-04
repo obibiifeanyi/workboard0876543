@@ -12,6 +12,9 @@ import { InvoiceManagement } from "@/components/accountant/InvoiceManagement";
 import { FinancialReports } from "@/components/accountant/FinancialReports";
 import { MemoApproval } from "@/components/accountant/MemoApproval";
 import { AccountSettings } from "@/components/accountant/AccountSettings";
+import { InventoryManagement } from "@/components/accountant/InventoryManagement";
+import { PaymentProcessing } from "@/components/accountant/PaymentProcessing";
+
 import { AdminDashboardModule } from "@/components/admin/dashboard/AdminDashboardModule";
 import { UserManagement } from "@/components/admin/UserManagement";
 import { DepartmentManagement } from "@/components/admin/DepartmentManagement";
@@ -56,6 +59,8 @@ function App() {
             <Route path="invoices" element={<InvoiceManagement />} />
             <Route path="reports" element={<FinancialReports />} />
             <Route path="memos" element={<MemoApproval />} />
+            <Route path="inventory" element={<InventoryManagement />} />
+            <Route path="payments" element={<PaymentProcessing />} />
             <Route path="settings" element={<AccountSettings />} />
           </Route>
 
@@ -124,7 +129,7 @@ function App() {
               />
             }
           />
-
+          
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
         <Toaster />
