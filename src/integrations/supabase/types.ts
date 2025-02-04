@@ -540,6 +540,9 @@ export type Database = {
       }
       profiles: {
         Row: {
+          account_type: string | null
+          accounting_permissions: Json | null
+          accounting_role: string | null
           avatar_url: string | null
           created_at: string | null
           department_id: string | null
@@ -551,6 +554,9 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          account_type?: string | null
+          accounting_permissions?: Json | null
+          accounting_role?: string | null
           avatar_url?: string | null
           created_at?: string | null
           department_id?: string | null
@@ -562,6 +568,9 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          account_type?: string | null
+          accounting_permissions?: Json | null
+          accounting_role?: string | null
           avatar_url?: string | null
           created_at?: string | null
           department_id?: string | null
