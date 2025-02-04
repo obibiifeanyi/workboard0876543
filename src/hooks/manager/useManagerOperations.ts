@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { TeamMember, ProjectWithAssignments } from "@/types/manager";
+import { TeamMember } from "@/types/manager";
 import { useToast } from "@/hooks/use-toast";
 
 interface ProjectAssignment {
@@ -9,19 +9,36 @@ interface ProjectAssignment {
   staff_id: string;
   profiles?: {
     id: string;
-    full_name: string | null;
+    full_name: string;
   } | null;
+  created_at?: string;
+  updated_at?: string;
 }
 
 interface Project {
   id: string;
   title: string;
-  description: string | null;
-  status: string | null;
-  start_date: string | null;
-  end_date: string | null;
+  description: string;
+  status: string;
+  start_date: string;
+  end_date: string;
   department_id: string;
+  client_name: string;
+  budget: number;
+  location: string;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
   project_assignments?: ProjectAssignment[];
+}
+
+interface ProjectWithAssignments extends Omit<Project, 'project_assignments'> {
+  project_assignments: Array<{
+    id: string;
+    project_id: string;
+    staff_id: string;
+    staff_name: string;
+  }>;
 }
 
 export const useManagerOperations = (departmentId: string) => {
@@ -78,14 +95,7 @@ export const useManagerOperations = (departmentId: string) => {
   });
 
   const createProject = useMutation({
-    mutationFn: async (projectData: {
-      title: string;
-      description?: string;
-      department_id: string;
-      start_date?: string;
-      end_date?: string;
-      status?: string;
-    }) => {
+    mutationFn: async (projectData: Omit<Project, 'id' | 'created_at' | 'updated_at' | 'project_assignments'>) => {
       const { error } = await supabase.from("projects").insert(projectData);
       if (error) throw error;
     },
@@ -104,7 +114,7 @@ export const useManagerOperations = (departmentId: string) => {
       data,
     }: {
       id: string;
-      data: Partial<ProjectWithAssignments>;
+      data: Partial<Omit<Project, 'id' | 'created_at' | 'updated_at' | 'project_assignments'>>;
     }) => {
       const { error } = await supabase
         .from("projects")
