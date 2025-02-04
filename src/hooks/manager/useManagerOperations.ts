@@ -12,12 +12,7 @@ export const useManagerOperations = (departmentId: string) => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("profiles")
-        .select(`
-          *,
-          departments (
-            name
-          )
-        `)
+        .select("*, departments(name)")
         .eq("department_id", departmentId);
 
       if (error) throw error;
@@ -40,9 +35,11 @@ export const useManagerOperations = (departmentId: string) => {
           status,
           start_date,
           end_date,
-          project_assignments (
+          project_assignments!inner (
+            id,
+            project_id,
             staff_id,
-            profiles (
+            profiles!inner (
               full_name
             )
           )
@@ -50,7 +47,7 @@ export const useManagerOperations = (departmentId: string) => {
         .eq("department_id", departmentId);
 
       if (error) throw error;
-      return data as ProjectWithAssignments[];
+      return data as unknown as ProjectWithAssignments[];
     },
   });
 
