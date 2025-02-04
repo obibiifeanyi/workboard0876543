@@ -1,3 +1,4 @@
+
 import { NavLink } from "react-router-dom";
 import {
   Users,
@@ -11,10 +12,12 @@ import {
   CalendarClock,
   Settings,
   Mail,
+  LayoutDashboard,
 } from "lucide-react";
 
 export const AdminNavigation = () => {
   const navItems = [
+    { to: "/admin", icon: LayoutDashboard, label: "Dashboard", end: true },
     { to: "/admin/users", icon: Users, label: "Users" },
     { to: "/admin/departments", icon: Building2, label: "Departments" },
     { to: "/admin/projects", icon: FileText, label: "Projects" },
@@ -26,7 +29,6 @@ export const AdminNavigation = () => {
     { to: "/admin/ai", icon: Brain, label: "AI Management" },
     { to: "/admin/knowledge", icon: Database, label: "Knowledge Base" },
     { to: "/admin/communication", icon: Mail, label: "Communication" },
-    { to: "/admin/settings", icon: Settings, label: "Settings" },
   ];
 
   return (
@@ -35,11 +37,12 @@ export const AdminNavigation = () => {
         <NavLink
           key={item.to}
           to={item.to}
+          end={item.end}
           className={({ isActive }) =>
             `flex items-center gap-2 rounded-lg px-3 py-2 transition-colors
              ${
                isActive
-                 ? "bg-admin-primary text-white"
+                 ? "bg-admin-primary text-white dark:bg-admin-primary/90"
                  : "text-foreground hover:bg-admin-accent hover:text-admin-primary"
              }`
           }
