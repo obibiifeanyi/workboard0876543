@@ -39,3 +39,5 @@ export const analyzeDocument = async (content: string): Promise<DocumentAnalysis
     throw error;
   }
 };
+
+export type { DocumentAnalysis };

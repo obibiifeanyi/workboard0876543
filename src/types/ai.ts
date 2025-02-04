@@ -38,3 +38,28 @@ export interface AIKnowledgeBase {
   created_at: string;
   updated_at: string;
 }
+
+// New interfaces for Memo and PowerReport
+export interface Memo {
+  id: string;
+  title: string;
+  content: string;
+  status: string;
+  department: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PowerReport {
+  id: string;
+  site_id: string;
+  report_datetime: string;
+  generator_runtime: number | null;
+  diesel_level: number | null;
+  comments: string | null;
+  status: string;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
