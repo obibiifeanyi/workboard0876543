@@ -1,6 +1,5 @@
 import { ClockInButton } from "@/components/ClockInButton";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
-import { Card } from "@/components/ui/card";
 import { NeuralNetwork } from "@/components/NeuralNetwork";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -44,15 +43,15 @@ const Index = () => {
         <ThemeSwitcher />
       </div>
 
-      <Card className="w-full max-w-4xl mx-auto p-6 sm:p-8 animate-fade-in glass relative z-10 
-                      bg-background/80 backdrop-blur-xl hover:border-primary/40
-                      transition-all duration-300">
+      <div className="w-full max-w-4xl mx-auto p-6 sm:p-8 animate-fade-in glass relative z-10 
+                    bg-background/80 backdrop-blur-xl
+                    transition-all duration-300">
         <div className="space-y-8 sm:space-y-12">
           <div className="text-center space-y-4">
             <img 
               src="/lovable-uploads/491c7e61-a4fb-46a3-a002-904b84354e48.png" 
               alt="CT Communication Towers Logo" 
-              className="h-16 w-auto mx-auto mb-4" // Reduced from h-24 to h-16 (approximately 30% smaller)
+              className="h-16 w-auto mx-auto mb-4"
             />
             <h1 className="text-2xl sm:text-4xl font-bold tracking-tight 
                          bg-gradient-to-r from-primary via-primary/80 to-primary 
@@ -70,7 +69,7 @@ const Index = () => {
             </p>
           </div>
         </div>
-      </Card>
+      </div>
     </div>
   );
 };
