@@ -13,16 +13,13 @@ export const useManagerOperations = () => {
       queryFn: async () => {
         const { data, error } = await supabase
           .from("profiles")
-          .select(`
-            *,
-            departments!inner(name)
-          `)
+          .select("*, departments!inner(name)")
           .eq("department_id", departmentId);
 
         if (error) throw error;
-        return data.map(profile => ({
+        return data.map((profile) => ({
           ...profile,
-          department: profile.departments?.name
+          department: profile.departments?.name,
         })) as TeamMember[];
       },
     });
@@ -34,14 +31,14 @@ export const useManagerOperations = () => {
       queryFn: async () => {
         const { data, error } = await supabase
           .from("projects")
-          .select(`
-            *,
-            project_assignments(
+          .select(
+            `*,
+            project_assignments (
               id,
               staff_id,
-              profiles!project_assignments_staff_id_fkey(full_name)
-            )
-          `)
+              profiles!project_assignments_staff_id_fkey (full_name)
+            )`
+          )
           .eq("department_id", departmentId);
 
         if (error) throw error;
@@ -61,10 +58,7 @@ export const useManagerOperations = () => {
       end_date?: string;
       status?: string;
     }) => {
-      const { error } = await supabase
-        .from("projects")
-        .insert(projectData);
-
+      const { error } = await supabase.from("projects").insert(projectData);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -77,7 +71,13 @@ export const useManagerOperations = () => {
   });
 
   const updateProject = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: Partial<ProjectWithAssignments> }) => {
+    mutationFn: async ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: Partial<ProjectWithAssignments>;
+    }) => {
       const updateData = {
         title: data.title,
         description: data.description,
@@ -86,7 +86,7 @@ export const useManagerOperations = () => {
         location: data.location,
         start_date: data.start_date,
         end_date: data.end_date,
-        status: data.status
+        status: data.status,
       };
 
       const { error } = await supabase
