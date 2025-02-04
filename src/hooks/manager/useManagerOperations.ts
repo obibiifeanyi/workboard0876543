@@ -1,59 +1,48 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import type { ProjectWithAssignments, TeamMember } from "@/types/supabase/manager";
+import { TeamMember, ProjectWithAssignments } from "@/types/manager";
 import { useToast } from "@/hooks/use-toast";
 
-export const useManagerOperations = () => {
-  const { toast } = useToast();
+export const useManagerOperations = (departmentId: string) => {
   const queryClient = useQueryClient();
+  const { toast } = useToast();
 
-  const useTeamMembers = (departmentId: string) => {
-    return useQuery({
-      queryKey: ["team-members", departmentId],
-      queryFn: async () => {
-        const { data, error } = await supabase
-          .from("profiles")
-          .select("*, departments!inner(name)")
-          .eq("department_id", departmentId);
+  const { data: teamMembers, isLoading: isLoadingTeam } = useQuery({
+    queryKey: ["team", departmentId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*, departments!inner(name)")
+        .eq("department_id", departmentId);
 
-        if (error) throw error;
-        return data.map((profile) => ({
-          ...profile,
-          department: profile.departments?.name,
-        })) as TeamMember[];
-      },
-    });
-  };
+      if (error) throw error;
+      return data.map((profile) => ({
+        ...profile,
+        department: profile.departments?.name,
+      })) as TeamMember[];
+    },
+  });
 
-  const useProjects = (departmentId: string) => {
-    return useQuery({
-      queryKey: ["projects", departmentId],
-      queryFn: async () => {
-        const { data, error } = await supabase
-          .from("projects")
-          .select(
-            `*,
-            project_assignments (
-              id,
-              staff_id,
-              profiles!project_assignments_staff_id_fkey (full_name)
-            )`
-          )
-          .eq("department_id", departmentId);
+  const { data: projects, isLoading: isLoadingProjects } = useQuery({
+    queryKey: ["projects", departmentId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("projects")
+        .select(
+          "id, title, description, status, start_date, end_date, project_assignments(staff_id, profiles(full_name))"
+        )
+        .eq("department_id", departmentId);
 
-        if (error) throw error;
-        return data as unknown as ProjectWithAssignments[];
-      },
-    });
-  };
+      if (error) throw error;
+      return data as ProjectWithAssignments[];
+    },
+  });
 
   const createProject = useMutation({
     mutationFn: async (projectData: {
       title: string;
-      description: string;
-      client_name?: string;
-      budget?: number;
-      location?: string;
+      description?: string;
+      department_id: string;
       start_date?: string;
       end_date?: string;
       status?: string;
@@ -64,8 +53,8 @@ export const useManagerOperations = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["projects"] });
       toast({
-        title: "Project Created",
-        description: "The project has been successfully created.",
+        title: "Success",
+        description: "Project created successfully",
       });
     },
   });
@@ -81,8 +70,7 @@ export const useManagerOperations = () => {
       const updateData = {
         title: data.title,
         description: data.description,
-        client_name: data.client_name,
-        budget: data.budget,
+        department_id: data.department_id,
         location: data.location,
         start_date: data.start_date,
         end_date: data.end_date,
@@ -99,15 +87,17 @@ export const useManagerOperations = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["projects"] });
       toast({
-        title: "Project Updated",
-        description: "The project has been successfully updated.",
+        title: "Success",
+        description: "Project updated successfully",
       });
     },
   });
 
   return {
-    useTeamMembers,
-    useProjects,
+    teamMembers,
+    projects,
+    isLoadingTeam,
+    isLoadingProjects,
     createProject,
     updateProject,
   };

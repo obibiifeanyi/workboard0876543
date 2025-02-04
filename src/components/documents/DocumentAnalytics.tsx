@@ -1,8 +1,6 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { FileText, Brain, ChartBar, AlertCircle, Tag, Clock } from "lucide-react";
 import { analyzeDocument, DocumentAnalysis } from "@/lib/ai/documentAI";
 import { useToast } from "@/hooks/use-toast";
@@ -34,14 +32,12 @@ export const DocumentAnalytics = () => {
 
     setIsUploading(true);
     try {
-      // Upload to Supabase Storage
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('documents')
         .upload(`${Date.now()}-${file.name}`, file);
 
       if (uploadError) throw uploadError;
 
-      // Read file content
       const content = await file.text();
 
       setSelectedDocument({
@@ -122,14 +118,14 @@ export const DocumentAnalytics = () => {
             </div>
           )}
 
-          {analysis && (
+          {analysis?.analysis_result && (
             <div className="space-y-6">
               <div className="glass-card p-4">
                 <h4 className="font-medium mb-2 flex items-center gap-2">
                   <ChartBar className="h-4 w-4 text-primary" />
                   Summary
                 </h4>
-                <p className="text-sm text-muted-foreground">{analysis.summary}</p>
+                <p className="text-sm text-muted-foreground">{analysis.analysis_result.summary}</p>
               </div>
               
               <div className="glass-card p-4">
@@ -138,7 +134,7 @@ export const DocumentAnalytics = () => {
                   Key Points
                 </h4>
                 <ul className="list-disc pl-4 space-y-2">
-                  {analysis.keyPoints.map((point, index) => (
+                  {analysis.analysis_result.keyPoints.map((point, index) => (
                     <li key={index} className="text-sm text-muted-foreground">
                       {point}
                     </li>
@@ -152,7 +148,7 @@ export const DocumentAnalytics = () => {
                   Suggested Actions
                 </h4>
                 <ul className="list-disc pl-4 space-y-2">
-                  {analysis.suggestedActions.map((action, index) => (
+                  {analysis.analysis_result.suggestedActions.map((action, index) => (
                     <li key={index} className="text-sm text-muted-foreground">
                       {action}
                     </li>
@@ -160,14 +156,14 @@ export const DocumentAnalytics = () => {
                 </ul>
               </div>
 
-              {analysis.categories && (
+              {analysis.analysis_result.categories && (
                 <div className="glass-card p-4">
                   <h4 className="font-medium mb-2 flex items-center gap-2">
                     <Tag className="h-4 w-4 text-primary" />
                     Categories
                   </h4>
                   <div className="flex flex-wrap gap-2">
-                    {analysis.categories.map((category, index) => (
+                    {analysis.analysis_result.categories.map((category, index) => (
                       <span
                         key={index}
                         className="px-2 py-1 rounded-full bg-primary/10 text-xs"
