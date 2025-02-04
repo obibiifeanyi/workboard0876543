@@ -5,6 +5,7 @@ import { AdminNavigation } from "@/components/admin/AdminNavigation";
 import { Outlet, useLocation } from "react-router-dom";
 import {
   Breadcrumb,
+  BreadcrumbList,
   BreadcrumbItem,
   BreadcrumbLink,
   BreadcrumbPage,
