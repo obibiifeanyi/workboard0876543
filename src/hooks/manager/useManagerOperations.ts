@@ -30,12 +30,19 @@ export const useManagerOperations = (departmentId: string) => {
       const { data, error } = await supabase
         .from("projects")
         .select(`
-          *,
-          project_assignments!inner (
+          id,
+          title,
+          description,
+          status,
+          start_date,
+          end_date,
+          department_id,
+          project_assignments (
             id,
             project_id,
             staff_id,
-            profiles:staff_id (
+            profiles (
+              id,
               full_name
             )
           )
@@ -44,17 +51,14 @@ export const useManagerOperations = (departmentId: string) => {
 
       if (error) throw error;
       
-      // Transform the data to include proper typing
       return (data || []).map(project => ({
         ...project,
-        project_assignments: project.project_assignments.map(assignment => ({
+        project_assignments: project.project_assignments?.map(assignment => ({
           id: assignment.id,
           project_id: assignment.project_id,
           staff_id: assignment.staff_id,
-          profiles: assignment.profiles ? {
-            full_name: assignment.profiles.full_name
-          } : undefined
-        }))
+          staff_name: assignment.profiles?.full_name || ''
+        })) || []
       })) as ProjectWithAssignments[];
     },
   });
@@ -113,3 +117,4 @@ export const useManagerOperations = (departmentId: string) => {
     updateProject,
   };
 };
+
