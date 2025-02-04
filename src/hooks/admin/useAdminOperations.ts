@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { AdminDashboardStats, SystemActivity, DepartmentWithManager } from "@/types/supabase/admin";
@@ -14,14 +13,11 @@ export const useAdminOperations = () => {
       queryFn: async () => {
         const { data, error } = await supabase
           .from("system_activities")
-          .select(`
-            *,
-            user:profiles(full_name)
-          `)
+          .select("*, profiles!system_activities_user_id_fkey(full_name)")
           .order("created_at", { ascending: false });
 
         if (error) throw error;
-        return data as SystemActivity[];
+        return data as unknown as SystemActivity[];
       },
     });
   };

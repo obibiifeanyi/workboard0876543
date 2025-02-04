@@ -15,14 +15,14 @@ export const useManagerOperations = () => {
           .from("profiles")
           .select(`
             *,
-            departments!inner (name)
+            departments!inner(name)
           `)
           .eq("department_id", departmentId);
 
         if (error) throw error;
         return data.map(profile => ({
           ...profile,
-          department: profile.departments.name
+          department: profile.departments?.name
         })) as TeamMember[];
       },
     });
@@ -36,16 +36,16 @@ export const useManagerOperations = () => {
           .from("projects")
           .select(`
             *,
-            project_assignments!inner (
+            project_assignments!inner(
               id,
               staff_id,
-              profiles:staff_id (full_name)
+              profiles!project_assignments_staff_id_fkey(full_name)
             )
           `)
           .eq("department_id", departmentId);
 
         if (error) throw error;
-        return data as ProjectWithAssignments[];
+        return data as unknown as ProjectWithAssignments[];
       },
     });
   };
