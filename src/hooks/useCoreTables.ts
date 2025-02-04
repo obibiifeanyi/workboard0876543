@@ -8,7 +8,6 @@ export const useCoreTables = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Departments
   const useDepartments = () => {
     return useQuery({
       queryKey: ['departments'],
@@ -50,21 +49,18 @@ export const useCoreTables = () => {
     });
   };
 
-  // Project Assignments
   const useProjectAssignments = () => {
     return useQuery({
       queryKey: ['project_assignments'],
       queryFn: async () => {
         const { data, error } = await supabase
-          .from('projects')
+          .from('project_assignments')
           .select(`
-            *,
-            project_assignments (
-              id,
-              staff_id,
-              created_at,
-              updated_at
-            )
+            id,
+            project_id,
+            staff_id,
+            created_at,
+            updated_at
           `);
         if (error) throw error;
         return data as ProjectAssignmentRow[];

@@ -5,7 +5,6 @@ export interface DepartmentRow {
   name: string;
   description: string | null;
   manager_id: string | null;
-  employee_count: number | null;
   created_at: string;
   updated_at: string;
   profiles?: {
@@ -13,27 +12,12 @@ export interface DepartmentRow {
   };
 }
 
-export interface DepartmentInsert {
-  name: string;
-  description?: string | null;
-  manager_id?: string | null;
-  employee_count?: number | null;
-  created_at?: string;
-  updated_at?: string;
-}
-
 export interface ProjectAssignmentRow {
   id: string;
-  project_name: string;
-  description: string | null;
-  assigned_to: string;
-  department_id: string;
-  start_date: string;
-  end_date: string | null;
-  status: 'pending' | 'in_progress' | 'completed' | 'cancelled';
-  priority: 'low' | 'medium' | 'high';
-  created_at: string;
-  updated_at: string;
+  project_id: string | null;
+  staff_id: string | null;
+  created_at: string | null;
+  updated_at: string | null;
 }
 
 export interface DocumentArchiveRow {

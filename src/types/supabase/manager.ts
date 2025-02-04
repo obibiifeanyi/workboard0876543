@@ -3,17 +3,24 @@ import { ProfileWithDetails, TaskWithAssignee } from "./common";
 
 export interface ProjectWithAssignments {
   id: string;
-  project_name: string;
+  title: string;
   description: string | null;
-  assigned_to: string;
-  department_id: string;
-  start_date: string;
+  client_name: string | null;
+  budget: number | null;
+  location: string | null;
+  start_date: string | null;
   end_date: string | null;
-  status: string;
-  priority: string;
+  status: string | null;
+  created_by: string | null;
   created_at: string;
   updated_at: string;
-  profiles?: ProfileWithDetails;
+  project_assignments: Array<{
+    id: string;
+    project_id: string | null;
+    staff_id: string | null;
+    created_at: string | null;
+    updated_at: string | null;
+  }>;
 }
 
 export interface TeamMember extends ProfileWithDetails {
