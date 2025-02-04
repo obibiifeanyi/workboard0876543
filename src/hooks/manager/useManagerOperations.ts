@@ -17,7 +17,7 @@ export const useManagerOperations = (departmentId: string) => {
         .eq("department_id", departmentId);
 
       if (error) throw error;
-      return data.map((profile) => ({
+      return (data || []).map((profile) => ({
         ...profile,
         department: profile.departments?.name,
       })) as TeamMember[];
@@ -27,6 +27,24 @@ export const useManagerOperations = (departmentId: string) => {
   const { data: projects, isLoading: isLoadingProjects } = useQuery({
     queryKey: ["projects", departmentId],
     queryFn: async () => {
+      type ProjectResponse = {
+        id: string;
+        title: string;
+        description?: string;
+        status?: string;
+        start_date?: string;
+        end_date?: string;
+        project_assignments?: Array<{
+          id: string;
+          project_id: string;
+          staff_id: string;
+          profiles?: {
+            id: string;
+            full_name: string;
+          };
+        }>;
+      };
+
       const { data, error } = await supabase
         .from("projects")
         .select(`
@@ -36,7 +54,6 @@ export const useManagerOperations = (departmentId: string) => {
           status,
           start_date,
           end_date,
-          department_id,
           project_assignments (
             id,
             project_id,
@@ -46,12 +63,11 @@ export const useManagerOperations = (departmentId: string) => {
               full_name
             )
           )
-        `)
-        .eq("department_id", departmentId);
+        `);
 
       if (error) throw error;
       
-      return (data || []).map(project => ({
+      return (data as ProjectResponse[] || []).map(project => ({
         ...project,
         project_assignments: project.project_assignments?.map(assignment => ({
           id: assignment.id,
@@ -117,4 +133,3 @@ export const useManagerOperations = (departmentId: string) => {
     updateProject,
   };
 };
-
