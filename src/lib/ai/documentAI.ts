@@ -1,9 +1,12 @@
+
 import { supabase } from '@/integrations/supabase/client';
 
 export interface DocumentAnalysis {
   summary: string;
   keyPoints: string[];
   suggestedActions: string[];
+  categories?: string[];
+  risks?: string[];
 }
 
 export const analyzeDocument = async (content: string): Promise<DocumentAnalysis> => {

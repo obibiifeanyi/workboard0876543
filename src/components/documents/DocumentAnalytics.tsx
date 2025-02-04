@@ -1,28 +1,71 @@
+
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FileText, Brain, ChartBar, AlertCircle } from "lucide-react";
+import { FileText, Brain, ChartBar, AlertCircle, Tag, Clock } from "lucide-react";
 import { analyzeDocument, DocumentAnalysis } from "@/lib/ai/documentAI";
 import { useToast } from "@/hooks/use-toast";
 import { Progress } from "@/components/ui/progress";
+import { supabase } from "@/integrations/supabase/client";
+
+interface UploadedDocument {
+  id: string;
+  name: string;
+  size: string;
+  type: string;
+  content: string;
+}
 
 export const DocumentAnalytics = () => {
-  const [selectedDocument, setSelectedDocument] = useState<string | null>(null);
+  const [selectedDocument, setSelectedDocument] = useState<UploadedDocument | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
   const { toast } = useToast();
 
   const { data: analysis, isLoading } = useQuery({
-    queryKey: ['documentAnalysis', selectedDocument],
-    queryFn: () => analyzeDocument(selectedDocument || ''),
+    queryKey: ['documentAnalysis', selectedDocument?.id],
+    queryFn: () => analyzeDocument(selectedDocument?.content || ''),
     enabled: !!selectedDocument,
   });
 
-  const handleAnalyze = async () => {
-    setSelectedDocument("Sample document content");
-    toast({
-      title: "Analysis Started",
-      description: "AI is analyzing your document...",
-    });
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    try {
+      // Upload to Supabase Storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('documents')
+        .upload(`${Date.now()}-${file.name}`, file);
+
+      if (uploadError) throw uploadError;
+
+      // Read file content
+      const content = await file.text();
+
+      setSelectedDocument({
+        id: uploadData.path,
+        name: file.name,
+        size: `${(file.size / 1024).toFixed(1)} KB`,
+        type: file.type,
+        content
+      });
+
+      toast({
+        title: "File Uploaded",
+        description: "Your document is ready for analysis",
+      });
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      toast({
+        title: "Upload Failed",
+        description: "Failed to upload document. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   return (
@@ -31,26 +74,51 @@ export const DocumentAnalytics = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Brain className="h-5 w-5 text-primary" />
-            Document Analytics
+            Document Analysis
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <Button
-            onClick={handleAnalyze}
-            className="w-full bg-primary hover:bg-primary/90"
-            disabled={isLoading}
-          >
-            <FileText className="mr-2 h-4 w-4" />
-            Analyze Document
-          </Button>
+          <div className="flex items-center justify-center w-full">
+            <label
+              htmlFor="document-upload"
+              className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer hover:bg-primary/5"
+            >
+              <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                <FileText className="w-8 h-8 mb-2 text-primary" />
+                <p className="mb-2 text-sm">
+                  <span className="font-semibold">Click to upload</span> or drag and drop
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  PDF, DOCX, TXT (MAX. 10MB)
+                </p>
+              </div>
+              <input
+                id="document-upload"
+                type="file"
+                className="hidden"
+                onChange={handleFileUpload}
+                accept=".pdf,.doc,.docx,.txt"
+              />
+            </label>
+          </div>
 
-          {isLoading && (
+          {selectedDocument && (
+            <div className="glass-card p-4">
+              <div className="flex items-center gap-2">
+                <FileText className="h-4 w-4 text-primary" />
+                <span className="font-medium">{selectedDocument.name}</span>
+                <span className="text-sm text-muted-foreground">({selectedDocument.size})</span>
+              </div>
+            </div>
+          )}
+
+          {(isUploading || isLoading) && (
             <div className="space-y-4">
               <div className="flex items-center gap-2 text-primary">
-                <Brain className="h-6 w-6 animate-pulse" />
-                <span>Processing document...</span>
+                <Clock className="h-6 w-6 animate-pulse" />
+                <span>{isUploading ? "Uploading document..." : "Processing document..."}</span>
               </div>
-              <Progress value={45} className="w-full" />
+              <Progress value={isUploading ? 45 : 75} className="w-full" />
             </div>
           )}
 
@@ -91,6 +159,25 @@ export const DocumentAnalytics = () => {
                   ))}
                 </ul>
               </div>
+
+              {analysis.categories && (
+                <div className="glass-card p-4">
+                  <h4 className="font-medium mb-2 flex items-center gap-2">
+                    <Tag className="h-4 w-4 text-primary" />
+                    Categories
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
+                    {analysis.categories.map((category, index) => (
+                      <span
+                        key={index}
+                        className="px-2 py-1 rounded-full bg-primary/10 text-xs"
+                      >
+                        {category}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </CardContent>
