@@ -12,6 +12,27 @@ import { InvoiceManagement } from "@/components/accountant/InvoiceManagement";
 import { FinancialReports } from "@/components/accountant/FinancialReports";
 import { MemoApproval } from "@/components/accountant/MemoApproval";
 import { AccountSettings } from "@/components/accountant/AccountSettings";
+import { AdminDashboardModule } from "@/components/admin/dashboard/AdminDashboardModule";
+import { UserManagement } from "@/components/admin/UserManagement";
+import { DepartmentManagement } from "@/components/admin/DepartmentManagement";
+import { ProjectManagement } from "@/components/admin/ProjectManagement";
+import { LeaveManagement } from "@/components/admin/LeaveManagement";
+import { TimeManagement } from "@/components/admin/TimeManagement";
+import { ClockInMonitor } from "@/components/admin/ClockInMonitor";
+import { TelecomSites } from "@/components/admin/TelecomSites";
+import { ActivityManagement } from "@/components/admin/ActivityManagement";
+import { AIManagementSystem } from "@/components/ai/AIManagementSystem";
+import { AIKnowledgeBase } from "@/components/ai/AIKnowledgeBase";
+import { CommunicationCenter } from "@/components/admin/CommunicationCenter";
+import { CurrentTasks } from "@/components/staff/CurrentTasks";
+import { MyTasks } from "@/components/staff/MyTasks";
+import { Memos } from "@/components/staff/Memos";
+import { Reports } from "@/components/staff/Reports";
+import { TelecomReports } from "@/components/staff/TelecomReports";
+import { BatteryReports } from "@/components/staff/BatteryReports";
+import { Meetings } from "@/components/staff/Meetings";
+import { StaffProfile } from "@/components/staff/StaffProfile";
+import { AccountPage } from "@/components/account/AccountPage";
 
 function App() {
   return (

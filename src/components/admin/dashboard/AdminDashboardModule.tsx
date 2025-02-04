@@ -1,18 +1,13 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, FileText, ListTodo, MapPin, BarChart } from "lucide-react";
-import { AdminStats } from "@/components/admin/dashboard/AdminStats";
-import { AdminPerformanceChart } from "@/components/admin/dashboard/AdminPerformanceChart";
-import { WorkProgressDonut } from "@/components/admin/dashboard/WorkProgressDonut";
-import { ActivityOverview } from "@/components/admin/ActivityOverview";
+import { ArrowLeft } from "lucide-react";
 
 export const AdminDashboardModule = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
         <Button 
           variant="ghost" 
@@ -24,35 +19,40 @@ export const AdminDashboardModule = () => {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <AdminStats />
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="col-span-1 lg:col-span-2">
-          <CardHeader>
-            <CardTitle>Performance Overview</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <AdminPerformanceChart />
-          </CardContent>
-        </Card>
-
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader>
-            <CardTitle>Work Distribution</CardTitle>
+            <CardTitle>Total Users</CardTitle>
           </CardHeader>
           <CardContent>
-            <WorkProgressDonut />
+            <p className="text-2xl font-bold">0</p>
           </CardContent>
         </Card>
-
+        
         <Card>
           <CardHeader>
-            <CardTitle>Recent Activities</CardTitle>
+            <CardTitle>Active Projects</CardTitle>
           </CardHeader>
           <CardContent>
-            <ActivityOverview />
+            <p className="text-2xl font-bold">0</p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader>
+            <CardTitle>Pending Tasks</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-bold">0</p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader>
+            <CardTitle>System Status</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-bold">Active</p>
           </CardContent>
         </Card>
       </div>

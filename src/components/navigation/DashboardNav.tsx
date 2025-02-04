@@ -1,49 +1,36 @@
+import { cn } from "@/lib/utils";
 import { NavLink } from "react-router-dom";
-import {
-  Users,
-  Building2,
-  Network,
-  Clock,
-  Activity,
-  Brain,
-  Database,
-  FileText,
-  CalendarClock,
-  Settings,
-  Mail,
-} from "lucide-react";
+import { LucideIcon } from "lucide-react";
 
-export const DashboardNav = () => {
-  const navItems = [
-    { to: "/manager/dashboard", icon: Activity, label: "Dashboard" },
-    { to: "/manager/team", icon: Users, label: "Team" },
-    { to: "/manager/projects", icon: FileText, label: "Projects" },
-    { to: "/manager/time", icon: Clock, label: "Time Management" },
-    { to: "/manager/sites", icon: Network, label: "Telecom Sites" },
-    { to: "/manager/reports", icon: Database, label: "Reports" },
-    { to: "/manager/communication", icon: Mail, label: "Communication" },
-    { to: "/manager/settings", icon: Settings, label: "Settings" },
-  ];
+interface DashboardNavProps {
+  items: {
+    title: string;
+    href: string;
+    icon: LucideIcon;
+    variant: "default" | "ghost";
+  }[];
+  className?: string;
+}
 
+export function DashboardNav({ items, className }: DashboardNavProps) {
   return (
-    <nav className="space-y-2">
-      {navItems.map((item) => (
+    <nav className={cn("grid items-start gap-2", className)}>
+      {items.map((item, index) => (
         <NavLink
-          key={item.to}
-          to={item.to}
+          key={index}
+          to={item.href}
           className={({ isActive }) =>
-            `flex items-center gap-2 rounded-lg px-3 py-2 transition-colors
-             ${
-               isActive
-                 ? "bg-manager-primary text-white"
-                 : "text-foreground hover:bg-manager-accent hover:text-manager-primary"
-             }`
+            cn(
+              "group flex items-center rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground",
+              isActive ? "bg-accent" : "transparent",
+              item.variant === "default" ? "justify-start" : "justify-center"
+            )
           }
         >
-          <item.icon className="h-4 w-4" />
-          {item.label}
+          <item.icon className="mr-2 h-4 w-4" />
+          <span>{item.title}</span>
         </NavLink>
       ))}
     </nav>
   );
-};
+}
