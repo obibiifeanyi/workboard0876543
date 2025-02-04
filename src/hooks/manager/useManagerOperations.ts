@@ -29,15 +29,9 @@ export const useManagerOperations = (departmentId: string) => {
       const { data, error } = await supabase
         .from("projects")
         .select(`
-          id,
-          title,
-          description,
-          status,
-          start_date,
-          end_date,
+          *,
           project_assignments!inner (
             id,
-            project_id,
             staff_id,
             profiles!inner (
               full_name
@@ -47,7 +41,7 @@ export const useManagerOperations = (departmentId: string) => {
         .eq("department_id", departmentId);
 
       if (error) throw error;
-      return data as unknown as ProjectWithAssignments[];
+      return data as ProjectWithAssignments[];
     },
   });
 
