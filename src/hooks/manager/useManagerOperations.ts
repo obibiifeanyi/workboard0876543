@@ -3,8 +3,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { TeamMember } from "@/types/manager";
 import { useToast } from "@/hooks/use-toast";
 
-// Define base types to avoid recursion
-type BaseProject = {
+interface ProjectAssignment {
+  id: string;
+  project_id: string;
+  staff_id: string;
+  staff_name: string;
+}
+
+interface Project {
   id: string;
   title: string;
   description: string | null;
@@ -18,19 +24,8 @@ type BaseProject = {
   created_by: string | null;
   created_at: string;
   updated_at: string;
-};
-
-type BaseProjectAssignment = {
-  id: string;
-  project_id: string;
-  staff_id: string;
-  staff_name: string;
-};
-
-// Use type intersection to avoid deep nesting
-type Project = BaseProject & {
-  project_assignments: BaseProjectAssignment[];
-};
+  project_assignments: ProjectAssignment[];
+}
 
 export const useManagerOperations = (departmentId: string) => {
   const queryClient = useQueryClient();
@@ -86,7 +81,7 @@ export const useManagerOperations = (departmentId: string) => {
   });
 
   const createProject = useMutation({
-    mutationFn: async (projectData: Omit<BaseProject, 'id' | 'created_at' | 'updated_at'>) => {
+    mutationFn: async (projectData: Omit<Project, 'id' | 'created_at' | 'updated_at' | 'project_assignments'>) => {
       const { error } = await supabase.from("projects").insert(projectData);
       if (error) throw error;
     },
@@ -105,7 +100,7 @@ export const useManagerOperations = (departmentId: string) => {
       data,
     }: {
       id: string;
-      data: Partial<Omit<BaseProject, 'id' | 'created_at' | 'updated_at'>>;
+      data: Partial<Omit<Project, 'id' | 'created_at' | 'updated_at' | 'project_assignments'>>;
     }) => {
       const { error } = await supabase
         .from("projects")
