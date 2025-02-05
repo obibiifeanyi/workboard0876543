@@ -22,14 +22,13 @@ interface Project {
   status: string | null;
   start_date: string | null;
   end_date: string | null;
-  department_id: string;
+  department_id: string | null;
   client_name: string | null;
   budget: number | null;
   location: string | null;
   created_by: string | null;
   created_at: string;
   updated_at: string;
-  project_assignments?: ProjectAssignment[];
 }
 
 interface ProjectWithAssignments extends Omit<Project, 'project_assignments'> {
@@ -64,7 +63,7 @@ export const useManagerOperations = (departmentId: string) => {
   const { data: projects, isLoading: isLoadingProjects } = useQuery({
     queryKey: ["projects", departmentId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data: projectsData, error } = await supabase
         .from("projects")
         .select(`
           *,
@@ -82,7 +81,7 @@ export const useManagerOperations = (departmentId: string) => {
 
       if (error) throw error;
 
-      return (data || []).map((project: Project) => ({
+      return (projectsData || []).map((project) => ({
         ...project,
         project_assignments: project.project_assignments?.map(assignment => ({
           id: assignment.id,
@@ -95,7 +94,7 @@ export const useManagerOperations = (departmentId: string) => {
   });
 
   const createProject = useMutation({
-    mutationFn: async (projectData: Omit<Project, 'id' | 'created_at' | 'updated_at' | 'project_assignments'>) => {
+    mutationFn: async (projectData: Omit<Project, 'id' | 'created_at' | 'updated_at'>) => {
       const { error } = await supabase.from("projects").insert(projectData);
       if (error) throw error;
     },
@@ -114,7 +113,7 @@ export const useManagerOperations = (departmentId: string) => {
       data,
     }: {
       id: string;
-      data: Partial<Omit<Project, 'id' | 'created_at' | 'updated_at' | 'project_assignments'>>;
+      data: Partial<Omit<Project, 'id' | 'created_at' | 'updated_at'>>;
     }) => {
       const { error } = await supabase
         .from("projects")
