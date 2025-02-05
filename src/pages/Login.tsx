@@ -93,14 +93,8 @@ const Login = () => {
   return (
     <ErrorBoundary>
       <AuthNavBar />
-      <div className="min-h-screen flex flex-col items-center justify-center bg-background px-4 py-8 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-secondary/5 to-primary/5 animate-pulse-glow" />
-        <div className="absolute inset-0 backdrop-blur-3xl" />
-        
-        <div className="w-full max-w-[400px] glass-card relative z-10 
-          border border-white/10 dark:border-white/5 
-          shadow-2xl hover:shadow-primary/5 transition-all duration-300
-          bg-white/10 dark:bg-black/20 backdrop-blur-xl rounded-xl p-6">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background px-4 py-8">
+        <div className="w-full max-w-[300px] bg-[#e8e8e8] dark:bg-gray-800 rounded-lg shadow-lg p-5">
           <LoginHeader />
           <LoginForm onLogin={handleLogin} />
         </div>
