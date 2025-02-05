@@ -33,6 +33,9 @@ const Login = () => {
             case 'manager':
               navigate('/manager');
               break;
+            case 'accountant':
+              navigate('/accountant');
+              break;
             default:
               navigate('/staff');
           }
@@ -60,6 +63,9 @@ const Login = () => {
           case 'manager':
             navigate('/manager');
             break;
+          case 'accountant':
+            navigate('/accountant');
+            break;
           default:
             navigate('/staff');
         }
@@ -71,7 +77,7 @@ const Login = () => {
     };
   }, [navigate, toast]);
 
-  const handleLogin = async (email: string, password: string) => {
+  const handleLogin = async (email: string, password: string, role: string) => {
     try {
       const { error } = await supabase.auth.signInWithPassword({
         email,
