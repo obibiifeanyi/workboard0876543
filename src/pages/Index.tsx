@@ -47,21 +47,21 @@ const Index = () => {
       <Card className="w-full max-w-4xl mx-auto p-6 sm:p-8 animate-fade-in glass relative z-10 
                       bg-background/80 backdrop-blur-xl border-primary/20 hover:border-primary/40
                       transition-all duration-300">
-        <div className="space-y-8 sm:space-y-12">
-          <div className="text-center space-y-4">
+        <div className="space-y-6 sm:space-y-8">
+          <div className="text-center space-y-3">
             <img 
               src="/lovable-uploads/491c7e61-a4fb-46a3-a002-904b84354e48.png" 
               alt="CT Communication Towers Logo" 
-              className="h-24 w-auto mx-auto mb-4"
+              className="h-16 w-auto mx-auto mb-2"
             />
-            <h1 className="text-2xl sm:text-4xl font-bold tracking-tight 
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight 
                          bg-gradient-to-r from-primary via-primary/80 to-primary 
                          bg-clip-text text-transparent animate-fade-in">
               CTNL AI WORK-BOARD
             </h1>
           </div>
 
-          <div className="flex flex-col items-center gap-6 sm:gap-8">
+          <div className="flex flex-col items-center gap-4 sm:gap-6">
             <div className="animate-pulse">
               <ClockInButton />
             </div>
