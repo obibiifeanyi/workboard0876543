@@ -1,33 +1,8 @@
+
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { TeamMember } from "@/types/manager";
+import { TeamMember, ProjectWithAssignments } from "@/types/manager";
 import { useToast } from "@/hooks/use-toast";
-
-interface ProjectAssignment {
-  id: string;
-  project_id: string;
-  staff_id: string;
-  profiles?: {
-    full_name: string;
-  };
-}
-
-interface Project {
-  id: string;
-  title: string;
-  description?: string;
-  department_id: string;
-  start_date?: string;
-  end_date?: string;
-  status?: string;
-  project_assignments?: ProjectAssignment[];
-  budget?: number;
-  client_name?: string;
-  created_at?: string;
-  created_by?: string;
-  location?: string;
-  updated_at?: string;
-}
 
 export const useManagerOperations = (departmentId: string) => {
   const queryClient = useQueryClient();
@@ -55,12 +30,19 @@ export const useManagerOperations = (departmentId: string) => {
       const { data, error } = await supabase
         .from("projects")
         .select(`
-          *,
+          id,
+          title,
+          description,
+          status,
+          start_date,
+          end_date,
+          department_id,
           project_assignments (
             id,
             project_id,
             staff_id,
-            profiles:staff_id (
+            profiles (
+              id,
               full_name
             )
           )
@@ -69,12 +51,27 @@ export const useManagerOperations = (departmentId: string) => {
 
       if (error) throw error;
       
-      return data as unknown as Project[];
+      return (data || []).map(project => ({
+        ...project,
+        project_assignments: project.project_assignments?.map(assignment => ({
+          id: assignment.id,
+          project_id: assignment.project_id,
+          staff_id: assignment.staff_id,
+          staff_name: assignment.profiles?.full_name || ''
+        })) || []
+      })) as ProjectWithAssignments[];
     },
   });
 
   const createProject = useMutation({
-    mutationFn: async (projectData: Partial<Project>) => {
+    mutationFn: async (projectData: {
+      title: string;
+      description?: string;
+      department_id: string;
+      start_date?: string;
+      end_date?: string;
+      status?: string;
+    }) => {
       const { error } = await supabase.from("projects").insert(projectData);
       if (error) throw error;
     },
@@ -93,7 +90,7 @@ export const useManagerOperations = (departmentId: string) => {
       data,
     }: {
       id: string;
-      data: Partial<Project>;
+      data: Partial<ProjectWithAssignments>;
     }) => {
       const { error } = await supabase
         .from("projects")
@@ -120,3 +117,4 @@ export const useManagerOperations = (departmentId: string) => {
     updateProject,
   };
 };
+
