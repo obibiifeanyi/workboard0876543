@@ -81,10 +81,8 @@ export const useManagerOperations = (departmentId: string) => {
         .eq("department_id", departmentId);
 
       if (error) throw error;
-      
-      const typedData = data as unknown as Project[];
-      
-      return typedData.map((project) => ({
+
+      return (data as unknown as Project[]).map((project) => ({
         ...project,
         project_assignments: project.project_assignments?.map(assignment => ({
           id: assignment.id,
