@@ -15,7 +15,7 @@ export const ForgotPasswordButton = ({
     <Button
       type="button"
       variant="ghost"
-      className="text-sm text-primary hover:text-primary/90 flex items-center gap-1"
+      className="text-xs text-[#0099ff] hover:text-[#0099ff]/90 flex items-center gap-1 p-0"
       onClick={onClick}
       disabled={disabled}
     >

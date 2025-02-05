@@ -19,10 +19,11 @@ export const RememberMeCheckbox = ({
         checked={checked}
         onCheckedChange={onCheckedChange}
         disabled={disabled}
+        className="border-[#12B1D1] data-[state=checked]:bg-[#12B1D1]"
       />
       <label
         htmlFor="remember"
-        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+        className="text-xs text-[#aaa] font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
       >
         Remember me
       </label>

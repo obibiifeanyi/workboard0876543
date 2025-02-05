@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { AuthError } from "@supabase/supabase-js";
@@ -9,6 +8,7 @@ import { RememberMeCheckbox } from "./RememberMeCheckbox";
 import { ForgotPasswordButton } from "./ForgotPasswordButton";
 import { SubmitButton } from "./SubmitButton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Apple, Chrome, Twitter } from "lucide-react";
 
 interface LoginFormProps {
   onLogin: (email: string, password: string) => Promise<void>;
@@ -58,7 +58,6 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
       }
 
       if (user) {
-        // First get the user's profile
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('id, role, account_type')
@@ -70,7 +69,6 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
           throw profileError;
         }
 
-        // Then get their roles from the user_roles table
         const { data: userRoles, error: rolesError } = await supabase
           .from('user_roles')
           .select('role')
@@ -80,7 +78,6 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
           console.error('Error fetching user roles:', rolesError);
         }
 
-        // Store roles and account type
         const roles = userRoles?.map(r => r.role) || [profile?.role || 'staff'];
         localStorage.setItem('userRoles', JSON.stringify(roles));
         localStorage.setItem('userRole', profile?.role || 'staff');
@@ -91,7 +88,6 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
           description: "You have successfully logged in.",
         });
 
-        // Navigate based on highest privilege role
         if (roles.includes('admin')) {
           window.location.href = '/admin';
         } else if (roles.includes('accountant')) {
@@ -116,77 +112,113 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
     }
   };
 
-  const handleForgotPassword = async () => {
-    if (!email) {
-      setError("Please enter your email address first");
-      return;
-    }
+  const handleSocialLogin = async (provider: 'google' | 'apple' | 'twitter') => {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`
+        }
+      });
 
-    toast({
-      title: "Password Reset Link Sent",
-      description: "Please check your email for further instructions",
-    });
+      if (error) throw error;
+    } catch (error) {
+      console.error(`${provider} login error:`, error);
+      toast({
+        title: "Login Failed",
+        description: `Failed to login with ${provider}`,
+        variant: "destructive",
+      });
+    }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      {error && (
-        <Alert variant="destructive" className="mb-4">
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
-      <div className="space-y-2 text-left">
-        <Label htmlFor="accountType">Account Type</Label>
-        <Select value={accountType} onValueChange={setAccountType}>
-          <SelectTrigger>
-            <SelectValue placeholder="Select account type" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="staff">Staff</SelectItem>
-            <SelectItem value="accountant">Accountant</SelectItem>
-            <SelectItem value="manager">Manager</SelectItem>
-            <SelectItem value="admin">Admin</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-      <div className="space-y-2 text-left">
-        <Label htmlFor="email">Email</Label>
+    <div className="w-full max-w-[400px] bg-gradient-to-b from-white to-[#F4F7FB] rounded-[40px] p-[25px_35px] border-[5px] border-white shadow-[0_30px_30px_-20px_rgba(133,189,215,0.88)]">
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {error && (
+          <Alert variant="destructive">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+        
+        <div className="space-y-2">
+          <Select value={accountType} onValueChange={setAccountType}>
+            <SelectTrigger className="w-full bg-white border-none shadow-[0_10px_10px_-5px_#cff0ff] rounded-[20px]">
+              <SelectValue placeholder="Select account type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="staff">Staff</SelectItem>
+              <SelectItem value="accountant">Accountant</SelectItem>
+              <SelectItem value="manager">Manager</SelectItem>
+              <SelectItem value="admin">Admin</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
         <Input
-          id="email"
           type="email"
           placeholder="Enter your email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          className="bg-black/5 dark:bg-white/5 border-none placeholder:text-muted-foreground/50"
+          className="w-full bg-white border-none p-[15px_20px] rounded-[20px] shadow-[0_10px_10px_-5px_#cff0ff] focus:border-[#12B1D1] focus:border-x-2"
           disabled={loading}
         />
-      </div>
-      <div className="space-y-2 text-left">
-        <Label htmlFor="password">Password</Label>
+
         <Input
-          id="password"
           type="password"
           placeholder="Enter your password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
-          className="bg-black/5 dark:bg-white/5 border-none placeholder:text-muted-foreground/50"
+          className="w-full bg-white border-none p-[15px_20px] rounded-[20px] shadow-[0_10px_10px_-5px_#cff0ff] focus:border-[#12B1D1] focus:border-x-2"
           disabled={loading}
         />
-      </div>
-      <div className="flex items-center justify-between">
-        <RememberMeCheckbox
-          checked={rememberMe}
-          onCheckedChange={(checked) => setRememberMe(checked)}
-          disabled={loading}
-        />
-        <ForgotPasswordButton
-          onClick={handleForgotPassword}
-          disabled={loading}
-        />
-      </div>
-      <SubmitButton loading={loading} />
-    </form>
+
+        <div className="flex items-center justify-between">
+          <RememberMeCheckbox
+            checked={rememberMe}
+            onCheckedChange={(checked) => setRememberMe(checked)}
+            disabled={loading}
+          />
+          <ForgotPasswordButton onClick={() => {}} disabled={loading} />
+        </div>
+
+        <SubmitButton loading={loading} />
+
+        <div className="mt-6 text-center">
+          <span className="text-xs text-[#aaa]">Or Sign in with</span>
+          <div className="flex justify-center gap-4 mt-2">
+            <button
+              type="button"
+              onClick={() => handleSocialLogin('google')}
+              className="bg-gradient-to-br from-black to-gray-700 p-2 rounded-full w-10 h-10 flex items-center justify-center border-[5px] border-white shadow-[0_12px_10px_-8px_rgba(133,189,215,0.88)] hover:scale-110 transition-transform"
+            >
+              <Chrome className="w-4 h-4 text-white" />
+            </button>
+            <button
+              type="button"
+              onClick={() => handleSocialLogin('apple')}
+              className="bg-gradient-to-br from-black to-gray-700 p-2 rounded-full w-10 h-10 flex items-center justify-center border-[5px] border-white shadow-[0_12px_10px_-8px_rgba(133,189,215,0.88)] hover:scale-110 transition-transform"
+            >
+              <Apple className="w-4 h-4 text-white" />
+            </button>
+            <button
+              type="button"
+              onClick={() => handleSocialLogin('twitter')}
+              className="bg-gradient-to-br from-black to-gray-700 p-2 rounded-full w-10 h-10 flex items-center justify-center border-[5px] border-white shadow-[0_12px_10px_-8px_rgba(133,189,215,0.88)] hover:scale-110 transition-transform"
+            >
+              <Twitter className="w-4 h-4 text-white" />
+            </button>
+          </div>
+        </div>
+
+        <div className="text-center mt-4">
+          <a href="#" className="text-[9px] text-[#0099ff] hover:underline">
+            Learn user licence agreement
+          </a>
+        </div>
+      </form>
+    </div>
   );
 };
