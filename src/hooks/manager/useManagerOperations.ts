@@ -1,7 +1,27 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { TeamMember, ProjectWithAssignments } from "@/types/manager";
+import { TeamMember } from "@/types/manager";
 import { useToast } from "@/hooks/use-toast";
+
+interface ProjectAssignment {
+  id: string;
+  project_id: string;
+  staff_id: string;
+  profiles?: {
+    full_name: string;
+  };
+}
+
+interface Project {
+  id: string;
+  title: string;
+  description?: string;
+  department_id: string;
+  start_date?: string;
+  end_date?: string;
+  status?: string;
+  project_assignments?: ProjectAssignment[];
+}
 
 export const useManagerOperations = (departmentId: string) => {
   const queryClient = useQueryClient();
@@ -43,20 +63,7 @@ export const useManagerOperations = (departmentId: string) => {
 
       if (error) throw error;
       
-      // Transform the data to match ProjectWithAssignments type
-      const transformedData = (data || []).map(project => ({
-        ...project,
-        project_assignments: project.project_assignments?.map(assignment => ({
-          id: assignment.id,
-          project_id: assignment.project_id,
-          staff_id: assignment.staff_id,
-          profiles: assignment.profiles ? {
-            full_name: assignment.profiles.full_name
-          } : undefined
-        })) || []
-      }));
-
-      return transformedData as ProjectWithAssignments[];
+      return (data || []) as Project[];
     },
   });
 
@@ -87,7 +94,7 @@ export const useManagerOperations = (departmentId: string) => {
       data,
     }: {
       id: string;
-      data: Partial<ProjectWithAssignments>;
+      data: Partial<Project>;
     }) => {
       const { error } = await supabase
         .from("projects")
