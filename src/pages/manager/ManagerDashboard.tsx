@@ -5,7 +5,6 @@ import { ManagerTabContent } from "@/components/manager/dashboard/ManagerTabCont
 import { DocumentAnalytics } from "@/components/documents/DocumentAnalytics";
 import { Search, Bell, Settings, FileText, Users, BarChart } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ChatBox } from "@/components/ChatBox";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -142,7 +141,6 @@ const ManagerDashboard = () => {
           </div>
         </Tabs>
       </div>
-      <ChatBox />
     </DashboardLayout>
   );
 };

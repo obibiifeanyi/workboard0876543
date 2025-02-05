@@ -53,55 +53,52 @@ export const ClockInButton = () => {
 
   return (
     <div className="relative">
-      <div className="absolute inset-0 grid place-content-center" style={{ padding: '25%', zIndex: 100 }}>
-        {loading ? (
-          <div className="loader w-32 h-32 relative">
-            <div className="box absolute inset-[40%] z-[99] rounded-full bg-gradient-to-b from-[#ea384c20] to-[#ea384c40] border-t border-[#ea384c] shadow-lg backdrop-blur-sm animate-pulse-beacon" />
-            <div className="box absolute inset-[30%] z-[98] rounded-full bg-gradient-to-b from-[#ea384c20] to-[#ea384c40] border-t border-[#ea384c80] shadow-lg backdrop-blur-sm animate-pulse-beacon delay-200" />
-            <div className="box absolute inset-[20%] z-[97] rounded-full bg-gradient-to-b from-[#ea384c20] to-[#ea384c40] border-t border-[#ea384c60] shadow-lg backdrop-blur-sm animate-pulse-beacon delay-400" />
-            <div className="box absolute inset-[10%] z-[96] rounded-full bg-gradient-to-b from-[#ea384c20] to-[#ea384c40] border-t border-[#ea384c40] shadow-lg backdrop-blur-sm animate-pulse-beacon delay-600" />
-            <div className="box absolute inset-0 z-[95] rounded-full bg-gradient-to-b from-[#ea384c20] to-[#ea384c40] border-t border-[#ea384c20] shadow-lg backdrop-blur-sm animate-pulse-beacon delay-800" />
-            <div className="logo absolute inset-0 grid place-content-center p-[30%]">
-              <img 
-                src="/lovable-uploads/491c7e61-a4fb-46a3-a002-904b84354e48.png"
-                alt="CT Communication Towers Logo"
-                className="w-full animate-logo-pulse"
-              />
-            </div>
-          </div>
-        ) : (
-          <div className="w-32 h-32 rounded-full bg-white p-2 shadow-lg">
-            <img 
-              src="/lovable-uploads/491c7e61-a4fb-46a3-a002-904b84354e48.png"
-              alt="CT Communication Towers Logo"
-              className="w-20 h-20 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
-            />
-            <Button
-              onClick={handleClockIn}
-              disabled={loading}
-              className="w-full h-full rounded-full 
-                bg-gradient-to-br from-[#ea384c] via-[#ea384c]/90 to-[#ea384c]/80
-                hover:bg-[#ea384c]/90 text-white
-                shadow-[0_0_30px_rgba(234,56,76,0.3)]
-                hover:shadow-[0_0_35px_rgba(234,56,76,0.4)]
-                active:shadow-[0_0_25px_rgba(234,56,76,0.3)]
-                active:transform active:scale-95
-                transition-all duration-300 ease-in-out
-                border-2 border-[#ea384c]/20
-                backdrop-blur-sm
-                relative
-                flex flex-col items-center justify-center gap-2
-                group
-                z-10"
-            >
-              <Timer className="h-8 w-8 group-hover:scale-110 transition-transform duration-300" />
-              <span className="font-semibold tracking-wide text-sm">
-                Clock In
-              </span>
-            </Button>
-          </div>
-        )}
-      </div>
+      {/* Enhanced animated layers with new color */}
+      <div className="absolute inset-0 animate-pulse-beacon opacity-40 rounded-full bg-[#ff1c04] scale-110" />
+      <div className="absolute inset-0 animate-pulse-beacon opacity-30 rounded-full bg-[#ff1c04] scale-125 delay-75" />
+      <div className="absolute inset-0 animate-pulse-beacon opacity-20 rounded-full bg-[#ff1c04] scale-150 delay-150" />
+      <div className="absolute inset-0 animate-pulse-beacon opacity-15 rounded-full bg-[#ff1c04] scale-[1.75] delay-200" />
+      <div className="absolute inset-0 animate-pulse-beacon opacity-10 rounded-full bg-[#ff1c04] scale-[2] delay-300" />
+      <div className="absolute inset-0 animate-pulse-beacon opacity-5 rounded-full bg-[#ff1c04] scale-[2.25] delay-400" />
+      
+      <Button
+        onClick={handleClockIn}
+        disabled={loading}
+        className="w-40 h-40 rounded-full 
+          bg-gradient-to-br from-[#ff1c04] via-[#ff1c04]/90 to-[#ff1c04]/80
+          hover:bg-[#ff1c04]/90 text-white
+          shadow-[0_0_30px_rgba(255,28,4,0.3),
+                  0_0_60px_rgba(255,28,4,0.2),
+                  0_0_90px_rgba(255,28,4,0.1),
+                  inset_0_0_20px_rgba(255,255,255,0.1)]
+          hover:shadow-[0_0_35px_rgba(255,28,4,0.4),
+                       0_0_70px_rgba(255,28,4,0.3),
+                       0_0_105px_rgba(255,28,4,0.2),
+                       inset_0_0_25px_rgba(255,255,255,0.2)]
+          active:shadow-[0_0_25px_rgba(255,28,4,0.3),
+                        0_0_50px_rgba(255,28,4,0.2),
+                        0_0_75px_rgba(255,28,4,0.1),
+                        inset_0_0_15px_rgba(255,255,255,0.1)]
+          active:transform active:scale-95
+          transition-all duration-300 ease-in-out
+          border-2 border-[#ff1c04]/20
+          backdrop-blur-sm
+          relative
+          before:content-['']
+          before:absolute before:inset-1
+          before:rounded-full
+          before:bg-gradient-to-b
+          before:from-white/10 before:to-transparent
+          before:opacity-50
+          flex flex-col items-center justify-center gap-2
+          group
+          z-10"
+      >
+        <Timer className="h-12 w-12 group-hover:scale-110 transition-transform duration-300" />
+        <span className="font-semibold tracking-wide text-lg">
+          {loading ? "Processing..." : "Clock In"}
+        </span>
+      </Button>
     </div>
   );
 };

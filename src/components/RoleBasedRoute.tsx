@@ -13,18 +13,13 @@ export const RoleBasedRoute = ({ element, allowedRoles, userRole: propUserRole }
   const { toast } = useToast();
   const [shouldRedirect, setShouldRedirect] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const storedRoles = JSON.parse(localStorage.getItem("userRoles") || "[]");
-  const userRole = propUserRole || localStorage.getItem("userRole") || "staff";
+  const storedRole = localStorage.getItem("userRole");
+  const userRole = propUserRole || storedRole || "staff";
 
   useEffect(() => {
     const checkAccess = async () => {
       try {
-        // Check if user has any of the allowed roles
-        const hasAccess = allowedRoles.some(role => 
-          storedRoles.includes(role) || userRole === role
-        );
-
-        if (!hasAccess) {
+        if (!allowedRoles.includes(userRole)) {
           toast({
             title: "Access Denied",
             description: "You don't have permission to access this page.",
@@ -45,7 +40,7 @@ export const RoleBasedRoute = ({ element, allowedRoles, userRole: propUserRole }
     };
 
     checkAccess();
-  }, [userRole, allowedRoles, toast, storedRoles]);
+  }, [userRole, allowedRoles, toast]);
 
   if (isLoading) {
     return (

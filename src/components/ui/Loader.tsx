@@ -1,55 +1,27 @@
-import React from 'react';
 
-interface LoaderProps {
-  className?: string;
-}
-
-const Loader: React.FC<LoaderProps> = ({ className = "" }) => {
+const Loader = ({ className }: { className?: string }) => {
   return (
-    <div className={className}>
-      <main>
-        <svg height="128px" width="128px" viewBox="0 0 128 128" className="pl1">
-          <defs>
-            <linearGradient y2={1} x2={1} y1={0} x1={0} id="pl-grad">
-              <stop stopColor="#000" offset="0%" />
-              <stop stopColor="#fff" offset="100%" />
-            </linearGradient>
-            <mask id="pl-mask">
-              <rect fill="url(#pl-grad)" height={128} width={128} y={0} x={0} />
-            </mask>
-          </defs>
-          <g fill="var(--primary)">
-            <g className="pl1__g">
-              <g transform="translate(20,20) rotate(0,44,44)">
-                <g className="pl1__rect-g">
-                  <rect height={40} width={40} ry={8} rx={8} className="pl1__rect" />
-                  <rect transform="translate(0,48)" height={40} width={40} ry={8} rx={8} className="pl1__rect" />
-                </g>
-                <g transform="rotate(180,44,44)" className="pl1__rect-g">
-                  <rect height={40} width={40} ry={8} rx={8} className="pl1__rect" />
-                  <rect transform="translate(0,48)" height={40} width={40} ry={8} rx={8} className="pl1__rect" />
-                </g>
-              </g>
-            </g>
-          </g>
-          <g mask="url(#pl-mask)" fill="hsl(343,90%,50%)">
-            <g className="pl1__g">
-              <g transform="translate(20,20) rotate(0,44,44)">
-                <g className="pl1__rect-g">
-                  <rect height={40} width={40} ry={8} rx={8} className="pl1__rect" />
-                  <rect transform="translate(0,48)" height={40} width={40} ry={8} rx={8} className="pl1__rect" />
-                </g>
-                <g transform="rotate(180,44,44)" className="pl1__rect-g">
-                  <rect height={40} width={40} ry={8} rx={8} className="pl1__rect" />
-                  <rect transform="translate(0,48)" height={40} width={40} ry={8} rx={8} className="pl1__rect" />
-                </g>
-              </g>
-            </g>
-          </g>
-        </svg>
-      </main>
-    </div>
+    <svg
+      className={className}
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+    >
+      <circle
+        className="opacity-25"
+        cx="12"
+        cy="12"
+        r="10"
+        stroke="currentColor"
+        strokeWidth="4"
+      />
+      <path
+        className="opacity-75"
+        fill="currentColor"
+        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+      />
+    </svg>
   );
 };
 
-export default Loader;
+export { Loader };
