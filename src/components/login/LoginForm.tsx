@@ -58,9 +58,10 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
       }
 
       if (user) {
+        // First get the user's profile
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
-          .select('role, account_type')
+          .select('id, role, account_type')
           .eq('id', user.id)
           .single();
 
@@ -69,7 +70,19 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
           throw profileError;
         }
 
-        // Store role and account type
+        // Then get their roles from the user_roles table
+        const { data: userRoles, error: rolesError } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', user.id);
+
+        if (rolesError) {
+          console.error('Error fetching user roles:', rolesError);
+        }
+
+        // Store roles and account type
+        const roles = userRoles?.map(r => r.role) || [profile?.role || 'staff'];
+        localStorage.setItem('userRoles', JSON.stringify(roles));
         localStorage.setItem('userRole', profile?.role || 'staff');
         localStorage.setItem('accountType', profile?.account_type || accountType);
 
@@ -78,20 +91,15 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
           description: "You have successfully logged in.",
         });
 
-        // Navigate based on account type
-        if (profile?.account_type === 'accountant') {
+        // Navigate based on highest privilege role
+        if (roles.includes('admin')) {
+          window.location.href = '/admin';
+        } else if (roles.includes('accountant')) {
           window.location.href = '/accountant';
+        } else if (roles.includes('manager')) {
+          window.location.href = '/manager';
         } else {
-          switch (profile?.role) {
-            case 'admin':
-              window.location.href = '/admin';
-              break;
-            case 'manager':
-              window.location.href = '/manager';
-              break;
-            default:
-              window.location.href = '/staff';
-          }
+          window.location.href = '/staff';
         }
       }
     } catch (error) {
