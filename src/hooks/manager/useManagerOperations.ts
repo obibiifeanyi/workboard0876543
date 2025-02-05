@@ -3,30 +3,30 @@ import { supabase } from "@/integrations/supabase/client";
 import { TeamMember } from "@/types/manager";
 import { useToast } from "@/hooks/use-toast";
 
+interface Profile {
+  id: string;
+  full_name: string | null;
+}
+
 interface ProjectAssignment {
   id: string;
   project_id: string;
   staff_id: string;
-  profiles?: {
-    id: string;
-    full_name: string;
-  } | null;
-  created_at?: string;
-  updated_at?: string;
+  profiles?: Profile | null;
 }
 
 interface Project {
   id: string;
   title: string;
-  description: string;
-  status: string;
-  start_date: string;
-  end_date: string;
+  description: string | null;
+  status: string | null;
+  start_date: string | null;
+  end_date: string | null;
   department_id: string;
-  client_name: string;
-  budget: number;
-  location: string;
-  created_by: string;
+  client_name: string | null;
+  budget: number | null;
+  location: string | null;
+  created_by: string | null;
   created_at: string;
   updated_at: string;
   project_assignments?: ProjectAssignment[];
@@ -82,7 +82,7 @@ export const useManagerOperations = (departmentId: string) => {
 
       if (error) throw error;
 
-      return (data as unknown as Project[]).map((project) => ({
+      return (data || []).map((project: Project) => ({
         ...project,
         project_assignments: project.project_assignments?.map(assignment => ({
           id: assignment.id,
