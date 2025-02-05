@@ -3,16 +3,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { TeamMember } from "@/types/manager";
 import { useToast } from "@/hooks/use-toast";
 
-interface Profile {
-  id: string;
-  full_name: string | null;
-}
-
+// Separate type definitions to avoid recursion
 interface ProjectAssignment {
   id: string;
   project_id: string;
   staff_id: string;
-  profiles?: Profile | null;
+  staff_name: string;
 }
 
 interface Project {
@@ -29,15 +25,7 @@ interface Project {
   created_by: string | null;
   created_at: string;
   updated_at: string;
-}
-
-interface ProjectWithAssignments extends Omit<Project, 'project_assignments'> {
-  project_assignments: Array<{
-    id: string;
-    project_id: string;
-    staff_id: string;
-    staff_name: string;
-  }>;
+  project_assignments: ProjectAssignment[];
 }
 
 export const useManagerOperations = (departmentId: string) => {
@@ -89,12 +77,12 @@ export const useManagerOperations = (departmentId: string) => {
           staff_id: assignment.staff_id,
           staff_name: assignment.profiles?.full_name || ''
         })) || []
-      })) as ProjectWithAssignments[];
+      })) as Project[];
     },
   });
 
   const createProject = useMutation({
-    mutationFn: async (projectData: Omit<Project, 'id' | 'created_at' | 'updated_at'>) => {
+    mutationFn: async (projectData: Omit<Project, 'id' | 'created_at' | 'updated_at' | 'project_assignments'>) => {
       const { error } = await supabase.from("projects").insert(projectData);
       if (error) throw error;
     },
@@ -113,7 +101,7 @@ export const useManagerOperations = (departmentId: string) => {
       data,
     }: {
       id: string;
-      data: Partial<Omit<Project, 'id' | 'created_at' | 'updated_at'>>;
+      data: Partial<Omit<Project, 'id' | 'created_at' | 'updated_at' | 'project_assignments'>>;
     }) => {
       const { error } = await supabase
         .from("projects")
