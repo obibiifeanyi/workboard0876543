@@ -21,6 +21,12 @@ interface Project {
   end_date?: string;
   status?: string;
   project_assignments?: ProjectAssignment[];
+  budget?: number;
+  client_name?: string;
+  created_at?: string;
+  created_by?: string;
+  location?: string;
+  updated_at?: string;
 }
 
 export const useManagerOperations = (departmentId: string) => {
@@ -63,19 +69,12 @@ export const useManagerOperations = (departmentId: string) => {
 
       if (error) throw error;
       
-      return (data || []) as Project[];
+      return data as unknown as Project[];
     },
   });
 
   const createProject = useMutation({
-    mutationFn: async (projectData: {
-      title: string;
-      description?: string;
-      department_id: string;
-      start_date?: string;
-      end_date?: string;
-      status?: string;
-    }) => {
+    mutationFn: async (projectData: Partial<Project>) => {
       const { error } = await supabase.from("projects").insert(projectData);
       if (error) throw error;
     },
