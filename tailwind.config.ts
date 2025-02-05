@@ -102,6 +102,11 @@ export default {
           "0%, 100%": { opacity: "1", transform: "scale(1)" },
           "50%": { opacity: "0.7", transform: "scale(0.95)" },
         },
+        "ripple": {
+          "0%": { transform: "scale(1)", boxShadow: "rgba(255, 28, 4, 0.3) 0px 10px 10px -0px" },
+          "50%": { transform: "scale(1.3)", boxShadow: "rgba(255, 28, 4, 0.3) 0px 30px 20px -0px" },
+          "100%": { transform: "scale(1)", boxShadow: "rgba(255, 28, 4, 0.3) 0px 10px 10px -0px" }
+        }
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -113,6 +118,7 @@ export default {
         "pulse-beacon": "pulse-beacon 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
         "slide-in-bottom": "slide-in-bottom 0.3s ease-out",
         "logo-pulse": "logo-pulse 2s ease-in-out infinite",
+        "ripple": "ripple 3s infinite ease-in-out"
       },
     },
   },
