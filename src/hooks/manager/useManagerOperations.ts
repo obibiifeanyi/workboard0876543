@@ -20,15 +20,16 @@ type BaseProject = {
   updated_at: string;
 };
 
-type ProjectAssignment = {
+type BaseProjectAssignment = {
   id: string;
   project_id: string;
   staff_id: string;
   staff_name: string;
 };
 
+// Use type intersection to avoid deep nesting
 type Project = BaseProject & {
-  project_assignments: ProjectAssignment[];
+  project_assignments: BaseProjectAssignment[];
 };
 
 export const useManagerOperations = (departmentId: string) => {
