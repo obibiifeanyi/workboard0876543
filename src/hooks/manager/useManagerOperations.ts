@@ -4,7 +4,7 @@ import { TeamMember } from "@/types/manager";
 import { useToast } from "@/hooks/use-toast";
 
 // Define base types to avoid recursion
-interface BaseProject {
+type BaseProject = {
   id: string;
   title: string;
   description: string | null;
@@ -18,18 +18,18 @@ interface BaseProject {
   created_by: string | null;
   created_at: string;
   updated_at: string;
-}
+};
 
-interface ProjectAssignment {
+type ProjectAssignment = {
   id: string;
   project_id: string;
   staff_id: string;
   staff_name: string;
-}
+};
 
-interface Project extends BaseProject {
+type Project = BaseProject & {
   project_assignments: ProjectAssignment[];
-}
+};
 
 export const useManagerOperations = (departmentId: string) => {
   const queryClient = useQueryClient();
