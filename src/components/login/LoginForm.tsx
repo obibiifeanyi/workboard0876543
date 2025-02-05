@@ -8,7 +8,6 @@ import { RememberMeCheckbox } from "./RememberMeCheckbox";
 import { ForgotPasswordButton } from "./ForgotPasswordButton";
 import { SubmitButton } from "./SubmitButton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Apple, Chrome, Twitter } from "lucide-react";
 
 interface LoginFormProps {
   onLogin: (email: string, password: string) => Promise<void>;
@@ -112,26 +111,6 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
     }
   };
 
-  const handleSocialLogin = async (provider: 'google' | 'apple' | 'twitter') => {
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider,
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`
-        }
-      });
-
-      if (error) throw error;
-    } catch (error) {
-      console.error(`${provider} login error:`, error);
-      toast({
-        title: "Login Failed",
-        description: `Failed to login with ${provider}`,
-        variant: "destructive",
-      });
-    }
-  };
-
   return (
     <div className="w-full max-w-[400px] bg-gradient-to-b from-white to-[#F4F7FB] rounded-[40px] p-[25px_35px] border-[5px] border-white shadow-[0_30px_30px_-20px_rgba(133,189,215,0.88)]">
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -161,7 +140,7 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          className="w-full bg-white border-none p-[15px_20px] rounded-[20px] shadow-[0_10px_10px_-5px_#cff0ff] focus:border-[#12B1D1] focus:border-x-2"
+          className="w-full bg-white border-none p-[15px_20px] rounded-[20px] shadow-[0_10px_10px_-5px_#cff0ff] focus:border-[#ea384c] focus:border-x-2"
           disabled={loading}
         />
 
@@ -171,7 +150,7 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
-          className="w-full bg-white border-none p-[15px_20px] rounded-[20px] shadow-[0_10px_10px_-5px_#cff0ff] focus:border-[#12B1D1] focus:border-x-2"
+          className="w-full bg-white border-none p-[15px_20px] rounded-[20px] shadow-[0_10px_10px_-5px_#cff0ff] focus:border-[#ea384c] focus:border-x-2"
           disabled={loading}
         />
 
@@ -186,35 +165,8 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
 
         <SubmitButton loading={loading} />
 
-        <div className="mt-6 text-center">
-          <span className="text-xs text-[#aaa]">Or Sign in with</span>
-          <div className="flex justify-center gap-4 mt-2">
-            <button
-              type="button"
-              onClick={() => handleSocialLogin('google')}
-              className="bg-gradient-to-br from-black to-gray-700 p-2 rounded-full w-10 h-10 flex items-center justify-center border-[5px] border-white shadow-[0_12px_10px_-8px_rgba(133,189,215,0.88)] hover:scale-110 transition-transform"
-            >
-              <Chrome className="w-4 h-4 text-white" />
-            </button>
-            <button
-              type="button"
-              onClick={() => handleSocialLogin('apple')}
-              className="bg-gradient-to-br from-black to-gray-700 p-2 rounded-full w-10 h-10 flex items-center justify-center border-[5px] border-white shadow-[0_12px_10px_-8px_rgba(133,189,215,0.88)] hover:scale-110 transition-transform"
-            >
-              <Apple className="w-4 h-4 text-white" />
-            </button>
-            <button
-              type="button"
-              onClick={() => handleSocialLogin('twitter')}
-              className="bg-gradient-to-br from-black to-gray-700 p-2 rounded-full w-10 h-10 flex items-center justify-center border-[5px] border-white shadow-[0_12px_10px_-8px_rgba(133,189,215,0.88)] hover:scale-110 transition-transform"
-            >
-              <Twitter className="w-4 h-4 text-white" />
-            </button>
-          </div>
-        </div>
-
         <div className="text-center mt-4">
-          <a href="#" className="text-[9px] text-[#0099ff] hover:underline">
+          <a href="#" className="text-[9px] text-[#ea384c] hover:underline">
             Learn user licence agreement
           </a>
         </div>
