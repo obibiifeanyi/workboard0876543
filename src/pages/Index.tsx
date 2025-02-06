@@ -1,3 +1,4 @@
+
 import { ClockInButton } from "@/components/ClockInButton";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 import { Card } from "@/components/ui/card";
@@ -54,11 +55,6 @@ const Index = () => {
               alt="CT Communication Towers Logo" 
               className="h-16 w-auto mx-auto mb-2"
             />
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight 
-                         bg-gradient-to-r from-primary via-primary/80 to-primary 
-                         bg-clip-text text-transparent animate-fade-in">
-              CTNL AI WORK-BOARD
-            </h1>
           </div>
 
           <div className="flex flex-col items-center gap-4 sm:gap-6">
