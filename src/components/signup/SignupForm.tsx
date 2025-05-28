@@ -44,11 +44,22 @@ export const SignupForm = ({ onSignup, error }: SignupFormProps) => {
     }
   };
 
+  // Display user-friendly error messages
+  const getErrorMessage = (error: string) => {
+    if (error.includes("User already registered")) {
+      return "An account with this email already exists. Please try logging in instead.";
+    }
+    if (error.includes("Database error saving new user")) {
+      return "There was an issue creating your account. Please try again or contact support.";
+    }
+    return error;
+  };
+
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {error && (
         <Alert variant="destructive" className="mb-4">
-          <AlertDescription>{error}</AlertDescription>
+          <AlertDescription>{getErrorMessage(error)}</AlertDescription>
         </Alert>
       )}
 

@@ -20,8 +20,10 @@ const Signup = () => {
     role: string,
     accountType: string
   ) => {
+    setError(null);
+    
     try {
-      const { data, error } = await supabase.auth.signUp({
+      const { data, error: signupError } = await supabase.auth.signUp({
         email: email.trim(),
         password: password.trim(),
         options: {
@@ -33,7 +35,21 @@ const Signup = () => {
         },
       });
 
-      if (error) throw error;
+      if (signupError) {
+        // Handle specific signup errors
+        if (signupError.message.includes("User already registered")) {
+          setError("An account with this email already exists. Please try logging in instead.");
+          toast({
+            title: "Account Exists",
+            description: "An account with this email already exists. Please try logging in.",
+            variant: "destructive",
+          });
+          // Redirect to login after a delay
+          setTimeout(() => navigate('/login'), 2000);
+          return;
+        }
+        throw signupError;
+      }
 
       if (data.user) {
         toast({

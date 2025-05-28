@@ -14,41 +14,72 @@ interface ActivityItem {
 
 export const ActivityOverview = () => {
   const { data: activities, isLoading } = useQuery({
-    queryKey: ['system_activities'],
+    queryKey: ['recent_activities'],
     queryFn: async () => {
-      // Try to get system activities first, fall back to notifications if table doesn't exist
-      const { data: systemActivities, error: systemError } = await supabase
-        .from('system_activities')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(10);
+      // Get recent memos, invoices, and reports as activity feed
+      const [memosRes, invoicesRes, reportsRes] = await Promise.all([
+        supabase
+          .from('memos')
+          .select('id, title, created_at, created_by')
+          .order('created_at', { ascending: false })
+          .limit(5),
+        supabase
+          .from('accounts_invoices')
+          .select('id, invoice_number, vendor_name, created_at, created_by')
+          .order('created_at', { ascending: false })
+          .limit(5),
+        supabase
+          .from('ct_power_reports')
+          .select('id, site_id, status, created_at, created_by')
+          .order('created_at', { ascending: false })
+          .limit(5)
+      ]);
 
-      if (!systemError && systemActivities) {
-        return systemActivities.map(activity => ({
-          id: activity.id,
-          type: activity.type,
-          description: activity.description,
-          created_at: activity.created_at,
-          user_id: activity.user_id,
-        })) as ActivityItem[];
+      const activities: ActivityItem[] = [];
+
+      // Add memos
+      if (memosRes.data) {
+        memosRes.data.forEach(memo => {
+          activities.push({
+            id: memo.id,
+            type: 'Memo',
+            description: `New memo: ${memo.title}`,
+            created_at: memo.created_at,
+            user_id: memo.created_by,
+          });
+        });
       }
 
-      // Fallback to notifications
-      const { data: notifications, error: notificationError } = await supabase
-        .from('notifications')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(10);
+      // Add invoices
+      if (invoicesRes.data) {
+        invoicesRes.data.forEach(invoice => {
+          activities.push({
+            id: invoice.id,
+            type: 'Invoice',
+            description: `Invoice created for ${invoice.vendor_name}`,
+            created_at: invoice.created_at,
+            user_id: invoice.created_by,
+          });
+        });
+      }
 
-      if (notificationError) throw notificationError;
-      
-      return notifications?.map(notification => ({
-        id: notification.id,
-        type: notification.type,
-        description: notification.message,
-        created_at: notification.created_at,
-        user_id: notification.user_id,
-      })) as ActivityItem[] || [];
+      // Add reports
+      if (reportsRes.data) {
+        reportsRes.data.forEach(report => {
+          activities.push({
+            id: report.id,
+            type: 'Site Report',
+            description: `Site report for ${report.site_id} - Status: ${report.status}`,
+            created_at: report.created_at,
+            user_id: report.created_by,
+          });
+        });
+      }
+
+      // Sort by created_at desc
+      return activities.sort((a, b) => 
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      ).slice(0, 10);
     },
   });
 
