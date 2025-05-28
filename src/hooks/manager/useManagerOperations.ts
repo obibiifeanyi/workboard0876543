@@ -13,13 +13,21 @@ export const useManagerOperations = (departmentId: string) => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("profiles")
-        .select("*, departments(name)")
+        .select(`
+          id,
+          full_name,
+          avatar_url,
+          role,
+          created_at,
+          updated_at,
+          department_id
+        `)
         .eq("department_id", departmentId);
 
       if (error) throw error;
       return (data || []).map((profile) => ({
         ...profile,
-        department: profile.departments?.name,
+        department: null,
       })) as TeamMember[];
     },
   });
@@ -43,6 +51,19 @@ export const useManagerOperations = (departmentId: string) => {
 
       if (error) throw error;
       
+      // Get project assignments for these projects
+      const projectIds = data?.map(p => p.id) || [];
+      let assignments = [];
+      
+      if (projectIds.length > 0) {
+        const { data: assignmentData } = await supabase
+          .from("project_assignments")
+          .select("*")
+          .in("project_id", projectIds);
+        
+        assignments = assignmentData || [];
+      }
+      
       return (data || []).map(project => ({
         id: project.id,
         title: project.name,
@@ -51,7 +72,7 @@ export const useManagerOperations = (departmentId: string) => {
         start_date: project.start_date,
         end_date: project.end_date,
         department_id: project.department_id,
-        project_assignments: []
+        project_assignments: assignments.filter(a => a.project_id === project.id)
       })) as ProjectWithAssignments[];
     },
   });

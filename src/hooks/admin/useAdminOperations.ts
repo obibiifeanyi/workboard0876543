@@ -12,55 +12,66 @@ export const useAdminOperations = () => {
     return useQuery({
       queryKey: ["system-activities"],
       queryFn: async () => {
-        // Use existing tables for activity data
-        const [memosRes, invoicesRes, reportsRes] = await Promise.all([
-          supabase.from('memos').select('id, title, created_at, created_by').order('created_at', { ascending: false }).limit(10),
-          supabase.from('accounts_invoices').select('id, invoice_number, vendor_name, created_at, created_by').order('created_at', { ascending: false }).limit(10),
-          supabase.from('ct_power_reports').select('id, site_id, status, created_at, created_by').order('created_at', { ascending: false }).limit(10)
-        ]);
+        const { data, error } = await supabase
+          .from('system_activities')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(20);
 
-        const activities = [];
-        
-        if (memosRes.data) {
-          memosRes.data.forEach(memo => {
-            activities.push({
-              id: memo.id,
-              type: 'memo',
-              description: `Memo created: ${memo.title}`,
-              user_id: memo.created_by,
-              created_at: memo.created_at,
-              metadata: null
+        if (error) {
+          console.error('Error fetching system activities:', error);
+          // Fallback to existing data approach
+          const [memosRes, invoicesRes, reportsRes] = await Promise.all([
+            supabase.from('memos').select('id, title, created_at, created_by').order('created_at', { ascending: false }).limit(10),
+            supabase.from('accounts_invoices').select('id, invoice_number, vendor_name, created_at, created_by').order('created_at', { ascending: false }).limit(10),
+            supabase.from('ct_power_reports').select('id, site_id, status, created_at, created_by').order('created_at', { ascending: false }).limit(10)
+          ]);
+
+          const activities = [];
+          
+          if (memosRes.data) {
+            memosRes.data.forEach(memo => {
+              activities.push({
+                id: memo.id,
+                type: 'memo',
+                description: `Memo created: ${memo.title}`,
+                user_id: memo.created_by,
+                created_at: memo.created_at,
+                metadata: null
+              });
             });
-          });
+          }
+
+          if (invoicesRes.data) {
+            invoicesRes.data.forEach(invoice => {
+              activities.push({
+                id: invoice.id,
+                type: 'invoice',
+                description: `Invoice ${invoice.invoice_number} for ${invoice.vendor_name}`,
+                user_id: invoice.created_by,
+                created_at: invoice.created_at,
+                metadata: null
+              });
+            });
+          }
+
+          if (reportsRes.data) {
+            reportsRes.data.forEach(report => {
+              activities.push({
+                id: report.id,
+                type: 'report',
+                description: `Site report for ${report.site_id}`,
+                user_id: report.created_by,
+                created_at: report.created_at,
+                metadata: null
+              });
+            });
+          }
+
+          return activities.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
         }
 
-        if (invoicesRes.data) {
-          invoicesRes.data.forEach(invoice => {
-            activities.push({
-              id: invoice.id,
-              type: 'invoice',
-              description: `Invoice ${invoice.invoice_number} for ${invoice.vendor_name}`,
-              user_id: invoice.created_by,
-              created_at: invoice.created_at,
-              metadata: null
-            });
-          });
-        }
-
-        if (reportsRes.data) {
-          reportsRes.data.forEach(report => {
-            activities.push({
-              id: report.id,
-              type: 'report',
-              description: `Site report for ${report.site_id}`,
-              user_id: report.created_by,
-              created_at: report.created_at,
-              metadata: null
-            });
-          });
-        }
-
-        return activities.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+        return data || [];
       },
     });
   };
@@ -71,15 +82,23 @@ export const useAdminOperations = () => {
       queryFn: async () => {
         const { data, error } = await supabase
           .from("departments")
-          .select("*");
+          .select(`
+            id,
+            name,
+            description,
+            manager_id,
+            employee_count,
+            created_at,
+            updated_at
+          `);
 
         if (error) throw error;
         
         return (data || []).map(dept => ({
           ...dept,
           description: dept.description || null,
-          manager_id: null,
-          employee_count: null,
+          manager_id: dept.manager_id || null,
+          employee_count: dept.employee_count || null,
           profiles: null
         })) as DepartmentWithManager[];
       },
@@ -127,6 +146,9 @@ export const useAdminOperations = () => {
     mutationFn: async ({ id, data }: { id: string; data: Partial<DepartmentWithManager> }) => {
       const updateData = {
         name: data.name,
+        description: data.description,
+        manager_id: data.manager_id,
+        employee_count: data.employee_count,
       };
 
       const { error } = await supabase

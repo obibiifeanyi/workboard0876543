@@ -14,18 +14,26 @@ export const useAuth = () => {
       async (event, session) => {
         if (session?.user) {
           setUser(session.user);
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('role, account_type')
-            .eq('id', session.user.id)
-            .single();
+          
+          // Defer profile queries to avoid blocking auth state changes
+          setTimeout(async () => {
+            try {
+              const { data: profile } = await supabase
+                .from('profiles')
+                .select('role, account_type')
+                .eq('id', session.user.id)
+                .single();
 
-          if (profile?.role) {
-            localStorage.setItem('userRole', profile.role);
-          }
-          if (profile?.account_type) {
-            localStorage.setItem('accountType', profile.account_type);
-          }
+              if (profile?.role) {
+                localStorage.setItem('userRole', profile.role);
+              }
+              if (profile?.account_type) {
+                localStorage.setItem('accountType', profile.account_type);
+              }
+            } catch (error) {
+              console.error('Error fetching profile:', error);
+            }
+          }, 0);
         } else {
           setUser(null);
           localStorage.removeItem('userRole');

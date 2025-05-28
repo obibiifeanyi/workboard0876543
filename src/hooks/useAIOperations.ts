@@ -12,7 +12,24 @@ export const useAIOperations = () => {
     return useQuery({
       queryKey: ['ai_results'],
       queryFn: async () => {
-        // Use memos table as a placeholder for AI results
+        // Try to use document_analysis table first
+        const { data: analysisData, error: analysisError } = await supabase
+          .from('document_analysis')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (!analysisError && analysisData) {
+          return analysisData.map(analysis => ({
+            id: analysis.id,
+            query_text: `Document Analysis: ${analysis.file_name}`,
+            result_data: analysis.analysis_result || { summary: 'Analysis completed' },
+            model_used: 'gpt-3.5-turbo',
+            created_by: analysis.created_by,
+            created_at: analysis.created_at
+          })) as unknown as AIResult[];
+        }
+
+        // Fallback to memos table
         const { data, error } = await supabase
           .from('memos')
           .select('*')
@@ -34,6 +51,23 @@ export const useAIOperations = () => {
   const useCreateAIResult = () => {
     return useMutation({
       mutationFn: async (newResult: Omit<AIResult, 'id' | 'created_at' | 'updated_at'>) => {
+        // Try to use document_analysis table first
+        const { data: analysisData, error: analysisError } = await supabase
+          .from('document_analysis')
+          .insert({
+            file_name: newResult.query_text,
+            analysis_result: newResult.result_data,
+            status: 'completed',
+            created_by: newResult.created_by
+          })
+          .select()
+          .single();
+
+        if (!analysisError && analysisData) {
+          return analysisData;
+        }
+
+        // Fallback to memos table
         const { data, error } = await supabase
           .from('memos')
           .insert({
@@ -68,7 +102,25 @@ export const useAIOperations = () => {
     return useQuery({
       queryKey: ['ai_knowledge_base'],
       queryFn: async () => {
-        // Use memos table for knowledge base entries
+        // Try to use ai_documents table first
+        const { data: aiDocsData, error: aiDocsError } = await supabase
+          .from('ai_documents')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (!aiDocsError && aiDocsData) {
+          return aiDocsData.map(doc => ({
+            id: doc.id,
+            title: doc.title,
+            content: doc.content,
+            category: doc.category || 'general',
+            tags: doc.tags || [],
+            created_by: doc.created_by,
+            created_at: doc.created_at
+          })) as unknown as AIKnowledgeBase[];
+        }
+
+        // Fallback to memos table
         const { data, error } = await supabase
           .from('memos')
           .select('*')
@@ -92,6 +144,24 @@ export const useAIOperations = () => {
   const useCreateKnowledgeEntry = () => {
     return useMutation({
       mutationFn: async (newEntry: Omit<AIKnowledgeBase, 'id' | 'created_at' | 'updated_at'>) => {
+        // Try to use ai_documents table first
+        const { data: aiDocData, error: aiDocError } = await supabase
+          .from('ai_documents')
+          .insert({
+            title: newEntry.title,
+            content: newEntry.content,
+            category: newEntry.category,
+            tags: newEntry.tags,
+            created_by: newEntry.created_by
+          })
+          .select()
+          .single();
+
+        if (!aiDocError && aiDocData) {
+          return aiDocData;
+        }
+
+        // Fallback to memos table
         const { data, error } = await supabase
           .from('memos')
           .insert({

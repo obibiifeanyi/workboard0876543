@@ -56,6 +56,39 @@ export type Database = {
           },
         ]
       }
+      ai_documents: {
+        Row: {
+          category: string | null
+          content: string
+          created_at: string
+          created_by: string | null
+          id: string
+          tags: string[] | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          content: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          content?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       assets_inventory: {
         Row: {
           condition: string | null
@@ -283,21 +316,60 @@ export type Database = {
       departments: {
         Row: {
           created_at: string | null
+          description: string | null
+          employee_count: number | null
           id: string
+          manager_id: string | null
           name: string
           updated_at: string | null
         }
         Insert: {
           created_at?: string | null
+          description?: string | null
+          employee_count?: number | null
           id?: string
+          manager_id?: string | null
           name: string
           updated_at?: string | null
         }
         Update: {
           created_at?: string | null
+          description?: string | null
+          employee_count?: number | null
           id?: string
+          manager_id?: string | null
           name?: string
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      document_analysis: {
+        Row: {
+          analysis_result: Json | null
+          created_at: string
+          created_by: string | null
+          file_name: string
+          id: string
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          analysis_result?: Json | null
+          created_at?: string
+          created_by?: string | null
+          file_name: string
+          id?: string
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          analysis_result?: Json | null
+          created_at?: string
+          created_by?: string | null
+          file_name?: string
+          id?: string
+          status?: string | null
+          updated_at?: string
         }
         Relationships: []
       }
@@ -473,6 +545,7 @@ export type Database = {
           id: string
           location: string | null
           new_id: string | null
+          phone: string | null
           phone_number: string | null
           position: string | null
           role: string | null
@@ -493,6 +566,7 @@ export type Database = {
           id: string
           location?: string | null
           new_id?: string | null
+          phone?: string | null
           phone_number?: string | null
           position?: string | null
           role?: string | null
@@ -513,6 +587,7 @@ export type Database = {
           id?: string
           location?: string | null
           new_id?: string | null
+          phone?: string | null
           phone_number?: string | null
           position?: string | null
           role?: string | null
@@ -534,6 +609,38 @@ export type Database = {
             columns: ["role_id"]
             isOneToOne: false
             referencedRelation: "roles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_assignments: {
+        Row: {
+          created_at: string
+          id: string
+          project_id: string | null
+          staff_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          project_id?: string | null
+          staff_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          project_id?: string | null
+          staff_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_assignments_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
             referencedColumns: ["id"]
           },
         ]
@@ -648,6 +755,33 @@ export type Database = {
           id?: string
           name?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      system_activities: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          metadata: Json | null
+          type: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          metadata?: Json | null
+          type: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          metadata?: Json | null
+          type?: string
+          user_id?: string | null
         }
         Relationships: []
       }

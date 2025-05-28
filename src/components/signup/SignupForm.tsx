@@ -21,19 +21,36 @@ export const SignupForm = ({ onSignup, error }: SignupFormProps) => {
   const [role, setRole] = useState("staff");
   const [accountType, setAccountType] = useState("staff");
   const [loading, setLoading] = useState(false);
+  const [formErrors, setFormErrors] = useState<string[]>([]);
+
+  const validateForm = () => {
+    const errors: string[] = [];
+    
+    if (!email || !password || !fullName) {
+      errors.push("Please fill in all required fields");
+    }
+    
+    if (password !== confirmPassword) {
+      errors.push("Passwords do not match");
+    }
+    
+    if (password.length < 6) {
+      errors.push("Password must be at least 6 characters long");
+    }
+    
+    if (!/\S+@\S+\.\S+/.test(email)) {
+      errors.push("Please enter a valid email address");
+    }
+    
+    setFormErrors(errors);
+    return errors.length === 0;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFormErrors([]);
     
-    if (!email || !password || !fullName) {
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      return;
-    }
-
-    if (password.length < 6) {
+    if (!validateForm()) {
       return;
     }
 
@@ -53,19 +70,30 @@ export const SignupForm = ({ onSignup, error }: SignupFormProps) => {
     if (error.includes("Database error saving new user")) {
       return "There was an issue creating your account. Please try again or contact support.";
     }
+    if (error.includes("Invalid email")) {
+      return "Please enter a valid email address.";
+    }
     return error;
   };
 
+  const allErrors = [...formErrors, ...(error ? [getErrorMessage(error)] : [])];
+
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      {error && (
+      {allErrors.length > 0 && (
         <Alert variant="destructive" className="mb-4">
-          <AlertDescription>{getErrorMessage(error)}</AlertDescription>
+          <AlertDescription>
+            <ul className="list-disc list-inside space-y-1">
+              {allErrors.map((err, index) => (
+                <li key={index}>{err}</li>
+              ))}
+            </ul>
+          </AlertDescription>
         </Alert>
       )}
 
       <div className="space-y-2 text-left">
-        <Label htmlFor="fullName">Full Name</Label>
+        <Label htmlFor="fullName">Full Name *</Label>
         <Input
           id="fullName"
           type="text"
@@ -79,7 +107,7 @@ export const SignupForm = ({ onSignup, error }: SignupFormProps) => {
       </div>
 
       <div className="space-y-2 text-left">
-        <Label htmlFor="email">Email</Label>
+        <Label htmlFor="email">Email *</Label>
         <Input
           id="email"
           type="email"
@@ -106,7 +134,7 @@ export const SignupForm = ({ onSignup, error }: SignupFormProps) => {
       </div>
 
       <div className="space-y-2 text-left">
-        <Label htmlFor="role">Role</Label>
+        <Label htmlFor="role">Role *</Label>
         <Select value={role} onValueChange={setRole} disabled={loading}>
           <SelectTrigger className="bg-black/5 dark:bg-white/5 border-none">
             <SelectValue placeholder="Select your role" />
@@ -122,7 +150,7 @@ export const SignupForm = ({ onSignup, error }: SignupFormProps) => {
       </div>
 
       <div className="space-y-2 text-left">
-        <Label htmlFor="accountType">Account Type</Label>
+        <Label htmlFor="accountType">Account Type *</Label>
         <Select value={accountType} onValueChange={setAccountType} disabled={loading}>
           <SelectTrigger className="bg-black/5 dark:bg-white/5 border-none">
             <SelectValue placeholder="Select account type" />
@@ -138,7 +166,7 @@ export const SignupForm = ({ onSignup, error }: SignupFormProps) => {
       </div>
 
       <div className="space-y-2 text-left">
-        <Label htmlFor="password">Password</Label>
+        <Label htmlFor="password">Password *</Label>
         <Input
           id="password"
           type="password"
@@ -153,7 +181,7 @@ export const SignupForm = ({ onSignup, error }: SignupFormProps) => {
       </div>
 
       <div className="space-y-2 text-left">
-        <Label htmlFor="confirmPassword">Confirm Password</Label>
+        <Label htmlFor="confirmPassword">Confirm Password *</Label>
         <Input
           id="confirmPassword"
           type="password"
@@ -166,14 +194,10 @@ export const SignupForm = ({ onSignup, error }: SignupFormProps) => {
         />
       </div>
 
-      {password !== confirmPassword && confirmPassword && (
-        <p className="text-sm text-destructive">Passwords do not match</p>
-      )}
-
       <Button 
         type="submit" 
         className="w-full" 
-        disabled={loading || password !== confirmPassword || password.length < 6}
+        disabled={loading || !email || !password || !fullName}
       >
         {loading ? (
           <>
