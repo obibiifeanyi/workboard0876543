@@ -1,31 +1,28 @@
+
 import { Database } from "@/integrations/supabase/types";
-import { ProfileWithDetails, TaskWithAssignee } from "./common";
 
 export interface ProjectWithAssignments {
   id: string;
   title: string;
   description: string | null;
-  client_name: string | null;
-  budget: number | null;
-  location: string | null;
+  status: string | null;
   start_date: string | null;
   end_date: string | null;
-  status: string | null;
-  created_by: string | null;
-  created_at: string;
-  updated_at: string;
+  department_id: string | null;
   project_assignments: Array<{
     id: string;
     project_id: string | null;
     staff_id: string | null;
-    profiles?: {
-      full_name: string;
-    };
-    created_at: string | null;
-    updated_at: string | null;
+    staff_name: string;
   }>;
 }
 
-export interface TeamMember extends ProfileWithDetails {
-  tasks?: TaskWithAssignee[];
+export interface TeamMember {
+  id: string;
+  full_name: string | null;
+  avatar_url: string | null;
+  department: string | null;
+  role: string | null;
+  created_at: string;
+  updated_at: string;
 }

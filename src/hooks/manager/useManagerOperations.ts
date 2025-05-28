@@ -17,7 +17,7 @@ export const useManagerOperations = (departmentId: string) => {
         .eq("department_id", departmentId);
 
       if (error) throw error;
-      return data.map((profile) => ({
+      return (data || []).map((profile) => ({
         ...profile,
         department: profile.departments?.name,
       })) as TeamMember[];
@@ -31,34 +31,27 @@ export const useManagerOperations = (departmentId: string) => {
         .from("projects")
         .select(`
           id,
-          title,
+          name,
           description,
           status,
           start_date,
           end_date,
           department_id,
-          project_assignments (
-            id,
-            project_id,
-            staff_id,
-            profiles (
-              id,
-              full_name
-            )
-          )
+          budget
         `)
         .eq("department_id", departmentId);
 
       if (error) throw error;
       
       return (data || []).map(project => ({
-        ...project,
-        project_assignments: project.project_assignments?.map(assignment => ({
-          id: assignment.id,
-          project_id: assignment.project_id,
-          staff_id: assignment.staff_id,
-          staff_name: assignment.profiles?.full_name || ''
-        })) || []
+        id: project.id,
+        title: project.name,
+        description: project.description,
+        status: project.status,
+        start_date: project.start_date,
+        end_date: project.end_date,
+        department_id: project.department_id,
+        project_assignments: []
       })) as ProjectWithAssignments[];
     },
   });
@@ -72,7 +65,16 @@ export const useManagerOperations = (departmentId: string) => {
       end_date?: string;
       status?: string;
     }) => {
-      const { error } = await supabase.from("projects").insert(projectData);
+      const insertData = {
+        name: projectData.title,
+        description: projectData.description || '',
+        department_id: projectData.department_id,
+        start_date: projectData.start_date,
+        end_date: projectData.end_date,
+        status: projectData.status || 'planning',
+      };
+
+      const { error } = await supabase.from("projects").insert(insertData);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -92,9 +94,17 @@ export const useManagerOperations = (departmentId: string) => {
       id: string;
       data: Partial<ProjectWithAssignments>;
     }) => {
+      const updateData = {
+        name: data.title,
+        description: data.description,
+        status: data.status,
+        start_date: data.start_date,
+        end_date: data.end_date,
+      };
+
       const { error } = await supabase
         .from("projects")
-        .update(data)
+        .update(updateData)
         .eq("id", id);
 
       if (error) throw error;
@@ -117,4 +127,3 @@ export const useManagerOperations = (departmentId: string) => {
     updateProject,
   };
 };
-

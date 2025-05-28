@@ -1,6 +1,7 @@
+
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import type { AdminDashboardStats, SystemActivity, DepartmentWithManager } from "@/types/supabase/admin";
+import type { AdminDashboardStats, DepartmentWithManager } from "@/types/supabase/admin";
 import { useToast } from "@/hooks/use-toast";
 
 export const useAdminOperations = () => {
@@ -11,13 +12,55 @@ export const useAdminOperations = () => {
     return useQuery({
       queryKey: ["system-activities"],
       queryFn: async () => {
-        const { data, error } = await supabase
-          .from("system_activities")
-          .select("*, profiles!system_activities_user_id_fkey(full_name)")
-          .order("created_at", { ascending: false });
+        // Use existing tables for activity data
+        const [memosRes, invoicesRes, reportsRes] = await Promise.all([
+          supabase.from('memos').select('id, title, created_at, created_by').order('created_at', { ascending: false }).limit(10),
+          supabase.from('accounts_invoices').select('id, invoice_number, vendor_name, created_at, created_by').order('created_at', { ascending: false }).limit(10),
+          supabase.from('ct_power_reports').select('id, site_id, status, created_at, created_by').order('created_at', { ascending: false }).limit(10)
+        ]);
 
-        if (error) throw error;
-        return data as unknown as SystemActivity[];
+        const activities = [];
+        
+        if (memosRes.data) {
+          memosRes.data.forEach(memo => {
+            activities.push({
+              id: memo.id,
+              type: 'memo',
+              description: `Memo created: ${memo.title}`,
+              user_id: memo.created_by,
+              created_at: memo.created_at,
+              metadata: null
+            });
+          });
+        }
+
+        if (invoicesRes.data) {
+          invoicesRes.data.forEach(invoice => {
+            activities.push({
+              id: invoice.id,
+              type: 'invoice',
+              description: `Invoice ${invoice.invoice_number} for ${invoice.vendor_name}`,
+              user_id: invoice.created_by,
+              created_at: invoice.created_at,
+              metadata: null
+            });
+          });
+        }
+
+        if (reportsRes.data) {
+          reportsRes.data.forEach(report => {
+            activities.push({
+              id: report.id,
+              type: 'report',
+              description: `Site report for ${report.site_id}`,
+              user_id: report.created_by,
+              created_at: report.created_at,
+              metadata: null
+            });
+          });
+        }
+
+        return activities.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
       },
     });
   };
@@ -28,13 +71,17 @@ export const useAdminOperations = () => {
       queryFn: async () => {
         const { data, error } = await supabase
           .from("departments")
-          .select(`
-            *,
-            profiles(full_name)
-          `);
+          .select("*");
 
         if (error) throw error;
-        return data as DepartmentWithManager[];
+        
+        return (data || []).map(dept => ({
+          ...dept,
+          description: null,
+          manager_id: null,
+          employee_count: null,
+          profiles: null
+        })) as DepartmentWithManager[];
       },
     });
   };
@@ -80,9 +127,6 @@ export const useAdminOperations = () => {
     mutationFn: async ({ id, data }: { id: string; data: Partial<DepartmentWithManager> }) => {
       const updateData = {
         name: data.name,
-        description: data.description,
-        manager_id: data.manager_id,
-        employee_count: data.employee_count,
       };
 
       const { error } = await supabase

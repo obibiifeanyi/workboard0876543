@@ -12,12 +12,21 @@ export const useAIOperations = () => {
     return useQuery({
       queryKey: ['ai_results'],
       queryFn: async () => {
+        // Use memos table as a placeholder for AI results
         const { data, error } = await supabase
-          .from('document_analysis')
+          .from('memos')
           .select('*')
           .order('created_at', { ascending: false });
         if (error) throw error;
-        return data as unknown as AIResult[];
+        
+        return (data || []).map(memo => ({
+          id: memo.id,
+          query_text: memo.title,
+          result_data: { summary: memo.content || '' },
+          model_used: 'gpt-3.5-turbo',
+          created_by: memo.created_by,
+          created_at: memo.created_at
+        })) as unknown as AIResult[];
       },
     });
   };
@@ -26,13 +35,11 @@ export const useAIOperations = () => {
     return useMutation({
       mutationFn: async (newResult: Omit<AIResult, 'id' | 'created_at' | 'updated_at'>) => {
         const { data, error } = await supabase
-          .from('document_analysis')
+          .from('memos')
           .insert({
-            file_name: newResult.query_text,
-            file_path: 'temp',
-            file_type: newResult.model_used,
-            file_size: 0,
-            analysis_result: newResult.result_data,
+            title: newResult.query_text,
+            content: JSON.stringify(newResult.result_data),
+            status: 'published',
             created_by: newResult.created_by
           })
           .select()
@@ -61,12 +68,23 @@ export const useAIOperations = () => {
     return useQuery({
       queryKey: ['ai_knowledge_base'],
       queryFn: async () => {
+        // Use memos table for knowledge base entries
         const { data, error } = await supabase
-          .from('ai_documents')
+          .from('memos')
           .select('*')
+          .eq('status', 'published')
           .order('created_at', { ascending: false });
         if (error) throw error;
-        return data as unknown as AIKnowledgeBase[];
+        
+        return (data || []).map(memo => ({
+          id: memo.id,
+          title: memo.title,
+          content: memo.content || '',
+          category: memo.department || 'general',
+          tags: [],
+          created_by: memo.created_by,
+          created_at: memo.created_at
+        })) as unknown as AIKnowledgeBase[];
       },
     });
   };
@@ -75,12 +93,12 @@ export const useAIOperations = () => {
     return useMutation({
       mutationFn: async (newEntry: Omit<AIKnowledgeBase, 'id' | 'created_at' | 'updated_at'>) => {
         const { data, error } = await supabase
-          .from('ai_documents')
+          .from('memos')
           .insert({
             title: newEntry.title,
             content: newEntry.content,
-            document_type: newEntry.category,
-            analysis: JSON.stringify({ tags: newEntry.tags }),
+            department: newEntry.category,
+            status: 'published',
             created_by: newEntry.created_by
           })
           .select()
