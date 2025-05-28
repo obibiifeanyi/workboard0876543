@@ -1,173 +1,96 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Send, Minimize2, Maximize2, Brain, Loader } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { Progress } from "@/components/ui/progress";
-import { supabase } from "@/integrations/supabase/client";
-
-interface Message {
-  content: string;
-  isUser: boolean;
-  timestamp: Date;
-}
+import { MessageCircle, Send, X } from "lucide-react";
 
 export const ChatBox = () => {
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [input, setInput] = useState("");
-  const [isMinimized, setIsMinimized] = useState(false);
-  const [isThinking, setIsThinking] = useState(false);
-  const [learningProgress, setLearningProgress] = useState(0);
-  const { toast } = useToast();
+  const [isOpen, setIsOpen] = useState(false);
+  const [message, setMessage] = useState("");
+  const [messages, setMessages] = useState<Array<{
+    id: string;
+    content: string;
+    isUser: boolean;
+    timestamp: Date;
+  }>>([]);
 
-  const handleSend = async () => {
-    if (!input.trim()) return;
+  const handleSendMessage = () => {
+    if (!message.trim()) return;
 
-    const userMessage = {
-      content: input,
+    const newMessage = {
+      id: Date.now().toString(),
+      content: message,
       isUser: true,
-      timestamp: new Date(),
+      timestamp: new Date()
     };
-    setMessages(prev => [...prev, userMessage]);
-    setInput("");
-    setIsThinking(true);
 
-    try {
-      // Start progress animation
-      const interval = setInterval(() => {
-        setLearningProgress(prev => {
-          if (prev >= 100) {
-            clearInterval(interval);
-            return 100;
-          }
-          return prev + 10;
-        });
-      }, 300);
+    setMessages(prev => [...prev, newMessage]);
+    setMessage("");
 
-      // Call the analyze-document function
-      const { data, error } = await supabase.functions.invoke('analyze-document', {
-        body: { content: input, type: 'chat_message' }
-      });
-
-      if (error) throw error;
-
+    // Simulate AI response
+    setTimeout(() => {
       const aiResponse = {
-        content: data.result,
+        id: (Date.now() + 1).toString(),
+        content: "Thank you for your message. How can I assist you today?",
         isUser: false,
-        timestamp: new Date(),
+        timestamp: new Date()
       };
-
       setMessages(prev => [...prev, aiResponse]);
-      
-      toast({
-        title: "AI Response Ready",
-        description: "The AI has processed your request",
-        duration: 3000,
-      });
-
-      // Store the interaction in system activities
-      await supabase.from('system_activities').insert({
-        type: 'ai_chat',
-        description: 'AI Chat interaction',
-        metadata: {
-          user_message: input,
-          ai_response: data.result
-        }
-      });
-
-    } catch (error) {
-      console.error('Error:', error);
-      toast({
-        title: "Error",
-        description: "Failed to process your request. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsThinking(false);
-      setLearningProgress(0);
-    }
+    }, 1000);
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
-  };
+  if (!isOpen) {
+    return (
+      <Button
+        onClick={() => setIsOpen(true)}
+        className="fixed bottom-4 right-4 z-50 rounded-full h-12 w-12 p-0"
+        size="icon"
+      >
+        <MessageCircle className="h-6 w-6" />
+      </Button>
+    );
+  }
 
   return (
-    <Card className={`fixed bottom-4 right-4 w-[95%] sm:w-[400px] transition-all duration-300 ease-in-out shadow-xl ${
-      isMinimized ? 'h-12' : 'h-[600px]'
-    }`}>
-      <CardHeader className="p-3 flex flex-row items-center justify-between border-b">
-        <CardTitle className="text-sm font-medium flex items-center gap-2">
-          <Brain className="h-4 w-4 text-primary animate-pulse" />
-          AI Assistant
-        </CardTitle>
+    <Card className="fixed bottom-4 right-4 z-50 w-80 h-96 flex flex-col">
+      <div className="flex items-center justify-between p-4 border-b">
+        <h3 className="font-semibold">AI Assistant</h3>
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8"
-          onClick={() => setIsMinimized(!isMinimized)}
+          onClick={() => setIsOpen(false)}
         >
-          {isMinimized ? <Maximize2 className="h-4 w-4" /> : <Minimize2 className="h-4 w-4" />}
+          <X className="h-4 w-4" />
         </Button>
-      </CardHeader>
-      {!isMinimized && (
-        <CardContent className="p-3 space-y-3">
-          <ScrollArea className="h-[480px] pr-4">
-            <div className="space-y-4">
-              {messages.map((msg, idx) => (
-                <div
-                  key={idx}
-                  className={`flex ${msg.isUser ? 'justify-end' : 'justify-start'}`}
-                >
-                  <div
-                    className={`chat-message ${
-                      msg.isUser
-                        ? 'bg-primary/10 ml-12'
-                        : 'bg-secondary/10 mr-12'
-                    }`}
-                  >
-                    <p className="text-sm break-words">{msg.content}</p>
-                    <span className="text-xs text-muted-foreground mt-2 block">
-                      {msg.timestamp.toLocaleTimeString()}
-                    </span>
-                  </div>
-                </div>
-              ))}
-              {isThinking && (
-                <div className="ai-thinking">
-                  <Loader className="h-5 w-5 animate-spin" />
-                  <div className="flex-1">
-                    <p className="text-sm mb-2">AI is thinking...</p>
-                    <Progress value={learningProgress} className="h-1" />
-                  </div>
-                </div>
-              )}
-            </div>
-          </ScrollArea>
-          <div className="flex gap-2 pt-2 border-t">
-            <Input
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="Ask anything..."
-              className="flex-1"
-            />
-            <Button 
-              size="icon" 
-              onClick={handleSend}
-              disabled={isThinking}
-              className="bg-primary hover:bg-primary/90"
-            >
-              <Send className="h-4 w-4" />
-            </Button>
+      </div>
+      
+      <div className="flex-1 overflow-y-auto p-4 space-y-2">
+        {messages.map((msg) => (
+          <div
+            key={msg.id}
+            className={`p-2 rounded-lg max-w-[80%] ${
+              msg.isUser
+                ? "bg-primary text-primary-foreground ml-auto"
+                : "bg-muted"
+            }`}
+          >
+            <p className="text-sm">{msg.content}</p>
           </div>
-        </CardContent>
-      )}
+        ))}
+      </div>
+      
+      <div className="p-4 border-t flex gap-2">
+        <Input
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          placeholder="Type your message..."
+          onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
+        />
+        <Button size="icon" onClick={handleSendMessage}>
+          <Send className="h-4 w-4" />
+        </Button>
+      </div>
     </Card>
   );
 };

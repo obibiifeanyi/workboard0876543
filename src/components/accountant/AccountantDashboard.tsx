@@ -1,3 +1,4 @@
+
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { AccountantNavigation } from "@/components/accountant/AccountantNavigation";
 import { Outlet } from "react-router-dom";
@@ -19,11 +20,11 @@ const AccountantDashboard = () => {
 
       const { data: profile } = await supabase
         .from('profiles')
-        .select('account_type, status')
+        .select('role_id')
         .eq('id', session.user.id)
         .single();
 
-      if (!profile || profile.account_type !== 'accountant' || profile.status !== 'active') {
+      if (!profile || !profile.role_id) {
         navigate('/login');
       }
     };

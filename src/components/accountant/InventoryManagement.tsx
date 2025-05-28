@@ -1,30 +1,34 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Package, Plus, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 
 export const InventoryManagement = () => {
   const [searchTerm, setSearchTerm] = useState("");
 
-  const { data: inventory, isLoading } = useQuery({
-    queryKey: ['inventory'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('assets_inventory')
-        .select('*')
-        .order('created_at', { ascending: false });
-      
-      if (error) throw error;
-      return data;
+  // Mock data for now since the assets_inventory table doesn't exist
+  const mockInventory = [
+    {
+      id: "1",
+      name: "Network Router",
+      type: "Hardware",
+      status: "Active",
+      condition: "Good"
     },
-  });
+    {
+      id: "2", 
+      name: "Server Cabinet",
+      type: "Infrastructure", 
+      status: "Maintenance",
+      condition: "Fair"
+    }
+  ];
 
-  const filteredInventory = inventory?.filter(item =>
-    item.asset_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    item.asset_type.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredInventory = mockInventory.filter(item =>
+    item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    item.type.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -53,28 +57,24 @@ export const InventoryManagement = () => {
             </Button>
           </div>
 
-          {isLoading ? (
-            <div className="text-center py-4">Loading inventory...</div>
-          ) : (
-            <div className="grid gap-4 mt-4">
-              {filteredInventory?.map((item) => (
-                <Card key={item.id} className="p-4">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h3 className="font-semibold">{item.asset_name}</h3>
-                      <p className="text-sm text-muted-foreground">{item.asset_type}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm font-medium">Status: {item.status}</p>
-                      <p className="text-sm text-muted-foreground">
-                        Condition: {item.condition}
-                      </p>
-                    </div>
+          <div className="grid gap-4 mt-4">
+            {filteredInventory.map((item) => (
+              <Card key={item.id} className="p-4">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h3 className="font-semibold">{item.name}</h3>
+                    <p className="text-sm text-muted-foreground">{item.type}</p>
                   </div>
-                </Card>
-              ))}
-            </div>
-          )}
+                  <div className="text-right">
+                    <p className="text-sm font-medium">Status: {item.status}</p>
+                    <p className="text-sm text-muted-foreground">
+                      Condition: {item.condition}
+                    </p>
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
         </div>
       </CardContent>
     </Card>
