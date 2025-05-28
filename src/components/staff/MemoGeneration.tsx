@@ -1,214 +1,230 @@
-import { useState, useEffect } from "react";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { FileText, Send } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
 import { Label } from "@/components/ui/label";
-import { supabase } from "@/integrations/supabase/client";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useState } from "react";
+import { useMemoManagement } from "@/hooks/useMemoManagement";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { format } from "date-fns";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Edit, Trash2 } from "lucide-react";
 
 export const MemoGeneration = () => {
-  const [from, setFrom] = useState("");
-  const [to, setTo] = useState("Manager");
-  const [subject, setSubject] = useState("");
-  const [date, setDate] = useState("");
-  const [purpose, setPurpose] = useState("");
-  const [paymentItems, setPaymentItems] = useState([{ description: "", amount: "" }]);
-  const [accountDetails, setAccountDetails] = useState("");
-  const [userFullName, setUserFullName] = useState("");
-  const { toast } = useToast();
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+  const [department, setDepartment] = useState("");
+  const [status, setStatus] = useState("draft");
+  const [editingMemo, setEditingMemo] = useState<any>(null);
+  
+  const { 
+    myMemos, 
+    isLoadingMyMemos, 
+    createMemo, 
+    updateMemo, 
+    deleteMemo 
+  } = useMemoManagement();
 
-  useEffect(() => {
-    const fetchUserProfile = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('full_name')
-          .eq('id', user.id)
-          .single();
-        
-        if (profile?.full_name) {
-          setUserFullName(profile.full_name);
-          setFrom(profile.full_name);
-        }
-      }
-    };
-
-    fetchUserProfile();
-  }, []);
-
-  const handleAddPaymentItem = () => {
-    setPaymentItems([...paymentItems, { description: "", amount: "" }]);
-  };
-
-  const handlePaymentItemChange = (index: number, field: "description" | "amount", value: string) => {
-    const newItems = [...paymentItems];
-    newItems[index][field] = value;
-    setPaymentItems(newItems);
-  };
-
-  const calculateTotal = () => {
-    return paymentItems.reduce((sum, item) => {
-      const amount = parseFloat(item.amount.replace(/[^0-9.]/g, "")) || 0;
-      return sum + amount;
-    }, 0);
-  };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-NG", {
-      style: "currency",
-      currency: "NGN",
-      minimumFractionDigits: 2,
-    }).format(amount);
-  };
-
-  const handleSubmit = () => {
-    if (!from || !to || !subject || !date || !purpose) {
-      toast({
-        title: "Missing Fields",
-        description: "Please fill in all required fields",
-        variant: "destructive",
-      });
+  const handleSubmit = async () => {
+    if (!title || !content || !department) {
       return;
     }
 
-    toast({
-      title: "Memo Generated",
-      description: "Your memo has been generated and sent to the Manager successfully",
-    });
+    if (editingMemo) {
+      await updateMemo.mutateAsync({
+        id: editingMemo.id,
+        data: { title, content, department, status }
+      });
+      setEditingMemo(null);
+    } else {
+      await createMemo.mutateAsync({
+        title,
+        content,
+        department,
+        status,
+      });
+    }
 
     // Reset form
-    setSubject("");
-    setDate("");
-    setPurpose("");
-    setPaymentItems([{ description: "", amount: "" }]);
-    setAccountDetails("");
+    setTitle("");
+    setContent("");
+    setDepartment("");
+    setStatus("draft");
+  };
+
+  const handleEdit = (memo: any) => {
+    setEditingMemo(memo);
+    setTitle(memo.title);
+    setContent(memo.content);
+    setDepartment(memo.department || "");
+    setStatus(memo.status);
+  };
+
+  const handleDelete = async (memoId: string) => {
+    if (window.confirm("Are you sure you want to delete this memo?")) {
+      await deleteMemo.mutateAsync(memoId);
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'published':
+        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100';
+      case 'archived':
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-100';
+      default:
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100';
+    }
   };
 
   return (
-    <Card className="bg-black/10 dark:bg-white/5 backdrop-blur-lg border-none">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-lg font-medium">
-          <FileText className="h-5 w-5 text-primary" />
-          Generate Memo
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <div className="text-center font-bold text-xl mb-6">
-          COMMUNICATION TOWERS NIGERIA LIMITED
-          <div className="text-lg mt-1">INTERNAL MEMO</div>
-        </div>
-
-        <div className="grid gap-4">
-          <div className="grid gap-2">
-            <Label htmlFor="from">FROM:</Label>
+    <div className="space-y-6">
+      <Card className="glass-card border border-primary/20">
+        <CardHeader>
+          <CardTitle className="text-xl md:text-2xl">
+            {editingMemo ? "Edit Memo" : "Create New Memo"}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <Label htmlFor="memo-title">Title</Label>
             <Input
-              id="from"
-              value={from}
-              onChange={(e) => setFrom(e.target.value)}
-              className="bg-white/5 border-white/10"
-              readOnly
+              id="memo-title"
+              placeholder="Enter memo title..."
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
             />
           </div>
 
-          <div className="grid gap-2">
-            <Label htmlFor="to">TO:</Label>
-            <Input
-              id="to"
-              value={to}
-              className="bg-white/5 border-white/10"
-              readOnly
+          <div>
+            <Label htmlFor="memo-department">Department</Label>
+            <Select value={department} onValueChange={setDepartment}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select department" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="IT">IT Department</SelectItem>
+                <SelectItem value="HR">Human Resources</SelectItem>
+                <SelectItem value="Finance">Finance</SelectItem>
+                <SelectItem value="Operations">Operations</SelectItem>
+                <SelectItem value="Marketing">Marketing</SelectItem>
+                <SelectItem value="All">All Departments</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <Label htmlFor="memo-status">Status</Label>
+            <Select value={status} onValueChange={setStatus}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="draft">Draft</SelectItem>
+                <SelectItem value="published">Published</SelectItem>
+                <SelectItem value="archived">Archived</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <Label htmlFor="memo-content">Content</Label>
+            <Textarea
+              id="memo-content"
+              placeholder="Enter memo content..."
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              rows={6}
             />
           </div>
 
-          <div className="grid gap-2">
-            <Label htmlFor="subject">SUBJECT:</Label>
-            <Input
-              id="subject"
-              value={subject}
-              onChange={(e) => setSubject(e.target.value)}
-              className="bg-white/5 border-white/10"
-            />
+          <div className="flex space-x-2">
+            <Button
+              onClick={handleSubmit}
+              disabled={!title || !content || !department || createMemo.isPending || updateMemo.isPending}
+              className="flex-1"
+            >
+              {createMemo.isPending || updateMemo.isPending 
+                ? (editingMemo ? "Updating..." : "Creating...") 
+                : (editingMemo ? "Update Memo" : "Create Memo")
+              }
+            </Button>
+            {editingMemo && (
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setEditingMemo(null);
+                  setTitle("");
+                  setContent("");
+                  setDepartment("");
+                  setStatus("draft");
+                }}
+              >
+                Cancel
+              </Button>
+            )}
           </div>
+        </CardContent>
+      </Card>
 
-          <div className="grid gap-2">
-            <Label htmlFor="date">DATE:</Label>
-            <Input
-              id="date"
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              className="bg-white/5 border-white/10"
-            />
-          </div>
-        </div>
-
-        <div className="grid gap-2">
-          <Label htmlFor="purpose">Purpose:</Label>
-          <Textarea
-            id="purpose"
-            value={purpose}
-            onChange={(e) => setPurpose(e.target.value)}
-            className="min-h-[100px] bg-white/5 border-white/10"
-          />
-        </div>
-
-        <div className="space-y-4">
-          <Label>Payment Details:</Label>
-          {paymentItems.map((item, index) => (
-            <div key={index} className="grid grid-cols-2 gap-2">
-              <Input
-                placeholder="Description"
-                value={item.description}
-                onChange={(e) => handlePaymentItemChange(index, "description", e.target.value)}
-                className="bg-white/5 border-white/10"
-              />
-              <Input
-                placeholder="Amount (₦)"
-                value={item.amount}
-                onChange={(e) => handlePaymentItemChange(index, "amount", e.target.value)}
-                className="bg-white/5 border-white/10"
-              />
-            </div>
-          ))}
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handleAddPaymentItem}
-            className="w-full"
-          >
-            Add Payment Item
-          </Button>
-        </div>
-
-        <div className="text-right font-semibold">
-          Total: {formatCurrency(calculateTotal())}
-        </div>
-
-        <div className="grid gap-2">
-          <Label htmlFor="accountDetails">Payment in favor of (Account Details):</Label>
-          <Input
-            id="accountDetails"
-            placeholder="Account #, Bank, Account Name"
-            value={accountDetails}
-            onChange={(e) => setAccountDetails(e.target.value)}
-            className="bg-white/5 border-white/10"
-          />
-        </div>
-
-        <div className="mt-8">
-          <div className="text-center">
-            {userFullName}
-          </div>
-        </div>
-
-        <Button onClick={handleSubmit} className="w-full md:w-auto mt-6">
-          <Send className="h-4 w-4 mr-2" />
-          Generate & Send Memo
-        </Button>
-      </CardContent>
-    </Card>
+      <Card className="glass-card border border-primary/20">
+        <CardHeader>
+          <CardTitle className="text-xl">My Memos</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {isLoadingMyMemos ? (
+            <p>Loading...</p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Title</TableHead>
+                  <TableHead>Department</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Created</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {myMemos?.map((memo) => (
+                  <TableRow key={memo.id}>
+                    <TableCell className="font-medium">{memo.title}</TableCell>
+                    <TableCell>{memo.department || 'N/A'}</TableCell>
+                    <TableCell>
+                      <Badge className={getStatusColor(memo.status)}>
+                        {memo.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>{format(new Date(memo.created_at), 'MMM dd, yyyy')}</TableCell>
+                    <TableCell>
+                      <div className="flex space-x-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEdit(memo)}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDelete(memo.id)}
+                          disabled={deleteMemo.isPending}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+    </div>
   );
 };
