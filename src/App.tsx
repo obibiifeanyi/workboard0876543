@@ -1,9 +1,11 @@
+
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { RoleBasedRoute } from "@/components/RoleBasedRoute";
 import Index from "@/pages/Index";
 import Login from "@/pages/Login";
+import Signup from "@/pages/Signup";
 import StaffDashboard from "@/pages/staff/StaffDashboard";
 import ManagerDashboard from "@/pages/manager/ManagerDashboard";
 import AdminDashboard from "@/pages/admin/AdminDashboard";
@@ -44,6 +46,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
           
           {/* Accountant Routes */}
           <Route

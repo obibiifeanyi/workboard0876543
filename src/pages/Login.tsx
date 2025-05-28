@@ -1,5 +1,6 @@
+
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -111,6 +112,13 @@ const Login = () => {
           />
           <LoginHeader />
           <LoginForm onLogin={handleLogin} />
+          
+          <div className="mt-6 text-center text-sm">
+            <span className="text-muted-foreground">Don't have an account? </span>
+            <Link to="/signup" className="text-primary hover:underline font-medium">
+              Sign up here
+            </Link>
+          </div>
         </div>
       </div>
     </ErrorBoundary>

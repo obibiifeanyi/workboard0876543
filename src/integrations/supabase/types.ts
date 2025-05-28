@@ -174,10 +174,12 @@ export type Database = {
       }
       profiles: {
         Row: {
+          account_type: string | null
           avatar_url: string | null
           bio: string | null
           created_at: string
           department: string | null
+          department_id: string | null
           email: string | null
           full_name: string | null
           id: string
@@ -185,15 +187,19 @@ export type Database = {
           new_id: string | null
           phone_number: string | null
           position: string | null
+          role: string | null
           role_id: string | null
           settings: Json | null
+          status: string | null
           updated_at: string
         }
         Insert: {
+          account_type?: string | null
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
           department?: string | null
+          department_id?: string | null
           email?: string | null
           full_name?: string | null
           id: string
@@ -201,15 +207,19 @@ export type Database = {
           new_id?: string | null
           phone_number?: string | null
           position?: string | null
+          role?: string | null
           role_id?: string | null
           settings?: Json | null
+          status?: string | null
           updated_at?: string
         }
         Update: {
+          account_type?: string | null
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
           department?: string | null
+          department_id?: string | null
           email?: string | null
           full_name?: string | null
           id?: string
@@ -217,11 +227,20 @@ export type Database = {
           new_id?: string | null
           phone_number?: string | null
           position?: string | null
+          role?: string | null
           role_id?: string | null
           settings?: Json | null
+          status?: string | null
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "profiles_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "profiles_role_id_fkey"
             columns: ["role_id"]
