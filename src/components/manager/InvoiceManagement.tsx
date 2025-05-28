@@ -1,86 +1,57 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { FileText, Plus, Receipt } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 
+interface MockMemo {
+  id: string;
+  title: string;
+  department: string;
+  created_at: string;
+}
+
 export const InvoiceManagement = () => {
-  const [selectedMemo, setSelectedMemo] = useState<string | null>(null);
   const { toast } = useToast();
-  const queryClient = useQueryClient();
 
-  // Fetch memos
-  const { data: memos } = useQuery({
-    queryKey: ['memos'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('memos')
-        .select('*')
-        .order('created_at', { ascending: false });
-      
-      if (error) throw error;
-      return data;
+  // Mock data since memos and accounts_invoices tables don't exist
+  const [memos] = useState<MockMemo[]>([
+    {
+      id: "1",
+      title: "Equipment Purchase Request",
+      department: "IT",
+      created_at: new Date().toISOString(),
     },
-  });
-
-  // Create invoice mutation
-  const createInvoice = useMutation({
-    mutationFn: async (formData: {
-      memo_id: string;
-      amount: number;
-      client_name: string;
-      items: any[];
-    }) => {
-      const { data, error } = await supabase
-        .from('accounts_invoices')
-        .insert({
-          invoice_number: `INV-${Date.now()}`,
-          vendor_name: formData.client_name,
-          amount: formData.amount,
-          due_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-          description: `Invoice for memo ${formData.memo_id}`,
-          created_by: (await supabase.auth.getUser()).data.user?.id
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
+    {
+      id: "2",
+      title: "Monthly Maintenance Report",
+      department: "Operations",
+      created_at: new Date(Date.now() - 86400000).toISOString(),
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['accounts_invoices'] });
+    {
+      id: "3",
+      title: "Staff Training Budget",
+      department: "HR",
+      created_at: new Date(Date.now() - 172800000).toISOString(),
+    }
+  ]);
+
+  const handleCreateInvoice = async (memo: MockMemo) => {
+    try {
+      // Mock invoice creation - in a real app this would save to database
       toast({
         title: "Success",
-        description: "Invoice created successfully",
+        description: `Invoice created for memo: ${memo.title} (mock data)`,
       });
-    },
-    onError: (error) => {
-      console.error('Invoice creation error:', error);
+    } catch (error) {
+      console.error('Error creating invoice:', error);
       toast({
         title: "Error",
         description: "Failed to create invoice",
         variant: "destructive",
       });
-    },
-  });
-
-  const handleCreateInvoice = async (memo: any) => {
-    try {
-      await createInvoice.mutateAsync({
-        memo_id: memo.id,
-        amount: 0, // This should be calculated based on memo content
-        client_name: memo.department || "Client",
-        items: [{
-          description: memo.title,
-          amount: 0,
-        }],
-      });
-    } catch (error) {
-      console.error('Error creating invoice:', error);
     }
   };
 
@@ -95,13 +66,13 @@ export const InvoiceManagement = () => {
       <CardContent>
         <div className="space-y-4">
           <div className="grid gap-4">
-            {memos?.map((memo) => (
+            {memos.map((memo) => (
               <Card key={memo.id} className="p-4 bg-white/5">
                 <div className="flex items-center justify-between">
                   <div>
                     <h3 className="font-medium">{memo.title}</h3>
                     <p className="text-sm text-muted-foreground">
-                      {format(new Date(memo.created_at), 'PPP')}
+                      {memo.department} - {format(new Date(memo.created_at), 'PPP')}
                     </p>
                   </div>
                   <Button

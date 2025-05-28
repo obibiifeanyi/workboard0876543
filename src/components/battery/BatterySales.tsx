@@ -1,6 +1,5 @@
-import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,55 +20,59 @@ interface BatterySale {
   };
 }
 
+interface BatteryItem {
+  id: string;
+  model_name: string;
+  manufacturer: string;
+}
+
 export const BatterySales = () => {
   const { toast } = useToast();
   const [isAddingSale, setIsAddingSale] = useState(false);
 
-  const { data: availableBatteries } = useQuery({
-    queryKey: ['available-batteries'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('battery_inventory')
-        .select('*')
-        .eq('status', 'in_stock');
-
-      if (error) throw error;
-      return data;
+  // Mock data since battery tables don't exist in the database
+  const [availableBatteries] = useState<BatteryItem[]>([
+    {
+      id: "1",
+      model_name: "AGM Deep Cycle 12V",
+      manufacturer: "Optima"
     },
-  });
-
-  const { data: sales, refetch: refetchSales } = useQuery({
-    queryKey: ['battery-sales'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('battery_sales')
-        .select(`
-          *,
-          battery:battery_inventory(model_name, manufacturer)
-        `)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      return data as BatterySale[];
+    {
+      id: "2", 
+      model_name: "Lithium Ion 24V",
+      manufacturer: "Tesla"
     },
-  });
+    {
+      id: "3",
+      model_name: "Lead Acid 48V", 
+      manufacturer: "Interstate"
+    }
+  ]);
 
-  useEffect(() => {
-    const channel = supabase
-      .channel('sales-changes')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'battery_sales' },
-        () => {
-          refetchSales();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [refetchSales]);
+  const [sales] = useState<BatterySale[]>([
+    {
+      id: "1",
+      battery_id: "1",
+      client_id: "CLIENT001",
+      sale_date: new Date().toISOString(),
+      sale_price: 1500,
+      battery: {
+        model_name: "AGM Deep Cycle 12V",
+        manufacturer: "Optima"
+      }
+    },
+    {
+      id: "2",
+      battery_id: "2", 
+      client_id: "CLIENT002",
+      sale_date: new Date(Date.now() - 86400000).toISOString(),
+      sale_price: 2500,
+      battery: {
+        model_name: "Lithium Ion 24V",
+        manufacturer: "Tesla"
+      }
+    }
+  ]);
 
   const handleAddSale = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -84,30 +87,13 @@ export const BatterySales = () => {
         throw new Error('Missing required fields');
       }
 
-      const { error: saleError } = await supabase
-        .from('battery_sales')
-        .insert({
-          battery_id: batteryId,
-          client_id: clientId,
-          sale_price: salePrice,
-        });
-
-      if (saleError) throw saleError;
-
-      const { error: updateError } = await supabase
-        .from('battery_inventory')
-        .update({ status: 'sold' })
-        .eq('id', batteryId);
-
-      if (updateError) throw updateError;
-
+      // Mock sale recording - in a real app this would save to database
       toast({
         title: "Sale Recorded",
-        description: "Battery sale has been recorded successfully",
+        description: "Battery sale has been recorded successfully (mock data)",
       });
 
       setIsAddingSale(false);
-      refetchSales();
     } catch (error) {
       toast({
         title: "Error",
@@ -142,7 +128,7 @@ export const BatterySales = () => {
                       <SelectValue placeholder="Select battery" />
                     </SelectTrigger>
                     <SelectContent>
-                      {availableBatteries?.map((battery) => (
+                      {availableBatteries.map((battery) => (
                         <SelectItem key={battery.id} value={battery.id}>
                           {battery.model_name} - {battery.manufacturer}
                         </SelectItem>
@@ -172,24 +158,24 @@ export const BatterySales = () => {
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {sales?.map((sale) => (
+        {sales.map((sale) => (
           <Card key={sale.id} className="hover:shadow-lg transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">
-                {sale.battery?.model_name}
+                {sale.battery.model_name}
               </CardTitle>
               <DollarSign className="h-4 w-4 text-primary" />
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
                 <div className="text-sm text-muted-foreground">
-                  Manufacturer: {sale.battery?.manufacturer}
+                  Manufacturer: {sale.battery.manufacturer}
                 </div>
                 <div className="text-sm text-muted-foreground">
                   Client ID: {sale.client_id}
                 </div>
                 <div className="text-sm font-semibold">
-                  Sale Price: ${sale.sale_price}
+                  Sale Price: ₦{sale.sale_price.toLocaleString()}
                 </div>
                 <div className="text-sm text-muted-foreground">
                   Sale Date: {new Date(sale.sale_date).toLocaleDateString()}
