@@ -1,8 +1,11 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import type { Database } from '@/integrations/supabase/types/base';
-import type { DepartmentRow, ProjectAssignmentRow } from '@/integrations/supabase/types/department';
+import type { Database } from '@/integrations/supabase/types';
+
+type DepartmentRow = Database['public']['Tables']['departments']['Row'];
+type ProjectMemberRow = Database['public']['Tables']['project_members']['Row'];
 
 export const useCoreTables = () => {
   const { toast } = useToast();
@@ -14,7 +17,7 @@ export const useCoreTables = () => {
       queryFn: async () => {
         const { data, error } = await supabase
           .from('departments')
-          .select('*, profiles(full_name)');
+          .select('*');
         if (error) throw error;
         return data as DepartmentRow[];
       },
@@ -49,41 +52,35 @@ export const useCoreTables = () => {
     });
   };
 
-  const useProjectAssignments = () => {
+  const useProjectMembers = () => {
     return useQuery({
-      queryKey: ['project_assignments'],
+      queryKey: ['project_members'],
       queryFn: async () => {
         const { data, error } = await supabase
-          .from('project_assignments')
-          .select(`
-            id,
-            project_id,
-            staff_id,
-            created_at,
-            updated_at
-          `);
+          .from('project_members')
+          .select('*');
         if (error) throw error;
-        return data as ProjectAssignmentRow[];
+        return data as ProjectMemberRow[];
       },
     });
   };
 
-  const useCreateProjectAssignment = () => {
+  const useCreateProjectMember = () => {
     return useMutation({
-      mutationFn: async (newAssignment: Database['public']['Tables']['project_assignments']['Insert']) => {
+      mutationFn: async (newMember: Database['public']['Tables']['project_members']['Insert']) => {
         const { data, error } = await supabase
-          .from('project_assignments')
-          .insert(newAssignment)
+          .from('project_members')
+          .insert(newMember)
           .select()
           .single();
         if (error) throw error;
         return data;
       },
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ['project_assignments'] });
+        queryClient.invalidateQueries({ queryKey: ['project_members'] });
         toast({
           title: 'Success',
-          description: 'Project assignment created successfully',
+          description: 'Project member added successfully',
         });
       },
       onError: (error: Error) => {
@@ -99,7 +96,7 @@ export const useCoreTables = () => {
   return {
     useDepartments,
     useCreateDepartment,
-    useProjectAssignments,
-    useCreateProjectAssignment,
+    useProjectMembers,
+    useCreateProjectMember,
   };
 };

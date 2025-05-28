@@ -77,7 +77,7 @@ export const useAdminOperations = () => {
         
         return (data || []).map(dept => ({
           ...dept,
-          description: null,
+          description: dept.description || null,
           manager_id: null,
           employee_count: null,
           profiles: null

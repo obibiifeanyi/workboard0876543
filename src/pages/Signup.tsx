@@ -18,7 +18,8 @@ const Signup = () => {
     password: string,
     fullName: string,
     role: string,
-    accountType: string
+    accountType: string,
+    phone?: string
   ) => {
     setError(null);
     
@@ -31,6 +32,7 @@ const Signup = () => {
             full_name: fullName,
             role: role,
             account_type: accountType,
+            phone: phone || null,
           },
         },
       });

@@ -1,7 +1,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { TeamMember, ProjectWithAssignments } from "@/types/manager";
+import { TeamMember, ProjectWithAssignments } from "@/types/supabase/manager";
 import { useToast } from "@/hooks/use-toast";
 
 export const useManagerOperations = (departmentId: string) => {

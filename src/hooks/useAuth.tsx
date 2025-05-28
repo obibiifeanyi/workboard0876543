@@ -16,16 +16,20 @@ export const useAuth = () => {
           setUser(session.user);
           const { data: profile } = await supabase
             .from('profiles')
-            .select('role')
+            .select('role, account_type')
             .eq('id', session.user.id)
             .single();
 
           if (profile?.role) {
             localStorage.setItem('userRole', profile.role);
           }
+          if (profile?.account_type) {
+            localStorage.setItem('accountType', profile.account_type);
+          }
         } else {
           setUser(null);
           localStorage.removeItem('userRole');
+          localStorage.removeItem('accountType');
         }
         setLoading(false);
       }

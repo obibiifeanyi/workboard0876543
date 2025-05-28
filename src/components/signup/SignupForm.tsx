@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Loader } from "lucide-react";
 
 interface SignupFormProps {
-  onSignup: (email: string, password: string, fullName: string, role: string, accountType: string) => Promise<void>;
+  onSignup: (email: string, password: string, fullName: string, role: string, accountType: string, phone?: string) => Promise<void>;
   error: string | null;
 }
 
@@ -17,6 +17,7 @@ export const SignupForm = ({ onSignup, error }: SignupFormProps) => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [fullName, setFullName] = useState("");
+  const [phone, setPhone] = useState("");
   const [role, setRole] = useState("staff");
   const [accountType, setAccountType] = useState("staff");
   const [loading, setLoading] = useState(false);
@@ -38,7 +39,7 @@ export const SignupForm = ({ onSignup, error }: SignupFormProps) => {
 
     setLoading(true);
     try {
-      await onSignup(email, password, fullName, role, accountType);
+      await onSignup(email, password, fullName, role, accountType, phone);
     } finally {
       setLoading(false);
     }
@@ -86,6 +87,19 @@ export const SignupForm = ({ onSignup, error }: SignupFormProps) => {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
+          className="bg-black/5 dark:bg-white/5 border-none placeholder:text-muted-foreground/50"
+          disabled={loading}
+        />
+      </div>
+
+      <div className="space-y-2 text-left">
+        <Label htmlFor="phone">Phone Number</Label>
+        <Input
+          id="phone"
+          type="tel"
+          placeholder="Enter your phone number"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
           className="bg-black/5 dark:bg-white/5 border-none placeholder:text-muted-foreground/50"
           disabled={loading}
         />

@@ -1,43 +1,66 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import type { DocumentAnalysis } from '@/types/ai';
 
-export const analyzeDocument = async (content: string): Promise<DocumentAnalysis> => {
+export interface DocumentAnalysis {
+  id: string;
+  file_name: string;
+  analysis_result: any;
+  status: string;
+  created_by: string;
+  created_at: string;
+}
+
+export const analyzeDocument = async (file: File, userId: string): Promise<DocumentAnalysis> => {
   try {
-    const { data, error } = await supabase.functions.invoke('analyze-document', {
-      body: { content, type: 'document' }
-    });
-
-    if (error) {
-      console.error('Error analyzing document:', error);
-      throw error;
-    }
-
-    // Create a document analysis record
-    const { data: analysisRecord, error: dbError } = await supabase
-      .from('document_analysis')
+    // Store analysis result in memos table for now
+    const { data, error } = await supabase
+      .from('memos')
       .insert({
-        file_name: 'Analyzed Document',
-        file_path: 'temp',
-        file_type: 'text',
-        file_size: content.length,
-        analysis_status: 'completed',
-        analysis_result: data,
-        created_by: (await supabase.auth.getUser()).data.user?.id
+        title: `Document Analysis: ${file.name}`,
+        content: `Analysis of ${file.name} completed`,
+        status: 'published',
+        created_by: userId
       })
       .select()
       .single();
 
-    if (dbError) {
-      console.error('Error saving analysis:', dbError);
-      throw dbError;
-    }
+    if (error) throw error;
 
-    return analysisRecord as DocumentAnalysis;
+    return {
+      id: data.id,
+      file_name: file.name,
+      analysis_result: { summary: data.content },
+      status: data.status || 'completed',
+      created_by: data.created_by || userId,
+      created_at: data.created_at
+    };
   } catch (error) {
-    console.error('Error in analyzeDocument:', error);
+    console.error('Error analyzing document:', error);
     throw error;
   }
 };
 
-export type { DocumentAnalysis };
+export const getDocumentAnalyses = async (userId: string): Promise<DocumentAnalysis[]> => {
+  try {
+    const { data, error } = await supabase
+      .from('memos')
+      .select('*')
+      .eq('created_by', userId)
+      .like('title', 'Document Analysis:%')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    return data.map(memo => ({
+      id: memo.id,
+      file_name: memo.title.replace('Document Analysis: ', ''),
+      analysis_result: { summary: memo.content },
+      status: memo.status || 'completed',
+      created_by: memo.created_by || userId,
+      created_at: memo.created_at
+    }));
+  } catch (error) {
+    console.error('Error fetching document analyses:', error);
+    throw error;
+  }
+};
