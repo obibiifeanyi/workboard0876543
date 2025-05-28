@@ -9,616 +9,263 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      accounts_invoices: {
-        Row: {
-          amount: number
-          created_at: string
-          created_by: string | null
-          department_id: string | null
-          description: string | null
-          due_date: string
-          id: string
-          invoice_number: string
-          paid_date: string | null
-          payment_reference: string | null
-          payment_status: string | null
-          updated_at: string
-          vendor_name: string
-        }
-        Insert: {
-          amount: number
-          created_at?: string
-          created_by?: string | null
-          department_id?: string | null
-          description?: string | null
-          due_date: string
-          id?: string
-          invoice_number: string
-          paid_date?: string | null
-          payment_reference?: string | null
-          payment_status?: string | null
-          updated_at?: string
-          vendor_name: string
-        }
-        Update: {
-          amount?: number
-          created_at?: string
-          created_by?: string | null
-          department_id?: string | null
-          description?: string | null
-          due_date?: string
-          id?: string
-          invoice_number?: string
-          paid_date?: string | null
-          payment_reference?: string | null
-          payment_status?: string | null
-          updated_at?: string
-          vendor_name?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "accounts_invoices_department_id_fkey"
-            columns: ["department_id"]
-            isOneToOne: false
-            referencedRelation: "departments"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      ai_documents: {
-        Row: {
-          analysis: string | null
-          content: string
-          created_at: string | null
-          document_type: string | null
-          file_path: string | null
-          id: string
-          title: string
-          updated_at: string | null
-        }
-        Insert: {
-          analysis?: string | null
-          content: string
-          created_at?: string | null
-          document_type?: string | null
-          file_path?: string | null
-          id?: string
-          title: string
-          updated_at?: string | null
-        }
-        Update: {
-          analysis?: string | null
-          content?: string
-          created_at?: string | null
-          document_type?: string | null
-          file_path?: string | null
-          id?: string
-          title?: string
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
-      approval_routes: {
-        Row: {
-          approver_id: string | null
-          comments: string | null
-          created_at: string | null
-          id: string
-          memo_id: string | null
-          status: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          approver_id?: string | null
-          comments?: string | null
-          created_at?: string | null
-          id?: string
-          memo_id?: string | null
-          status?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          approver_id?: string | null
-          comments?: string | null
-          created_at?: string | null
-          id?: string
-          memo_id?: string | null
-          status?: string | null
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "approval_routes_memo_id_fkey"
-            columns: ["memo_id"]
-            isOneToOne: false
-            referencedRelation: "reports"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      assets_inventory: {
-        Row: {
-          asset_name: string
-          asset_type: string
-          assigned_to: string | null
-          condition: string | null
-          created_at: string
-          department_id: string | null
-          id: string
-          notes: string | null
-          purchase_cost: number | null
-          purchase_date: string | null
-          serial_number: string | null
-          status: string | null
-          updated_at: string
-        }
-        Insert: {
-          asset_name: string
-          asset_type: string
-          assigned_to?: string | null
-          condition?: string | null
-          created_at?: string
-          department_id?: string | null
-          id?: string
-          notes?: string | null
-          purchase_cost?: number | null
-          purchase_date?: string | null
-          serial_number?: string | null
-          status?: string | null
-          updated_at?: string
-        }
-        Update: {
-          asset_name?: string
-          asset_type?: string
-          assigned_to?: string | null
-          condition?: string | null
-          created_at?: string
-          department_id?: string | null
-          id?: string
-          notes?: string | null
-          purchase_cost?: number | null
-          purchase_date?: string | null
-          serial_number?: string | null
-          status?: string | null
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "assets_inventory_department_id_fkey"
-            columns: ["department_id"]
-            isOneToOne: false
-            referencedRelation: "departments"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      battery_inventory: {
-        Row: {
-          capacity: string
-          created_at: string
-          id: string
-          manufacturer: string
-          model_name: string
-          purchase_date: string | null
-          purchase_price: number
-          status: string | null
-          updated_at: string
-          voltage: string
-        }
-        Insert: {
-          capacity: string
-          created_at?: string
-          id?: string
-          manufacturer: string
-          model_name: string
-          purchase_date?: string | null
-          purchase_price: number
-          status?: string | null
-          updated_at?: string
-          voltage: string
-        }
-        Update: {
-          capacity?: string
-          created_at?: string
-          id?: string
-          manufacturer?: string
-          model_name?: string
-          purchase_date?: string | null
-          purchase_price?: number
-          status?: string | null
-          updated_at?: string
-          voltage?: string
-        }
-        Relationships: []
-      }
-      battery_sales: {
-        Row: {
-          battery_id: string
-          client_id: string
-          created_at: string
-          id: string
-          sale_date: string
-          sale_price: number
-          updated_at: string
-        }
-        Insert: {
-          battery_id: string
-          client_id: string
-          created_at?: string
-          id?: string
-          sale_date?: string
-          sale_price: number
-          updated_at?: string
-        }
-        Update: {
-          battery_id?: string
-          client_id?: string
-          created_at?: string
-          id?: string
-          sale_date?: string
-          sale_price?: number
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "battery_sales_battery_id_fkey"
-            columns: ["battery_id"]
-            isOneToOne: false
-            referencedRelation: "battery_inventory"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      cell_sites: {
+      auth_users: {
         Row: {
           created_at: string | null
+          email: string
           id: string
-          latitude: number | null
-          location: string
-          longitude: number | null
-          name: string
-          site_id: string
-          status: string | null
+          password: string
           updated_at: string | null
         }
         Insert: {
           created_at?: string | null
+          email: string
           id?: string
-          latitude?: number | null
-          location: string
-          longitude?: number | null
-          name: string
-          site_id: string
-          status?: string | null
+          password: string
           updated_at?: string | null
         }
         Update: {
           created_at?: string | null
+          email?: string
           id?: string
-          latitude?: number | null
-          location?: string
-          longitude?: number | null
-          name?: string
-          site_id?: string
-          status?: string | null
+          password?: string
           updated_at?: string | null
-        }
-        Relationships: []
-      }
-      ct_power_reports: {
-        Row: {
-          comments: string | null
-          created_at: string
-          created_by: string | null
-          diesel_level: number | null
-          generator_runtime: number | null
-          id: string
-          report_datetime: string
-          site_id: string
-          status: string | null
-          updated_at: string
-        }
-        Insert: {
-          comments?: string | null
-          created_at?: string
-          created_by?: string | null
-          diesel_level?: number | null
-          generator_runtime?: number | null
-          id?: string
-          report_datetime: string
-          site_id: string
-          status?: string | null
-          updated_at?: string
-        }
-        Update: {
-          comments?: string | null
-          created_at?: string
-          created_by?: string | null
-          diesel_level?: number | null
-          generator_runtime?: number | null
-          id?: string
-          report_datetime?: string
-          site_id?: string
-          status?: string | null
-          updated_at?: string
         }
         Relationships: []
       }
       departments: {
         Row: {
           created_at: string | null
-          description: string | null
           id: string
-          manager_id: string | null
           name: string
           updated_at: string | null
         }
         Insert: {
           created_at?: string | null
-          description?: string | null
           id?: string
-          manager_id?: string | null
           name: string
           updated_at?: string | null
         }
         Update: {
           created_at?: string | null
-          description?: string | null
           id?: string
-          manager_id?: string | null
           name?: string
           updated_at?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "departments_manager_id_fkey"
-            columns: ["manager_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      document_analysis: {
-        Row: {
-          analysis_result: Json | null
-          analysis_status: string | null
-          created_at: string
-          created_by: string | null
-          file_name: string
-          file_path: string
-          file_size: number
-          file_type: string
-          id: string
-          updated_at: string
-        }
-        Insert: {
-          analysis_result?: Json | null
-          analysis_status?: string | null
-          created_at?: string
-          created_by?: string | null
-          file_name: string
-          file_path: string
-          file_size: number
-          file_type: string
-          id?: string
-          updated_at?: string
-        }
-        Update: {
-          analysis_result?: Json | null
-          analysis_status?: string | null
-          created_at?: string
-          created_by?: string | null
-          file_name?: string
-          file_path?: string
-          file_size?: number
-          file_type?: string
-          id?: string
-          updated_at?: string
-        }
         Relationships: []
       }
-      documents: {
+      email_verification_tokens: {
         Row: {
-          access_level: string | null
           created_at: string | null
-          department_id: string | null
-          description: string | null
-          file_type: string | null
-          file_url: string | null
+          expires_at: string
           id: string
-          title: string
-          updated_at: string | null
-          uploaded_by: string | null
+          token: string
+          user_id: string | null
         }
         Insert: {
-          access_level?: string | null
           created_at?: string | null
-          department_id?: string | null
-          description?: string | null
-          file_type?: string | null
-          file_url?: string | null
+          expires_at: string
           id?: string
-          title: string
-          updated_at?: string | null
-          uploaded_by?: string | null
+          token: string
+          user_id?: string | null
         }
         Update: {
-          access_level?: string | null
           created_at?: string | null
-          department_id?: string | null
-          description?: string | null
-          file_type?: string | null
-          file_url?: string | null
+          expires_at?: string
           id?: string
-          title?: string
-          updated_at?: string | null
-          uploaded_by?: string | null
+          token?: string
+          user_id?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "documents_department_id_fkey"
-            columns: ["department_id"]
-            isOneToOne: false
-            referencedRelation: "departments"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "documents_uploaded_by_fkey"
-            columns: ["uploaded_by"]
+            foreignKeyName: "email_verification_tokens_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
       }
-      memos: {
+      health_check: {
         Row: {
-          content: string
-          created_at: string
-          created_by: string | null
-          department: string | null
-          id: string
-          status: string | null
-          title: string
-          updated_at: string
+          checked_at: string | null
+          id: number
         }
         Insert: {
-          content: string
-          created_at?: string
-          created_by?: string | null
-          department?: string | null
-          id?: string
-          status?: string | null
-          title: string
-          updated_at?: string
+          checked_at?: string | null
+          id?: number
         }
         Update: {
-          content?: string
-          created_at?: string
-          created_by?: string | null
-          department?: string | null
-          id?: string
-          status?: string | null
-          title?: string
-          updated_at?: string
+          checked_at?: string | null
+          id?: number
         }
         Relationships: []
       }
       notifications: {
         Row: {
-          content: string
-          created_at: string | null
+          created_at: string
           id: string
-          read: boolean | null
-          recipient_id: string | null
+          is_read: boolean | null
+          link: string | null
+          message: string
+          metadata: Json | null
           title: string
           type: string
-          updated_at: string | null
+          updated_at: string
+          user_id: string | null
         }
         Insert: {
-          content: string
-          created_at?: string | null
+          created_at?: string
           id?: string
-          read?: boolean | null
-          recipient_id?: string | null
+          is_read?: boolean | null
+          link?: string | null
+          message: string
+          metadata?: Json | null
           title: string
           type: string
-          updated_at?: string | null
+          updated_at?: string
+          user_id?: string | null
         }
         Update: {
-          content?: string
-          created_at?: string | null
+          created_at?: string
           id?: string
-          read?: boolean | null
-          recipient_id?: string | null
+          is_read?: boolean | null
+          link?: string | null
+          message?: string
+          metadata?: Json | null
           title?: string
           type?: string
-          updated_at?: string | null
+          updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }
-      profiles: {
+      password_reset_tokens: {
         Row: {
-          account_type: string | null
-          accounting_permissions: Json | null
-          accounting_role: string | null
-          avatar_url: string | null
           created_at: string | null
-          department_id: string | null
-          email: string
-          full_name: string | null
+          expires_at: string
           id: string
-          role: string
-          status: string | null
-          updated_at: string | null
+          token: string
+          user_id: string | null
         }
         Insert: {
-          account_type?: string | null
-          accounting_permissions?: Json | null
-          accounting_role?: string | null
-          avatar_url?: string | null
           created_at?: string | null
-          department_id?: string | null
-          email: string
-          full_name?: string | null
-          id: string
-          role: string
-          status?: string | null
-          updated_at?: string | null
+          expires_at: string
+          id?: string
+          token: string
+          user_id?: string | null
         }
         Update: {
-          account_type?: string | null
-          accounting_permissions?: Json | null
-          accounting_role?: string | null
-          avatar_url?: string | null
           created_at?: string | null
-          department_id?: string | null
-          email?: string
-          full_name?: string | null
+          expires_at?: string
           id?: string
-          role?: string
-          status?: string | null
-          updated_at?: string | null
+          token?: string
+          user_id?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "fk_department"
-            columns: ["department_id"]
+            foreignKeyName: "password_reset_tokens_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: "departments"
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
       }
-      project_assignments: {
+      profiles: {
         Row: {
-          created_at: string | null
+          avatar_url: string | null
+          bio: string | null
+          created_at: string
+          department: string | null
+          email: string | null
+          full_name: string | null
           id: string
-          project_id: string | null
-          staff_id: string | null
-          updated_at: string | null
+          location: string | null
+          new_id: string | null
+          phone_number: string | null
+          position: string | null
+          role_id: string | null
+          settings: Json | null
+          updated_at: string
         }
         Insert: {
-          created_at?: string | null
-          id?: string
-          project_id?: string | null
-          staff_id?: string | null
-          updated_at?: string | null
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          department?: string | null
+          email?: string | null
+          full_name?: string | null
+          id: string
+          location?: string | null
+          new_id?: string | null
+          phone_number?: string | null
+          position?: string | null
+          role_id?: string | null
+          settings?: Json | null
+          updated_at?: string
         }
         Update: {
-          created_at?: string | null
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          department?: string | null
+          email?: string | null
+          full_name?: string | null
           id?: string
-          project_id?: string | null
-          staff_id?: string | null
-          updated_at?: string | null
+          location?: string | null
+          new_id?: string | null
+          phone_number?: string | null
+          position?: string | null
+          role_id?: string | null
+          settings?: Json | null
+          updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "project_assignments_project_id_fkey"
+            foreignKeyName: "profiles_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "roles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_members: {
+        Row: {
+          id: string
+          joined_at: string | null
+          project_id: string
+          role: string | null
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          joined_at?: string | null
+          project_id: string
+          role?: string | null
+          user_id: string
+        }
+        Update: {
+          id?: string
+          joined_at?: string | null
+          project_id?: string
+          role?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_members_project_id_fkey"
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -626,220 +273,229 @@ export type Database = {
       projects: {
         Row: {
           budget: number | null
-          client_name: string | null
           created_at: string | null
-          created_by: string | null
-          description: string | null
+          department_id: string | null
+          description: string
           end_date: string | null
           id: string
-          location: string | null
+          manager_id: string | null
+          name: string
           start_date: string | null
-          status: string | null
-          title: string
+          status: string
           updated_at: string | null
         }
         Insert: {
           budget?: number | null
-          client_name?: string | null
           created_at?: string | null
-          created_by?: string | null
-          description?: string | null
+          department_id?: string | null
+          description: string
           end_date?: string | null
           id?: string
-          location?: string | null
+          manager_id?: string | null
+          name: string
           start_date?: string | null
-          status?: string | null
-          title: string
+          status?: string
           updated_at?: string | null
         }
         Update: {
           budget?: number | null
-          client_name?: string | null
           created_at?: string | null
-          created_by?: string | null
-          description?: string | null
+          department_id?: string | null
+          description?: string
           end_date?: string | null
           id?: string
-          location?: string | null
+          manager_id?: string | null
+          name?: string
           start_date?: string | null
-          status?: string | null
-          title?: string
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
-      reports: {
-        Row: {
-          content: string
-          created_at: string | null
-          created_by: string | null
-          data: Json | null
-          id: string
-          status: string | null
-          title: string
-          type: string
-          updated_at: string | null
-        }
-        Insert: {
-          content: string
-          created_at?: string | null
-          created_by?: string | null
-          data?: Json | null
-          id?: string
-          status?: string | null
-          title: string
-          type: string
-          updated_at?: string | null
-        }
-        Update: {
-          content?: string
-          created_at?: string | null
-          created_by?: string | null
-          data?: Json | null
-          id?: string
-          status?: string | null
-          title?: string
-          type?: string
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
-      site_reports: {
-        Row: {
-          comments: string | null
-          created_at: string | null
-          diesel_level: number | null
-          generator_runtime: number | null
-          id: string
-          reporter_id: string | null
-          site_id: string | null
-          status: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          comments?: string | null
-          created_at?: string | null
-          diesel_level?: number | null
-          generator_runtime?: number | null
-          id?: string
-          reporter_id?: string | null
-          site_id?: string | null
-          status?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          comments?: string | null
-          created_at?: string | null
-          diesel_level?: number | null
-          generator_runtime?: number | null
-          id?: string
-          reporter_id?: string | null
-          site_id?: string | null
-          status?: string | null
+          status?: string
           updated_at?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "site_reports_site_id_fkey"
-            columns: ["site_id"]
+            foreignKeyName: "projects_department_id_fkey"
+            columns: ["department_id"]
             isOneToOne: false
-            referencedRelation: "cell_sites"
+            referencedRelation: "departments"
             referencedColumns: ["id"]
           },
         ]
       }
-      system_activities: {
+      roles: {
         Row: {
           created_at: string
-          description: string
+          description: string | null
           id: string
-          metadata: Json | null
-          type: string
+          name: string
           updated_at: string
-          user_id: string | null
         }
         Insert: {
           created_at?: string
-          description: string
+          description?: string | null
           id?: string
-          metadata?: Json | null
-          type: string
+          name: string
           updated_at?: string
-          user_id?: string | null
         }
         Update: {
           created_at?: string
-          description?: string
+          description?: string | null
           id?: string
-          metadata?: Json | null
-          type?: string
+          name?: string
           updated_at?: string
-          user_id?: string | null
         }
         Relationships: []
       }
       tasks: {
         Row: {
-          assigned_by: string | null
-          assigned_to: string | null
+          actual_hours: number | null
+          assigned_to_id: string | null
+          completion_notes: string | null
           created_at: string | null
+          created_by_id: string | null
           description: string | null
           due_date: string | null
+          estimated_hours: number | null
           id: string
-          status: string | null
+          priority: string
+          project_id: string | null
+          review_notes: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          submitted_at: string | null
           title: string
           updated_at: string | null
         }
         Insert: {
-          assigned_by?: string | null
-          assigned_to?: string | null
+          actual_hours?: number | null
+          assigned_to_id?: string | null
+          completion_notes?: string | null
           created_at?: string | null
+          created_by_id?: string | null
           description?: string | null
           due_date?: string | null
+          estimated_hours?: number | null
           id?: string
-          status?: string | null
+          priority?: string
+          project_id?: string | null
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          submitted_at?: string | null
           title: string
           updated_at?: string | null
         }
         Update: {
-          assigned_by?: string | null
-          assigned_to?: string | null
+          actual_hours?: number | null
+          assigned_to_id?: string | null
+          completion_notes?: string | null
           created_at?: string | null
+          created_by_id?: string | null
           description?: string | null
           due_date?: string | null
+          estimated_hours?: number | null
           id?: string
-          status?: string | null
+          priority?: string
+          project_id?: string | null
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          submitted_at?: string | null
           title?: string
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "tasks_assigned_to_id_fkey"
+            columns: ["assigned_to_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_created_by_id_fkey"
+            columns: ["created_by_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       time_logs: {
         Row: {
+          clock_in: string
+          clock_out: string | null
           created_at: string | null
-          end_time: string | null
           id: string
-          start_time: string
+          notes: string | null
+          project_id: string | null
+          task_id: string | null
+          total_hours: number | null
           updated_at: string | null
-          user_id: string | null
+          user_id: string
         }
         Insert: {
+          clock_in: string
+          clock_out?: string | null
           created_at?: string | null
-          end_time?: string | null
           id?: string
-          start_time: string
+          notes?: string | null
+          project_id?: string | null
+          task_id?: string | null
+          total_hours?: number | null
           updated_at?: string | null
-          user_id?: string | null
+          user_id: string
         }
         Update: {
+          clock_in?: string
+          clock_out?: string | null
           created_at?: string | null
-          end_time?: string | null
           id?: string
-          start_time?: string
+          notes?: string | null
+          project_id?: string | null
+          task_id?: string | null
+          total_hours?: number | null
           updated_at?: string | null
-          user_id?: string | null
+          user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "time_logs_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "time_logs_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "time_logs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
@@ -857,27 +513,29 @@ export type Database = {
   }
 }
 
-type PublicSchema = Database[Extract<keyof Database, "public">]
+type DefaultSchema = Database[Extract<keyof Database, "public">]
 
 export type Tables<
-  PublicTableNameOrOptions extends
-    | keyof (PublicSchema["Tables"] & PublicSchema["Views"])
+  DefaultSchemaTableNameOrOptions extends
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof Database },
-  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
-    ? keyof (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
-        Database[PublicTableNameOrOptions["schema"]]["Views"])
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof Database
+  }
+    ? keyof (Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
     : never = never,
-> = PublicTableNameOrOptions extends { schema: keyof Database }
-  ? (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
-      Database[PublicTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
+  ? (Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
       Row: infer R
     }
     ? R
     : never
-  : PublicTableNameOrOptions extends keyof (PublicSchema["Tables"] &
-        PublicSchema["Views"])
-    ? (PublicSchema["Tables"] &
-        PublicSchema["Views"])[PublicTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
         Row: infer R
       }
       ? R
@@ -885,20 +543,22 @@ export type Tables<
     : never
 
 export type TablesInsert<
-  PublicTableNameOrOptions extends
-    | keyof PublicSchema["Tables"]
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
     | { schema: keyof Database },
-  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
-    ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof Database
+  }
+    ? keyof Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
-> = PublicTableNameOrOptions extends { schema: keyof Database }
-  ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
+  ? Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Insert: infer I
     }
     ? I
     : never
-  : PublicTableNameOrOptions extends keyof PublicSchema["Tables"]
-    ? PublicSchema["Tables"][PublicTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
         Insert: infer I
       }
       ? I
@@ -906,20 +566,22 @@ export type TablesInsert<
     : never
 
 export type TablesUpdate<
-  PublicTableNameOrOptions extends
-    | keyof PublicSchema["Tables"]
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
     | { schema: keyof Database },
-  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
-    ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof Database
+  }
+    ? keyof Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
-> = PublicTableNameOrOptions extends { schema: keyof Database }
-  ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
+  ? Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Update: infer U
     }
     ? U
     : never
-  : PublicTableNameOrOptions extends keyof PublicSchema["Tables"]
-    ? PublicSchema["Tables"][PublicTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
         Update: infer U
       }
       ? U
@@ -927,21 +589,23 @@ export type TablesUpdate<
     : never
 
 export type Enums<
-  PublicEnumNameOrOptions extends
-    | keyof PublicSchema["Enums"]
+  DefaultSchemaEnumNameOrOptions extends
+    | keyof DefaultSchema["Enums"]
     | { schema: keyof Database },
-  EnumName extends PublicEnumNameOrOptions extends { schema: keyof Database }
-    ? keyof Database[PublicEnumNameOrOptions["schema"]]["Enums"]
+  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof Database
+  }
+    ? keyof Database[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
     : never = never,
-> = PublicEnumNameOrOptions extends { schema: keyof Database }
-  ? Database[PublicEnumNameOrOptions["schema"]]["Enums"][EnumName]
-  : PublicEnumNameOrOptions extends keyof PublicSchema["Enums"]
-    ? PublicSchema["Enums"][PublicEnumNameOrOptions]
+> = DefaultSchemaEnumNameOrOptions extends { schema: keyof Database }
+  ? Database[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
     : never
 
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
-    | keyof PublicSchema["CompositeTypes"]
+    | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof Database },
   CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
     schema: keyof Database
@@ -950,6 +614,12 @@ export type CompositeTypes<
     : never = never,
 > = PublicCompositeTypeNameOrOptions extends { schema: keyof Database }
   ? Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
-  : PublicCompositeTypeNameOrOptions extends keyof PublicSchema["CompositeTypes"]
-    ? PublicSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never
+
+export const Constants = {
+  public: {
+    Enums: {},
+  },
+} as const
