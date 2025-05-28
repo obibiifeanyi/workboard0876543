@@ -14,19 +14,35 @@ interface ActivityItem {
 
 export const ActivityOverview = () => {
   const { data: activities, isLoading } = useQuery({
-    queryKey: ['activities'],
+    queryKey: ['system_activities'],
     queryFn: async () => {
-      // Since system_activities table doesn't exist, we'll use notifications as a substitute
-      const { data, error } = await supabase
+      // Try to get system activities first, fall back to notifications if table doesn't exist
+      const { data: systemActivities, error: systemError } = await supabase
+        .from('system_activities')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      if (!systemError && systemActivities) {
+        return systemActivities.map(activity => ({
+          id: activity.id,
+          type: activity.type,
+          description: activity.description,
+          created_at: activity.created_at,
+          user_id: activity.user_id,
+        })) as ActivityItem[];
+      }
+
+      // Fallback to notifications
+      const { data: notifications, error: notificationError } = await supabase
         .from('notifications')
         .select('*')
         .order('created_at', { ascending: false })
         .limit(10);
 
-      if (error) throw error;
+      if (notificationError) throw notificationError;
       
-      // Transform notifications to activity format
-      return data?.map(notification => ({
+      return notifications?.map(notification => ({
         id: notification.id,
         type: notification.type,
         description: notification.message,

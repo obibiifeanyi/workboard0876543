@@ -6,101 +6,102 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { ShoppingCart, DollarSign } from "lucide-react";
-
-interface BatterySale {
-  id: string;
-  battery_id: string;
-  client_id: string;
-  sale_date: string;
-  sale_price: number;
-  battery: {
-    model_name: string;
-    manufacturer: string;
-  };
-}
-
-interface BatteryItem {
-  id: string;
-  model_name: string;
-  manufacturer: string;
-}
 
 export const BatterySales = () => {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [isAddingSale, setIsAddingSale] = useState(false);
 
-  // Mock data since battery tables don't exist in the database
-  const [availableBatteries] = useState<BatteryItem[]>([
-    {
-      id: "1",
-      model_name: "AGM Deep Cycle 12V",
-      manufacturer: "Optima"
-    },
-    {
-      id: "2", 
-      model_name: "Lithium Ion 24V",
-      manufacturer: "Tesla"
-    },
-    {
-      id: "3",
-      model_name: "Lead Acid 48V", 
-      manufacturer: "Interstate"
-    }
-  ]);
+  const { data: availableBatteries } = useQuery({
+    queryKey: ['battery_inventory'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('battery_inventory')
+        .select('*')
+        .eq('status', 'available');
 
-  const [sales] = useState<BatterySale[]>([
-    {
-      id: "1",
-      battery_id: "1",
-      client_id: "CLIENT001",
-      sale_date: new Date().toISOString(),
-      sale_price: 1500,
-      battery: {
-        model_name: "AGM Deep Cycle 12V",
-        manufacturer: "Optima"
-      }
+      if (error) throw error;
+      return data;
     },
-    {
-      id: "2",
-      battery_id: "2", 
-      client_id: "CLIENT002",
-      sale_date: new Date(Date.now() - 86400000).toISOString(),
-      sale_price: 2500,
-      battery: {
-        model_name: "Lithium Ion 24V",
-        manufacturer: "Tesla"
+  });
+
+  const { data: sales } = useQuery({
+    queryKey: ['battery_sales'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('battery_sales')
+        .select(`
+          *,
+          battery_inventory (
+            model_name,
+            manufacturer
+          )
+        `)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const createSaleMutation = useMutation({
+    mutationFn: async (saleData: any) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        throw new Error('You must be logged in to record sales');
       }
-    }
-  ]);
+
+      const { error } = await supabase
+        .from('battery_sales')
+        .insert([{
+          ...saleData,
+          created_by: user.id,
+        }]);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['battery_sales'] });
+      toast({
+        title: "Sale Recorded",
+        description: "Battery sale has been recorded successfully",
+      });
+      setIsAddingSale(false);
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to record battery sale",
+        variant: "destructive",
+      });
+    },
+  });
 
   const handleAddSale = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     
-    try {
-      const batteryId = formData.get('battery_id')?.toString();
-      const clientId = formData.get('client_id')?.toString();
-      const salePrice = parseFloat(formData.get('sale_price')?.toString() || '0');
+    const saleData = {
+      battery_id: formData.get('battery_id')?.toString(),
+      client_id: formData.get('client_id')?.toString(),
+      sale_price: parseFloat(formData.get('sale_price')?.toString() || '0'),
+      sale_date: new Date().toISOString(),
+    };
 
-      if (!batteryId || !clientId || !salePrice) {
-        throw new Error('Missing required fields');
-      }
-
-      // Mock sale recording - in a real app this would save to database
-      toast({
-        title: "Sale Recorded",
-        description: "Battery sale has been recorded successfully (mock data)",
-      });
-
-      setIsAddingSale(false);
-    } catch (error) {
+    if (!saleData.battery_id || !saleData.client_id || !saleData.sale_price) {
       toast({
         title: "Error",
-        description: "Failed to record battery sale",
+        description: "Please fill in all required fields",
         variant: "destructive",
       });
+      return;
     }
+
+    createSaleMutation.mutate(saleData);
   };
 
   return (
@@ -128,7 +129,7 @@ export const BatterySales = () => {
                       <SelectValue placeholder="Select battery" />
                     </SelectTrigger>
                     <SelectContent>
-                      {availableBatteries.map((battery) => (
+                      {availableBatteries?.map((battery) => (
                         <SelectItem key={battery.id} value={battery.id}>
                           {battery.model_name} - {battery.manufacturer}
                         </SelectItem>
@@ -151,25 +152,27 @@ export const BatterySales = () => {
                   />
                 </div>
               </div>
-              <Button type="submit">Record Sale</Button>
+              <Button type="submit" disabled={createSaleMutation.isPending}>
+                {createSaleMutation.isPending ? 'Recording...' : 'Record Sale'}
+              </Button>
             </form>
           </CardContent>
         </Card>
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {sales.map((sale) => (
+        {sales?.map((sale) => (
           <Card key={sale.id} className="hover:shadow-lg transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">
-                {sale.battery.model_name}
+                {sale.battery_inventory?.model_name}
               </CardTitle>
               <DollarSign className="h-4 w-4 text-primary" />
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
                 <div className="text-sm text-muted-foreground">
-                  Manufacturer: {sale.battery.manufacturer}
+                  Manufacturer: {sale.battery_inventory?.manufacturer}
                 </div>
                 <div className="text-sm text-muted-foreground">
                   Client ID: {sale.client_id}

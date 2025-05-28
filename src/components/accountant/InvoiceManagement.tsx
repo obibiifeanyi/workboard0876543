@@ -3,41 +3,75 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { FileText, Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 
 export const InvoiceManagement = () => {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  // Mock data for now since the accounts_invoices table doesn't exist
-  const mockInvoices = [
-    {
-      id: "1",
-      invoice_number: "INV-001",
-      vendor_name: "Tech Supplies Ltd",
-      amount: 150000,
-      payment_status: "pending",
-      created_at: new Date().toISOString(),
-      paid_date: null,
-      payment_reference: null
+  const { data: invoices, isLoading } = useQuery({
+    queryKey: ['accounts_invoices'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('accounts_invoices')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data;
     },
-    {
-      id: "2",
-      invoice_number: "INV-002", 
-      vendor_name: "Office Equipment Co",
-      amount: 75000,
-      payment_status: "paid",
-      created_at: new Date(Date.now() - 86400000).toISOString(),
-      paid_date: new Date().toISOString(),
-      payment_reference: "PAY-123456"
-    }
-  ];
+  });
+
+  const markAsPaidMutation = useMutation({
+    mutationFn: async (invoiceId: string) => {
+      const { error } = await supabase
+        .from('accounts_invoices')
+        .update({
+          payment_status: 'paid',
+          paid_date: new Date().toISOString(),
+          payment_reference: `PAY-${Date.now()}`,
+        })
+        .eq('id', invoiceId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['accounts_invoices'] });
+      toast({
+        title: "Payment Processed",
+        description: "The invoice has been marked as paid.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to update invoice",
+        variant: "destructive",
+      });
+    },
+  });
 
   const handleMarkAsPaid = async (invoiceId: string) => {
-    toast({
-      title: "Payment Processed",
-      description: "The invoice has been marked as paid.",
-    });
+    markAsPaidMutation.mutate(invoiceId);
   };
+
+  if (isLoading) {
+    return (
+      <Card className="bg-black/10 dark:bg-white/5 backdrop-blur-lg border-none">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-lg font-medium">
+            <FileText className="h-5 w-5 text-primary" />
+            Invoice Management
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center">Loading invoices...</div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="bg-black/10 dark:bg-white/5 backdrop-blur-lg border-none">
@@ -49,10 +83,10 @@ export const InvoiceManagement = () => {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {!mockInvoices?.length ? (
+          {!invoices?.length ? (
             <div className="text-center text-muted-foreground">No invoices found</div>
           ) : (
-            mockInvoices.map((invoice) => (
+            invoices.map((invoice) => (
               <Card key={invoice.id} className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
@@ -70,9 +104,10 @@ export const InvoiceManagement = () => {
                         variant="outline"
                         size="sm"
                         onClick={() => handleMarkAsPaid(invoice.id)}
+                        disabled={markAsPaidMutation.isPending}
                       >
                         <Check className="h-4 w-4 mr-2" />
-                        Mark as Paid
+                        {markAsPaidMutation.isPending ? 'Processing...' : 'Mark as Paid'}
                       </Button>
                     ) : (
                       <span className="flex items-center gap-1 text-sm text-green-500">

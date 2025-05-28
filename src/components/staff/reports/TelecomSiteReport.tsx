@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -22,21 +23,30 @@ export const TelecomSiteReport = () => {
   const [selectedSite, setSelectedSite] = useState("");
   const { toast } = useToast();
   const [reportDateTime, setReportDateTime] = useState(new Date().toISOString().slice(0, 16));
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmitReport = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
+    setIsSubmitting(true);
     
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        throw new Error('You must be logged in to submit reports');
+      }
+
       const { error } = await supabase
         .from('ct_power_reports')
-        .insert([{  // Wrap the object in an array to match the expected type
+        .insert([{
           site_id: selectedSite,
           report_datetime: formData.get('reportDateTime') as string,
           generator_runtime: Number(formData.get('generatorRuntime')),
           diesel_level: Number(formData.get('dieselLevel')),
           comments: formData.get('comments') as string,
           status: formData.get('status') as string,
+          created_by: user.id,
         }]);
 
       if (error) throw error;
@@ -45,13 +55,20 @@ export const TelecomSiteReport = () => {
         title: "Site Report Submitted",
         description: `Report for site ${selectedSite} has been submitted successfully`,
       });
+
+      // Reset form
+      e.currentTarget.reset();
+      setSelectedSite("");
+      setReportDateTime(new Date().toISOString().slice(0, 16));
     } catch (error) {
       console.error('Error submitting report:', error);
       toast({
         title: "Error",
-        description: "Failed to submit report. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to submit report. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -70,6 +87,7 @@ export const TelecomSiteReport = () => {
             <Select
               value={selectedSite}
               onValueChange={setSelectedSite}
+              required
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select a site" />
@@ -159,8 +177,8 @@ export const TelecomSiteReport = () => {
             </div>
           </div>
 
-          <Button type="submit" className="w-full md:w-auto">
-            Submit Site Report
+          <Button type="submit" className="w-full md:w-auto" disabled={isSubmitting}>
+            {isSubmitting ? 'Submitting...' : 'Submit Site Report'}
           </Button>
         </form>
       </CardContent>

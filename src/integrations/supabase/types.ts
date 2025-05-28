@@ -9,6 +9,113 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      accounts_invoices: {
+        Row: {
+          amount: number
+          created_at: string
+          created_by: string | null
+          id: string
+          invoice_number: string
+          paid_date: string | null
+          payment_reference: string | null
+          payment_status: string | null
+          updated_at: string
+          vendor_name: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          invoice_number: string
+          paid_date?: string | null
+          payment_reference?: string | null
+          payment_status?: string | null
+          updated_at?: string
+          vendor_name: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          invoice_number?: string
+          paid_date?: string | null
+          payment_reference?: string | null
+          payment_status?: string | null
+          updated_at?: string
+          vendor_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "accounts_invoices_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      assets_inventory: {
+        Row: {
+          condition: string | null
+          created_at: string
+          created_by: string | null
+          department_id: string | null
+          id: string
+          location: string | null
+          name: string
+          purchase_date: string | null
+          purchase_price: number | null
+          status: string | null
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          condition?: string | null
+          created_at?: string
+          created_by?: string | null
+          department_id?: string | null
+          id?: string
+          location?: string | null
+          name: string
+          purchase_date?: string | null
+          purchase_price?: number | null
+          status?: string | null
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          condition?: string | null
+          created_at?: string
+          created_by?: string | null
+          department_id?: string | null
+          id?: string
+          location?: string | null
+          name?: string
+          purchase_date?: string | null
+          purchase_price?: number | null
+          status?: string | null
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assets_inventory_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assets_inventory_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       auth_users: {
         Row: {
           created_at: string | null
@@ -32,6 +139,146 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      battery_inventory: {
+        Row: {
+          capacity_kwh: number | null
+          condition: string | null
+          created_at: string
+          id: string
+          location: string | null
+          manufacturer: string
+          model_name: string
+          purchase_date: string | null
+          status: string | null
+          updated_at: string
+          voltage: number | null
+          warranty_expiry: string | null
+        }
+        Insert: {
+          capacity_kwh?: number | null
+          condition?: string | null
+          created_at?: string
+          id?: string
+          location?: string | null
+          manufacturer: string
+          model_name: string
+          purchase_date?: string | null
+          status?: string | null
+          updated_at?: string
+          voltage?: number | null
+          warranty_expiry?: string | null
+        }
+        Update: {
+          capacity_kwh?: number | null
+          condition?: string | null
+          created_at?: string
+          id?: string
+          location?: string | null
+          manufacturer?: string
+          model_name?: string
+          purchase_date?: string | null
+          status?: string | null
+          updated_at?: string
+          voltage?: number | null
+          warranty_expiry?: string | null
+        }
+        Relationships: []
+      }
+      battery_sales: {
+        Row: {
+          battery_id: string | null
+          client_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          sale_date: string
+          sale_price: number
+          updated_at: string
+        }
+        Insert: {
+          battery_id?: string | null
+          client_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          sale_date: string
+          sale_price: number
+          updated_at?: string
+        }
+        Update: {
+          battery_id?: string | null
+          client_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          sale_date?: string
+          sale_price?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "battery_sales_battery_id_fkey"
+            columns: ["battery_id"]
+            isOneToOne: false
+            referencedRelation: "battery_inventory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "battery_sales_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ct_power_reports: {
+        Row: {
+          comments: string | null
+          created_at: string
+          created_by: string | null
+          diesel_level: number
+          generator_runtime: number
+          id: string
+          report_datetime: string
+          site_id: string
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          comments?: string | null
+          created_at?: string
+          created_by?: string | null
+          diesel_level: number
+          generator_runtime: number
+          id?: string
+          report_datetime: string
+          site_id: string
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          comments?: string | null
+          created_at?: string
+          created_by?: string | null
+          diesel_level?: number
+          generator_runtime?: number
+          id?: string
+          report_datetime?: string
+          site_id?: string
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ct_power_reports_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       departments: {
         Row: {
@@ -100,6 +347,47 @@ export type Database = {
           id?: number
         }
         Relationships: []
+      }
+      memos: {
+        Row: {
+          content: string | null
+          created_at: string
+          created_by: string | null
+          department: string | null
+          id: string
+          status: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string
+          created_by?: string | null
+          department?: string | null
+          id?: string
+          status?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string | null
+          created_at?: string
+          created_by?: string | null
+          department?: string | null
+          id?: string
+          status?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "memos_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       notifications: {
         Row: {

@@ -4,32 +4,45 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Package, Plus, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 export const InventoryManagement = () => {
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Mock data for now since the assets_inventory table doesn't exist
-  const mockInventory = [
-    {
-      id: "1",
-      name: "Network Router",
-      type: "Hardware",
-      status: "Active",
-      condition: "Good"
-    },
-    {
-      id: "2", 
-      name: "Server Cabinet",
-      type: "Infrastructure", 
-      status: "Maintenance",
-      condition: "Fair"
-    }
-  ];
+  const { data: inventory, isLoading } = useQuery({
+    queryKey: ['assets_inventory'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('assets_inventory')
+        .select('*')
+        .order('created_at', { ascending: false });
 
-  const filteredInventory = mockInventory.filter(item =>
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const filteredInventory = inventory?.filter(item =>
     item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     item.type.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  ) || [];
+
+  if (isLoading) {
+    return (
+      <Card className="bg-black/10 dark:bg-white/5 backdrop-blur-lg border-none">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-lg font-medium">
+            <Package className="h-5 w-5 text-primary" />
+            Inventory Management
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center">Loading inventory...</div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="bg-black/10 dark:bg-white/5 backdrop-blur-lg border-none">
@@ -58,22 +71,31 @@ export const InventoryManagement = () => {
           </div>
 
           <div className="grid gap-4 mt-4">
-            {filteredInventory.map((item) => (
-              <Card key={item.id} className="p-4">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className="font-semibold">{item.name}</h3>
-                    <p className="text-sm text-muted-foreground">{item.type}</p>
+            {filteredInventory.length > 0 ? (
+              filteredInventory.map((item) => (
+                <Card key={item.id} className="p-4">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h3 className="font-semibold">{item.name}</h3>
+                      <p className="text-sm text-muted-foreground">{item.type}</p>
+                      {item.location && (
+                        <p className="text-sm text-muted-foreground">Location: {item.location}</p>
+                      )}
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-medium">Status: {item.status}</p>
+                      <p className="text-sm text-muted-foreground">
+                        Condition: {item.condition}
+                      </p>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-sm font-medium">Status: {item.status}</p>
-                    <p className="text-sm text-muted-foreground">
-                      Condition: {item.condition}
-                    </p>
-                  </div>
-                </div>
-              </Card>
-            ))}
+                </Card>
+              ))
+            ) : (
+              <div className="text-center text-muted-foreground">
+                {searchTerm ? 'No items match your search' : 'No inventory items found'}
+              </div>
+            )}
           </div>
         </div>
       </CardContent>
