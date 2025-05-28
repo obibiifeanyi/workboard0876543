@@ -5,12 +5,12 @@ import { useEffect, useState } from "react";
 import { Loader } from "lucide-react";
 
 interface RoleBasedRouteProps {
-  element: React.ReactElement;
+  children: React.ReactNode;
   allowedRoles: string[];
   userRole?: string;
 }
 
-export const RoleBasedRoute = ({ element, allowedRoles, userRole: propUserRole }: RoleBasedRouteProps) => {
+export const RoleBasedRoute = ({ children, allowedRoles, userRole: propUserRole }: RoleBasedRouteProps) => {
   const { toast } = useToast();
   const [shouldRedirect, setShouldRedirect] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -53,5 +53,5 @@ export const RoleBasedRoute = ({ element, allowedRoles, userRole: propUserRole }
     return <Navigate to="/login" replace />;
   }
 
-  return element;
+  return <>{children}</>;
 };
