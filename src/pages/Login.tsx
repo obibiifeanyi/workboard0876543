@@ -11,7 +11,6 @@ import { LoginHeader } from "@/components/login/LoginHeader";
 const Login = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -19,14 +18,49 @@ const Login = () => {
         if (session?.user) {
           const { data: profile } = await supabase
             .from('profiles')
-            .select('role')
+            .select('role, account_type')
             .eq('id', session.user.id)
             .single();
 
           const role = profile?.role || 'staff';
+          const accountType = profile?.account_type || 'staff';
+          
           localStorage.setItem('userRole', role);
+          localStorage.setItem('accountType', accountType);
 
-          // Redirect based on role
+          // Redirect based on account type first, then role
+          if (accountType === 'accountant') {
+            navigate('/accountant');
+          } else {
+            switch (role) {
+              case 'admin':
+                navigate('/admin');
+                break;
+              case 'manager':
+                navigate('/manager');
+                break;
+              default:
+                navigate('/staff');
+            }
+          }
+
+          toast({
+            title: "Welcome back!",
+            description: "You have successfully logged in.",
+          });
+        }
+      }
+    });
+
+    // Check if user is already logged in
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        const role = localStorage.getItem('userRole') || 'staff';
+        const accountType = localStorage.getItem('accountType') || 'staff';
+        
+        if (accountType === 'accountant') {
+          navigate('/accountant');
+        } else {
           switch (role) {
             case 'admin':
               navigate('/admin');
@@ -37,32 +71,6 @@ const Login = () => {
             default:
               navigate('/staff');
           }
-
-          toast({
-            title: "Welcome back!",
-            description: "You have successfully logged in.",
-          });
-        }
-      }
-      if (event === 'SIGNED_OUT') {
-        localStorage.removeItem('userRole');
-        setError(null);
-      }
-    });
-
-    // Check if user is already logged in
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        const role = localStorage.getItem('userRole') || 'staff';
-        switch (role) {
-          case 'admin':
-            navigate('/admin');
-            break;
-          case 'manager':
-            navigate('/manager');
-            break;
-          default:
-            navigate('/staff');
         }
       }
     });
@@ -82,12 +90,7 @@ const Login = () => {
       if (error) throw error;
     } catch (error) {
       console.error('Login error:', error);
-      setError(error instanceof Error ? error.message : 'Failed to login');
-      toast({
-        title: "Login Failed",
-        description: error instanceof Error ? error.message : 'Failed to login',
-        variant: "destructive",
-      });
+      // Error handling is done in LoginForm component
     }
   };
 

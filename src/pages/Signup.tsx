@@ -36,15 +36,12 @@ const Signup = () => {
       });
 
       if (signupError) {
-        // Handle specific signup errors
         if (signupError.message.includes("User already registered")) {
-          setError("An account with this email already exists. Please try logging in instead.");
           toast({
             title: "Account Exists",
-            description: "An account with this email already exists. Please try logging in.",
+            description: "An account with this email already exists. Redirecting to login...",
             variant: "destructive",
           });
-          // Redirect to login after a delay
           setTimeout(() => navigate('/login'), 2000);
           return;
         }
@@ -57,18 +54,12 @@ const Signup = () => {
           description: "Welcome to CT Communication Towers. Please check your email to verify your account.",
         });
         
-        // Redirect to login page
         navigate('/login');
       }
     } catch (error) {
       console.error('Signup error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to create account';
       setError(errorMessage);
-      toast({
-        title: "Signup Failed",
-        description: errorMessage,
-        variant: "destructive",
-      });
     }
   };
 
