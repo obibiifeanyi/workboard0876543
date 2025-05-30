@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,7 +18,6 @@ export const SignupForm = ({ onSignup, error }: SignupFormProps) => {
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [role, setRole] = useState("staff");
-  const [accountType, setAccountType] = useState("staff");
   const [loading, setLoading] = useState(false);
   const [formErrors, setFormErrors] = useState<string[]>([]);
 
@@ -56,7 +54,8 @@ export const SignupForm = ({ onSignup, error }: SignupFormProps) => {
 
     setLoading(true);
     try {
-      await onSignup(email, password, fullName, role, accountType, phone || undefined);
+      // Account type automatically matches the selected role
+      await onSignup(email, password, fullName, role, role, phone || undefined);
     } finally {
       setLoading(false);
     }
@@ -144,21 +143,6 @@ export const SignupForm = ({ onSignup, error }: SignupFormProps) => {
         <Select value={role} onValueChange={setRole} disabled={loading}>
           <SelectTrigger className="bg-black/5 dark:bg-white/5 border-none">
             <SelectValue placeholder="Select your role" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="staff">Staff</SelectItem>
-            <SelectItem value="manager">Manager</SelectItem>
-            <SelectItem value="admin">Admin</SelectItem>
-            <SelectItem value="accountant">Accountant</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="space-y-2 text-left">
-        <Label htmlFor="accountType">Account Type *</Label>
-        <Select value={accountType} onValueChange={setAccountType} disabled={loading}>
-          <SelectTrigger className="bg-black/5 dark:bg-white/5 border-none">
-            <SelectValue placeholder="Select account type" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="staff">Staff</SelectItem>
