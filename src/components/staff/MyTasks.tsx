@@ -1,19 +1,26 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TaskList } from "@/components/staff/TaskList";
 
 export const MyTasks = () => {
   const mockTasks = [
     {
-      id: 1,
-      task: "Daily System Check",
-      deadline: "2024-03-21",
-      status: "In Progress"
+      id: "1",
+      title: "Daily System Check",
+      description: "Perform daily system health checks and monitoring",
+      status: "in_progress",
+      priority: "medium",
+      due_date: "2024-03-21",
+      created_at: "2024-03-15T09:00:00Z"
     },
     {
-      id: 2,
-      task: "Report Generation",
-      deadline: "2024-03-23",
-      status: "Pending"
+      id: "2",
+      title: "Report Generation", 
+      description: "Generate weekly performance reports",
+      status: "pending",
+      priority: "low",
+      due_date: "2024-03-23",
+      created_at: "2024-03-15T10:30:00Z"
     }
   ];
 
