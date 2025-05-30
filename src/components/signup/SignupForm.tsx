@@ -56,7 +56,7 @@ export const SignupForm = ({ onSignup, error }: SignupFormProps) => {
 
     setLoading(true);
     try {
-      await onSignup(email, password, fullName, role, accountType, phone);
+      await onSignup(email, password, fullName, role, accountType, phone || undefined);
     } finally {
       setLoading(false);
     }
@@ -64,7 +64,7 @@ export const SignupForm = ({ onSignup, error }: SignupFormProps) => {
 
   // Display user-friendly error messages
   const getErrorMessage = (error: string) => {
-    if (error.includes("User already registered")) {
+    if (error.includes("User already registered") || error.includes("Email address is already registered")) {
       return "An account with this email already exists. Please try logging in instead.";
     }
     if (error.includes("Database error saving new user")) {
@@ -72,6 +72,12 @@ export const SignupForm = ({ onSignup, error }: SignupFormProps) => {
     }
     if (error.includes("Invalid email")) {
       return "Please enter a valid email address.";
+    }
+    if (error.includes("Password should be at least 6 characters")) {
+      return "Password must be at least 6 characters long.";
+    }
+    if (error.includes("Email not confirmed")) {
+      return "Please check your email and confirm your account before signing in.";
     }
     return error;
   };

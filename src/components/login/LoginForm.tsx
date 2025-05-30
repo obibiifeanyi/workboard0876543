@@ -44,14 +44,20 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
         localStorage.removeItem("rememberedEmail");
       }
 
+      console.log('Attempting login with:', { email, accountType });
+
       const { data: { user }, error: authError } = await supabase.auth.signInWithPassword({
         email: email.trim(),
         password: password.trim()
       });
 
       if (authError) {
+        console.error('Login error:', authError);
+        
         if (authError.message === "Invalid login credentials") {
           setError("Invalid email or password. Please try again.");
+        } else if (authError.message.includes("Email not confirmed")) {
+          setError("Please check your email and confirm your account before signing in.");
         } else {
           setError(authError.message);
         }
@@ -59,11 +65,13 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
       }
 
       if (user) {
-        // Profile should exist due to trigger, but fetch it to get role info
+        console.log('User logged in successfully:', user.id);
+        
+        // Fetch user profile to get role and account_type
         try {
           const { data: profile, error: profileError } = await supabase
             .from('profiles')
-            .select('role, account_type')
+            .select('role, account_type, full_name')
             .eq('id', user.id)
             .single();
 
@@ -73,7 +81,8 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
             localStorage.setItem('userRole', 'staff');
             localStorage.setItem('accountType', accountType);
           } else if (profile) {
-            // Store role and account type
+            console.log('Profile fetched:', profile);
+            // Store role and account type from database
             localStorage.setItem('userRole', profile.role || 'staff');
             localStorage.setItem('accountType', profile.account_type || accountType);
           }
@@ -110,10 +119,20 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
       return;
     }
 
-    toast({
-      title: "Password Reset Link Sent",
-      description: "Please check your email for further instructions",
-    });
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email);
+      if (error) {
+        setError(error.message);
+      } else {
+        toast({
+          title: "Password Reset Link Sent",
+          description: "Please check your email for further instructions",
+        });
+      }
+    } catch (error) {
+      console.error('Password reset error:', error);
+      setError("Failed to send password reset email");
+    }
   };
 
   return (

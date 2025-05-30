@@ -12,6 +12,8 @@ export const useAuth = () => {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('Auth state change:', event, session?.user?.id);
+        
         if (session?.user) {
           setUser(session.user);
           
@@ -20,7 +22,7 @@ export const useAuth = () => {
             try {
               const { data: profile, error } = await supabase
                 .from('profiles')
-                .select('role, account_type')
+                .select('role, account_type, full_name')
                 .eq('id', session.user.id)
                 .single();
 
@@ -33,6 +35,7 @@ export const useAuth = () => {
               }
 
               if (profile) {
+                console.log('Profile loaded:', profile);
                 localStorage.setItem('userRole', profile.role || 'staff');
                 localStorage.setItem('accountType', profile.account_type || 'staff');
               }

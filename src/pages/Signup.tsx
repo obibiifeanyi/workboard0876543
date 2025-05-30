@@ -24,21 +24,28 @@ const Signup = () => {
     setError(null);
     
     try {
+      console.log('Starting signup process with:', { email, fullName, role, accountType, phone });
+      
       const { data, error: signupError } = await supabase.auth.signUp({
         email: email.trim(),
         password: password.trim(),
         options: {
           data: {
-            full_name: fullName,
+            full_name: fullName.trim(),
             role: role,
             account_type: accountType,
-            phone: phone || null,
+            phone: phone?.trim() || null,
           },
         },
       });
 
+      console.log('Signup response:', { data, signupError });
+
       if (signupError) {
-        if (signupError.message.includes("User already registered")) {
+        console.error('Signup error:', signupError);
+        
+        if (signupError.message.includes("User already registered") || 
+            signupError.message.includes("Email address is already registered")) {
           toast({
             title: "Account Exists",
             description: "An account with this email already exists. Redirecting to login...",
@@ -47,21 +54,38 @@ const Signup = () => {
           setTimeout(() => navigate('/login'), 2000);
           return;
         }
+        
+        // Handle database errors specifically
+        if (signupError.message.includes("Database error saving new user")) {
+          setError("There was an issue creating your account. This might be due to a duplicate email or system error. Please try again or contact support.");
+          return;
+        }
+        
         throw signupError;
       }
 
       if (data.user) {
+        console.log('User created successfully:', data.user.id);
+        
         toast({
           title: "Account Created Successfully!",
           description: "Welcome to CT Communication Towers. Please check your email to verify your account.",
         });
         
         navigate('/login');
+      } else {
+        setError("Failed to create account. Please try again.");
       }
     } catch (error) {
       console.error('Signup error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to create account';
       setError(errorMessage);
+      
+      toast({
+        title: "Signup Failed",
+        description: errorMessage,
+        variant: "destructive",
+      });
     }
   };
 
