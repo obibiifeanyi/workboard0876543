@@ -1,10 +1,13 @@
+
 import { DashboardLayout } from "@/components/DashboardLayout";
-import { DocumentArchive } from "@/components/documents/DocumentArchive";
+import { AIDocumentAnalyzer } from "@/components/ai/AIDocumentAnalyzer";
 
 const DocumentsPage = () => {
   return (
-    <DashboardLayout title="Document Archive">
-      <DocumentArchive />
+    <DashboardLayout title="AI Document Analyzer">
+      <div className="p-6">
+        <AIDocumentAnalyzer />
+      </div>
     </DashboardLayout>
   );
 };

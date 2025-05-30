@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1'
 
@@ -12,7 +13,7 @@ serve(async (req) => {
   }
 
   try {
-    const { content, type } = await req.json()
+    const { content, fileName, fileType } = await req.json()
 
     if (!content) {
       return new Response(
@@ -21,31 +22,18 @@ serve(async (req) => {
       )
     }
 
-    // OpenAI API configuration
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          {
-            role: 'system',
-            content: `You are an AI assistant specialized in analyzing ${type || 'content'}. Provide detailed analysis including key points and suggested actions.`
-          },
-          {
-            role: 'user',
-            content: content
-          }
-        ],
-        temperature: 0.7,
-        max_tokens: 1000
-      })
-    })
+    // Try OpenAI first, fallback to Google AI
+    let analysisResult;
+    const openaiKey = Deno.env.get('OPENAI_API_KEY');
+    const googleKey = Deno.env.get('GOOGLE_AI_API_KEY');
 
-    const result = await response.json()
+    if (openaiKey) {
+      analysisResult = await analyzeWithOpenAI(content, fileName, fileType, openaiKey);
+    } else if (googleKey) {
+      analysisResult = await analyzeWithGoogleAI(content, fileName, fileType, googleKey);
+    } else {
+      throw new Error('No AI API keys configured');
+    }
 
     // Store the analysis result
     const supabase = createClient(
@@ -56,25 +44,25 @@ serve(async (req) => {
     const { data: analysisRecord, error: dbError } = await supabase
       .from('document_analysis')
       .insert({
-        file_name: 'AI Analysis',
-        file_path: 'ai-analysis',
-        file_type: 'text',
+        file_name: fileName,
+        file_path: `ai-analysis/${Date.now()}-${fileName}`,
+        file_type: fileType,
         file_size: content.length,
         analysis_status: 'completed',
-        analysis_result: result.choices[0].message.content,
+        analysis_result: analysisResult,
         created_by: req.headers.get('x-user-id')
       })
       .select()
       .single()
 
     if (dbError) {
-      throw dbError
+      console.error('Database error:', dbError)
     }
 
     return new Response(
       JSON.stringify({ 
-        result: result.choices[0].message.content,
-        analysis: analysisRecord
+        analysis: analysisResult,
+        record: analysisRecord
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
@@ -86,3 +74,90 @@ serve(async (req) => {
     )
   }
 })
+
+async function analyzeWithOpenAI(content: string, fileName: string, fileType: string, apiKey: string) {
+  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      model: 'gpt-4o-mini',
+      messages: [
+        {
+          role: 'system',
+          content: `You are an AI document analyzer. Analyze the provided document and return a JSON response with the following structure:
+          {
+            "summary": "Brief summary of the document",
+            "keyPoints": ["key point 1", "key point 2", ...],
+            "suggestedActions": ["action 1", "action 2", ...],
+            "categories": ["category1", "category2", ...],
+            "sentiment": "positive/negative/neutral",
+            "wordCount": number
+          }`
+        },
+        {
+          role: 'user',
+          content: `Analyze this document (${fileName}, ${fileType}):\n\n${content}`
+        }
+      ],
+      temperature: 0.3,
+      max_tokens: 2000
+    })
+  })
+
+  const result = await response.json()
+  const analysisText = result.choices[0].message.content
+
+  try {
+    return JSON.parse(analysisText)
+  } catch {
+    // Fallback if JSON parsing fails
+    return {
+      summary: analysisText,
+      keyPoints: ["Analysis completed"],
+      suggestedActions: ["Review the document"],
+      categories: ["General"],
+      sentiment: "neutral",
+      wordCount: content.split(/\s+/).length
+    }
+  }
+}
+
+async function analyzeWithGoogleAI(content: string, fileName: string, fileType: string, apiKey: string) {
+  const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      contents: [{
+        parts: [{
+          text: `Analyze this document (${fileName}, ${fileType}) and provide a JSON response with summary, keyPoints, suggestedActions, categories, sentiment, and wordCount:\n\n${content}`
+        }]
+      }],
+      generationConfig: {
+        temperature: 0.3,
+        maxOutputTokens: 2000
+      }
+    })
+  })
+
+  const result = await response.json()
+  const analysisText = result.candidates[0].content.parts[0].text
+
+  try {
+    return JSON.parse(analysisText)
+  } catch {
+    // Fallback if JSON parsing fails
+    return {
+      summary: analysisText,
+      keyPoints: ["Analysis completed"],
+      suggestedActions: ["Review the document"],
+      categories: ["General"],
+      sentiment: "neutral",
+      wordCount: content.split(/\s+/).length
+    }
+  }
+}
