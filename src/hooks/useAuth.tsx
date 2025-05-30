@@ -9,6 +9,27 @@ export const useAuth = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
+  const redirectUserBasedOnRole = (role: string, accountType: string) => {
+    console.log('Redirecting user based on role:', role, 'accountType:', accountType);
+    
+    // Redirect based on account type first, then role
+    if (accountType === 'accountant') {
+      navigate('/accountant');
+    } else {
+      switch (role) {
+        case 'admin':
+          navigate('/admin');
+          break;
+        case 'manager':
+          navigate('/manager');
+          break;
+        case 'staff':
+        default:
+          navigate('/staff');
+      }
+    }
+  };
+
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
@@ -29,20 +50,39 @@ export const useAuth = () => {
               if (error) {
                 console.error('Error fetching profile:', error);
                 // Profile should exist due to trigger, but set defaults if not
-                localStorage.setItem('userRole', 'staff');
-                localStorage.setItem('accountType', 'staff');
+                const defaultRole = 'staff';
+                const defaultAccountType = 'staff';
+                localStorage.setItem('userRole', defaultRole);
+                localStorage.setItem('accountType', defaultAccountType);
+                redirectUserBasedOnRole(defaultRole, defaultAccountType);
                 return;
               }
 
               if (profile) {
                 console.log('Profile loaded:', profile);
-                localStorage.setItem('userRole', profile.role || 'staff');
-                localStorage.setItem('accountType', profile.account_type || profile.role || 'staff');
+                const userRole = profile.role || 'staff';
+                const accountType = profile.account_type || profile.role || 'staff';
+                
+                localStorage.setItem('userRole', userRole);
+                localStorage.setItem('accountType', accountType);
+                
+                // Only redirect if user is not already on the correct dashboard
+                const currentPath = window.location.pathname;
+                const targetPath = accountType === 'accountant' ? '/accountant' : 
+                                  userRole === 'admin' ? '/admin' :
+                                  userRole === 'manager' ? '/manager' : '/staff';
+                
+                if (!currentPath.startsWith(targetPath)) {
+                  redirectUserBasedOnRole(userRole, accountType);
+                }
               }
             } catch (error) {
               console.error('Error fetching profile:', error);
-              localStorage.setItem('userRole', 'staff');
-              localStorage.setItem('accountType', 'staff');
+              const defaultRole = 'staff';
+              const defaultAccountType = 'staff';
+              localStorage.setItem('userRole', defaultRole);
+              localStorage.setItem('accountType', defaultAccountType);
+              redirectUserBasedOnRole(defaultRole, defaultAccountType);
             }
           }, 0);
         } else {

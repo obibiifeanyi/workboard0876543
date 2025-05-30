@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
@@ -39,7 +38,6 @@ const Login = () => {
         if (session?.user) {
           console.log('User signed in, fetching profile...');
           
-          // Use proper Supabase client method
           const { data: profile, error } = await supabase
             .from('profiles')
             .select('role, account_type')

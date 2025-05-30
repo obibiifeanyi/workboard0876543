@@ -6,21 +6,80 @@ import { NeuralNetwork } from "@/components/NeuralNetwork";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Loader } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 2000);
-
-    // Check if user is already logged in
-    const userRole = localStorage.getItem('userRole');
-    if (userRole) {
-      navigate(`/${userRole.toLowerCase()}`);
+  const redirectUserBasedOnRole = (role: string, accountType: string) => {
+    console.log('Redirecting user based on role:', role, 'accountType:', accountType);
+    
+    // Redirect based on account type first, then role
+    if (accountType === 'accountant') {
+      navigate('/accountant');
+    } else {
+      switch (role) {
+        case 'admin':
+          navigate('/admin');
+          break;
+        case 'manager':
+          navigate('/manager');
+          break;
+        case 'staff':
+        default:
+          navigate('/staff');
+      }
     }
+  };
+
+  useEffect(() => {
+    const checkAuthAndRedirect = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session?.user) {
+          console.log('User is logged in, checking role...');
+          
+          // Check if we have stored role info
+          const storedRole = localStorage.getItem('userRole');
+          const storedAccountType = localStorage.getItem('accountType');
+          
+          if (storedRole && storedAccountType) {
+            redirectUserBasedOnRole(storedRole, storedAccountType);
+            return;
+          }
+          
+          // Fetch from database if not stored
+          const { data: profile, error } = await supabase
+            .from('profiles')
+            .select('role, account_type')
+            .eq('id', session.user.id)
+            .single();
+
+          if (!error && profile) {
+            const role = profile.role || 'staff';
+            const accountType = profile.account_type || 'staff';
+            
+            localStorage.setItem('userRole', role);
+            localStorage.setItem('accountType', accountType);
+            
+            redirectUserBasedOnRole(role, accountType);
+          } else {
+            // Default to staff if profile fetch fails
+            navigate('/staff');
+          }
+        }
+      } catch (error) {
+        console.error('Error checking auth:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    const timer = setTimeout(() => {
+      checkAuthAndRedirect();
+    }, 2000);
 
     return () => clearTimeout(timer);
   }, [navigate]);
