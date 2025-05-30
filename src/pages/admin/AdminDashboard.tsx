@@ -1,7 +1,8 @@
+
 import { useState, Suspense } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { AdminNavigation } from "@/components/admin/AdminNavigation";
-import { Outlet, useLocation } from "react-router-dom";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -13,12 +14,13 @@ import {
 import { Loader } from "@/components/ui/Loader";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
+import { AdminDashboardModule } from "@/components/admin/dashboard/AdminDashboardModule";
 
 const AdminDashboard = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const location = useLocation();
-  const { toast } = useToast();
+  const navigate = useNavigate();
+  const isRootAdminRoute = location.pathname === '/admin';
 
   const renderBreadcrumb = () => {
     const paths = location.pathname.split('/').filter(Boolean);
@@ -75,7 +77,7 @@ const AdminDashboard = () => {
               <Loader className="h-8 w-8 animate-spin text-primary" />
             </div>
           }>
-            <Outlet />
+            {isRootAdminRoute ? <AdminDashboardModule /> : <Outlet />}
           </Suspense>
         </ErrorBoundary>
       </div>

@@ -22,6 +22,23 @@ import AccountantDashboard from "./pages/accountant/AccountantDashboard";
 import DocumentsPage from "./pages/documents/DocumentsPage";
 import { RoleBasedRoute } from "./components/RoleBasedRoute";
 
+// Admin sub-components
+import { UserManagement } from "@/components/admin/UserManagement";
+import { TelecomSiteManagement } from "@/components/admin/TelecomSiteManagement";
+import { ProjectManagement } from "@/components/admin/ProjectManagement";
+import { TimeManagement } from "@/components/admin/TimeManagement";
+import { LeaveManagement } from "@/components/admin/LeaveManagement";
+import { CommunicationCenter } from "@/components/admin/CommunicationCenter";
+import { DepartmentManagement } from "@/components/admin/DepartmentManagement";
+
+// Accountant sub-components
+import { FinancialReports } from "@/components/accountant/FinancialReports";
+import { InvoiceManagement } from "@/components/accountant/InvoiceManagement";
+import { PaymentProcessing } from "@/components/accountant/PaymentProcessing";
+import { InventoryManagement } from "@/components/accountant/InventoryManagement";
+import { MemoApproval } from "@/components/accountant/MemoApproval";
+import { AccountSettings } from "@/components/accountant/AccountSettings";
+
 function App() {
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
@@ -93,14 +110,29 @@ function App() {
               <RoleBasedRoute allowedRoles={['admin']}>
                 <AdminDashboard />
               </RoleBasedRoute>
-            } />
+            }>
+              <Route path="users" element={<UserManagement />} />
+              <Route path="sites" element={<TelecomSiteManagement />} />
+              <Route path="projects" element={<ProjectManagement />} />
+              <Route path="time" element={<TimeManagement />} />
+              <Route path="leave" element={<LeaveManagement />} />
+              <Route path="communication" element={<CommunicationCenter />} />
+              <Route path="departments" element={<DepartmentManagement />} />
+            </Route>
             
             {/* Accountant Routes */}
             <Route path="/accountant" element={
               <RoleBasedRoute allowedRoles={['accountant', 'admin']}>
                 <AccountantDashboard />
               </RoleBasedRoute>
-            } />
+            }>
+              <Route path="financial-reports" element={<FinancialReports />} />
+              <Route path="invoices" element={<InvoiceManagement />} />
+              <Route path="payments" element={<PaymentProcessing />} />
+              <Route path="inventory" element={<InventoryManagement />} />
+              <Route path="memos" element={<MemoApproval />} />
+              <Route path="settings" element={<AccountSettings />} />
+            </Route>
             
             {/* Documents Routes */}
             <Route path="/documents" element={
