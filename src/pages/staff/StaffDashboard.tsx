@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { StatsCards } from "@/components/StatsCards";
@@ -10,6 +11,7 @@ import {
   Users, Settings, StickyNote
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import { ChatBox } from "@/components/ChatBox";
 import { TaskList } from "@/components/staff/TaskList";
 import { LeaveApplication } from "@/components/staff/LeaveApplication";
@@ -26,6 +28,58 @@ const StaffDashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [date, setDate] = useState<Date | undefined>(new Date());
+  const [tasks, setTasks] = useState([]);
+  const [memos, setMemos] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Fetch dashboard data on load
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      setIsLoading(true);
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (user) {
+          // Fetch user's tasks
+          const { data: tasksData, error: tasksError } = await supabase
+            .from('tasks')
+            .select('*')
+            .eq('assigned_to_id', user.id)
+            .order('created_at', { ascending: false });
+
+          if (tasksError) {
+            console.error('Error fetching tasks:', tasksError);
+          } else {
+            setTasks(tasksData || []);
+          }
+
+          // Fetch user's memos
+          const { data: memosData, error: memosError } = await supabase
+            .from('user_memos')
+            .select('*')
+            .eq('recipient_id', user.id)
+            .order('created_at', { ascending: false });
+
+          if (memosError) {
+            console.error('Error fetching memos:', memosError);
+          } else {
+            setMemos(memosData || []);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load dashboard data",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, [toast]);
 
   const stats = [
     {
@@ -36,7 +90,7 @@ const StaffDashboard = () => {
     },
     {
       title: "Tasks Completed",
-      value: "15",
+      value: tasks.filter(task => task.status === 'completed').length.toString(),
       description: "This week",
       icon: CheckCircle,
     },
@@ -48,7 +102,7 @@ const StaffDashboard = () => {
     },
     {
       title: "Notifications",
-      value: "4",
+      value: memos.filter(memo => !memo.is_read).length.toString(),
       description: "Unread messages",
       icon: Bell,
     },
@@ -152,7 +206,7 @@ const StaffDashboard = () => {
             </TabsContent>
 
             <TabsContent value="tasks" className="space-y-4">
-              <TaskList tasks={[]} />
+              <TaskList tasks={tasks} />
             </TabsContent>
 
             <TabsContent value="reports" className="space-y-4">
