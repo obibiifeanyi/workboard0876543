@@ -17,18 +17,13 @@ const Login = () => {
     // Redirect based on account type first, then role
     if (accountType === 'accountant') {
       navigate('/accountant');
+    } else if (accountType === 'admin' || role === 'admin') {
+      navigate('/admin');
+    } else if (accountType === 'manager' || role === 'manager') {
+      navigate('/manager');
     } else {
-      switch (role) {
-        case 'admin':
-          navigate('/admin');
-          break;
-        case 'manager':
-          navigate('/manager');
-          break;
-        case 'staff':
-        default:
-          navigate('/staff');
-      }
+      // Default to staff for any other account type or role
+      navigate('/staff');
     }
   };
 

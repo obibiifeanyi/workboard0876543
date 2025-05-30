@@ -32,7 +32,19 @@ export const RoleBasedRoute = ({ children, allowedRoles, userRole: propUserRole 
         }
 
         // For accountant routes, check account type first
-        if (allowedRoles.includes("accountant") && accountType === "accountant") {
+        if (allowedRoles.includes("accountant") && (accountType === "accountant")) {
+          setIsLoading(false);
+          return;
+        }
+        
+        // For admin routes, check both account type and role
+        if (allowedRoles.includes("admin") && (accountType === "admin" || userRole === "admin")) {
+          setIsLoading(false);
+          return;
+        }
+        
+        // For manager routes, check both account type and role
+        if (allowedRoles.includes("manager") && (accountType === "manager" || userRole === "manager")) {
           setIsLoading(false);
           return;
         }
@@ -62,24 +74,47 @@ export const RoleBasedRoute = ({ children, allowedRoles, userRole: propUserRole 
             localStorage.setItem('userRole', profile.role || 'staff');
             localStorage.setItem('accountType', profile.account_type || 'staff');
             
-            // Check access with fetched role
+            // Check access with fetched role and account type
             const finalRole = profile.role || 'staff';
             const finalAccountType = profile.account_type || 'staff';
             
+            // Check accountant access
             if (allowedRoles.includes("accountant") && finalAccountType === "accountant") {
               setIsLoading(false);
               return;
             }
             
-            if (!allowedRoles.includes(finalRole)) {
-              setShouldRedirect(true);
+            // Check admin access
+            if (allowedRoles.includes("admin") && (finalAccountType === "admin" || finalRole === "admin")) {
+              setIsLoading(false);
+              return;
             }
+            
+            // Check manager access
+            if (allowedRoles.includes("manager") && (finalAccountType === "manager" || finalRole === "manager")) {
+              setIsLoading(false);
+              return;
+            }
+            
+            // Check role-based access for staff and other roles
+            if (allowedRoles.includes(finalRole) || allowedRoles.includes(finalAccountType)) {
+              setIsLoading(false);
+              return;
+            }
+            
+            setShouldRedirect(true);
           } else {
             setShouldRedirect(true);
           }
         } else {
-          // Check with stored role
-          if (!allowedRoles.includes(userRole)) {
+          // Check with stored role and account type
+          const hasAccess = allowedRoles.includes(userRole) || 
+                           allowedRoles.includes(accountType) ||
+                           (allowedRoles.includes("admin") && (accountType === "admin" || userRole === "admin")) ||
+                           (allowedRoles.includes("manager") && (accountType === "manager" || userRole === "manager")) ||
+                           (allowedRoles.includes("accountant") && accountType === "accountant");
+          
+          if (!hasAccess) {
             setShouldRedirect(true);
           }
         }
