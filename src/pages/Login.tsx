@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
@@ -12,10 +11,33 @@ const Login = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  const redirectUserBasedOnRole = (role: string, accountType: string) => {
+    console.log('Redirecting user based on role:', role, 'accountType:', accountType);
+    
+    // Redirect based on account type first, then role
+    if (accountType === 'accountant') {
+      navigate('/accountant');
+    } else {
+      switch (role) {
+        case 'admin':
+          navigate('/admin');
+          break;
+        case 'manager':
+          navigate('/manager');
+          break;
+        case 'staff':
+        default:
+          navigate('/staff');
+      }
+    }
+  };
+
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_IN') {
         if (session?.user) {
+          console.log('User signed in, fetching profile...');
+          
           // Use proper Supabase client method instead of direct REST API
           const { data: profile, error } = await supabase
             .from('profiles')
@@ -38,21 +60,7 @@ const Login = () => {
           localStorage.setItem('userRole', role);
           localStorage.setItem('accountType', accountType);
 
-          // Redirect based on account type first, then role
-          if (accountType === 'accountant') {
-            navigate('/accountant');
-          } else {
-            switch (role) {
-              case 'admin':
-                navigate('/admin');
-                break;
-              case 'manager':
-                navigate('/manager');
-                break;
-              default:
-                navigate('/staff');
-            }
-          }
+          redirectUserBasedOnRole(role, accountType);
 
           toast({
             title: "Welcome back!",
@@ -65,22 +73,35 @@ const Login = () => {
     // Check if user is already logged in
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
-        const role = localStorage.getItem('userRole') || 'staff';
-        const accountType = localStorage.getItem('accountType') || 'staff';
+        console.log('Existing session found, checking stored role...');
+        const storedRole = localStorage.getItem('userRole') || 'staff';
+        const storedAccountType = localStorage.getItem('accountType') || 'staff';
         
-        if (accountType === 'accountant') {
-          navigate('/accountant');
+        // If we have stored role info, redirect immediately
+        if (storedRole && storedAccountType) {
+          redirectUserBasedOnRole(storedRole, storedAccountType);
         } else {
-          switch (role) {
-            case 'admin':
-              navigate('/admin');
-              break;
-            case 'manager':
-              navigate('/manager');
-              break;
-            default:
-              navigate('/staff');
-          }
+          // Otherwise fetch from database
+          supabase
+            .from('profiles')
+            .select('role, account_type')
+            .eq('id', session.user.id)
+            .single()
+            .then(({ data: profile, error }) => {
+              if (error) {
+                console.error('Error fetching profile:', error);
+                navigate('/staff');
+                return;
+              }
+              
+              const role = profile?.role || 'staff';
+              const accountType = profile?.account_type || 'staff';
+              
+              localStorage.setItem('userRole', role);
+              localStorage.setItem('accountType', accountType);
+              
+              redirectUserBasedOnRole(role, accountType);
+            });
         }
       }
     });

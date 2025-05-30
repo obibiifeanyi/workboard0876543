@@ -37,7 +37,7 @@ export const useAuth = () => {
               if (profile) {
                 console.log('Profile loaded:', profile);
                 localStorage.setItem('userRole', profile.role || 'staff');
-                localStorage.setItem('accountType', profile.account_type || 'staff');
+                localStorage.setItem('accountType', profile.account_type || profile.role || 'staff');
               }
             } catch (error) {
               console.error('Error fetching profile:', error);

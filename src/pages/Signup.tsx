@@ -55,7 +55,6 @@ const Signup = () => {
           return;
         }
         
-        // Handle database errors specifically
         if (signupError.message.includes("Database error saving new user")) {
           setError("There was an issue creating your account. This might be due to a duplicate email or system error. Please try again or contact support.");
           return;
@@ -67,12 +66,30 @@ const Signup = () => {
       if (data.user) {
         console.log('User created successfully:', data.user.id);
         
+        // Store role and account type in localStorage for immediate use
+        localStorage.setItem('userRole', role);
+        localStorage.setItem('accountType', accountType);
+        
         toast({
           title: "Account Created Successfully!",
           description: "Welcome to CT Communication Towers. Please check your email to verify your account.",
         });
         
-        navigate('/login');
+        // Redirect based on role immediately after signup
+        if (accountType === 'accountant') {
+          navigate('/accountant');
+        } else {
+          switch (role) {
+            case 'admin':
+              navigate('/admin');
+              break;
+            case 'manager':
+              navigate('/manager');
+              break;
+            default:
+              navigate('/staff');
+          }
+        }
       } else {
         setError("Failed to create account. Please try again.");
       }

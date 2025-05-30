@@ -9,7 +9,6 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { RememberMeCheckbox } from "./RememberMeCheckbox";
 import { ForgotPasswordButton } from "./ForgotPasswordButton";
 import { SubmitButton } from "./SubmitButton";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface LoginFormProps {
   onLogin: (email: string, password: string) => Promise<void>;
@@ -23,7 +22,6 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
   const [loading, setLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [accountType, setAccountType] = useState("staff");
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -44,7 +42,7 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
         localStorage.removeItem("rememberedEmail");
       }
 
-      console.log('Attempting login with:', { email, accountType });
+      console.log('Attempting login with:', { email });
 
       const { data: { user }, error: authError } = await supabase.auth.signInWithPassword({
         email: email.trim(),
@@ -79,17 +77,17 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
             console.error('Error fetching user profile:', profileError);
             // Set default values if profile fetch fails
             localStorage.setItem('userRole', 'staff');
-            localStorage.setItem('accountType', accountType);
+            localStorage.setItem('accountType', 'staff');
           } else if (profile) {
             console.log('Profile fetched:', profile);
             // Store role and account type from database
             localStorage.setItem('userRole', profile.role || 'staff');
-            localStorage.setItem('accountType', profile.account_type || accountType);
+            localStorage.setItem('accountType', profile.account_type || 'staff');
           }
         } catch (profileError) {
           console.error('Profile fetch error:', profileError);
           localStorage.setItem('userRole', 'staff');
-          localStorage.setItem('accountType', accountType);
+          localStorage.setItem('accountType', 'staff');
         }
 
         toast({
@@ -142,20 +140,6 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
-      <div className="space-y-2 text-left">
-        <Label htmlFor="accountType">Account Type</Label>
-        <Select value={accountType} onValueChange={setAccountType}>
-          <SelectTrigger>
-            <SelectValue placeholder="Select account type" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="staff">Staff</SelectItem>
-            <SelectItem value="accountant">Accountant</SelectItem>
-            <SelectItem value="manager">Manager</SelectItem>
-            <SelectItem value="admin">Admin</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
       <div className="space-y-2 text-left">
         <Label htmlFor="email">Email</Label>
         <Input
