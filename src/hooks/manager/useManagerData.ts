@@ -34,7 +34,7 @@ export const useManagerData = () => {
           project_assignments(
             id,
             staff_id,
-            profiles(full_name)
+            profiles!project_assignments_staff_id_fkey(full_name)
           )
         `);
 
@@ -51,7 +51,7 @@ export const useManagerData = () => {
         .from("time_logs")
         .select(`
           *,
-          profiles(full_name)
+          profiles!time_logs_user_id_fkey(full_name)
         `)
         .order("created_at", { ascending: false });
 
@@ -68,7 +68,7 @@ export const useManagerData = () => {
         .from("leave_requests")
         .select(`
           *,
-          profiles(full_name)
+          profiles!leave_requests_user_id_fkey(full_name)
         `)
         .order("created_at", { ascending: false });
 
