@@ -22,20 +22,43 @@ export const useLeaveRequests = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Temporarily return empty data until leave_requests table is created
+  // Fetch all leave requests (for managers/admins)
   const { data: leaveRequests, isLoading } = useQuery({
     queryKey: ['leave-requests'],
     queryFn: async () => {
-      // Return empty array for now
-      return [] as LeaveRequest[];
+      const { data, error } = await supabase
+        .from('leave_requests')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching leave requests:', error);
+        throw error;
+      }
+
+      return data as LeaveRequest[];
     },
   });
 
+  // Fetch current user's leave requests
   const { data: myLeaveRequests, isLoading: isLoadingMyRequests } = useQuery({
     queryKey: ['my-leave-requests'],
     queryFn: async () => {
-      // Return empty array for now
-      return [] as LeaveRequest[];
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
+      const { data, error } = await supabase
+        .from('leave_requests')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching user leave requests:', error);
+        throw error;
+      }
+
+      return data as LeaveRequest[];
     },
   });
 
@@ -46,8 +69,30 @@ export const useLeaveRequests = () => {
       leave_type: string;
       reason: string;
     }) => {
-      // Temporarily just log the request
-      console.log('Leave request submitted:', requestData);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
+      const { data, error } = await supabase
+        .from('leave_requests')
+        .insert([
+          {
+            user_id: user.id,
+            start_date: requestData.start_date,
+            end_date: requestData.end_date,
+            leave_type: requestData.leave_type,
+            reason: requestData.reason,
+            status: 'pending'
+          }
+        ])
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error submitting leave request:', error);
+        throw error;
+      }
+
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['leave-requests'] });
@@ -58,6 +103,7 @@ export const useLeaveRequests = () => {
       });
     },
     onError: (error) => {
+      console.error('Submit leave request error:', error);
       toast({
         title: "Error",
         description: "Failed to submit leave request. Please try again.",
@@ -68,7 +114,26 @@ export const useLeaveRequests = () => {
 
   const approveLeaveRequest = useMutation({
     mutationFn: async (requestId: string) => {
-      console.log('Approving leave request:', requestId);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
+      const { data, error } = await supabase
+        .from('leave_requests')
+        .update({
+          status: 'approved',
+          approved_by: user.id,
+          approved_at: new Date().toISOString(),
+        })
+        .eq('id', requestId)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error approving leave request:', error);
+        throw error;
+      }
+
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['leave-requests'] });
@@ -77,17 +142,53 @@ export const useLeaveRequests = () => {
         description: "The leave request has been approved.",
       });
     },
+    onError: (error) => {
+      console.error('Approve leave request error:', error);
+      toast({
+        title: "Error",
+        description: "Failed to approve leave request. Please try again.",
+        variant: "destructive",
+      });
+    },
   });
 
   const rejectLeaveRequest = useMutation({
     mutationFn: async ({ requestId, reason }: { requestId: string; reason: string }) => {
-      console.log('Rejecting leave request:', requestId, reason);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
+      const { data, error } = await supabase
+        .from('leave_requests')
+        .update({
+          status: 'rejected',
+          approved_by: user.id,
+          approved_at: new Date().toISOString(),
+          rejection_reason: reason,
+        })
+        .eq('id', requestId)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error rejecting leave request:', error);
+        throw error;
+      }
+
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['leave-requests'] });
       toast({
         title: "Leave Rejected",
         description: "The leave request has been rejected.",
+      });
+    },
+    onError: (error) => {
+      console.error('Reject leave request error:', error);
+      toast({
+        title: "Error",
+        description: "Failed to reject leave request. Please try again.",
+        variant: "destructive",
       });
     },
   });

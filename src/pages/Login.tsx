@@ -16,11 +16,21 @@ const Login = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_IN') {
         if (session?.user) {
-          const { data: profile } = await supabase
+          // Use proper Supabase client method instead of direct REST API
+          const { data: profile, error } = await supabase
             .from('profiles')
             .select('role, account_type')
             .eq('id', session.user.id)
             .single();
+
+          if (error) {
+            console.error('Error fetching profile:', error);
+            // Set default values if profile fetch fails
+            localStorage.setItem('userRole', 'staff');
+            localStorage.setItem('accountType', 'staff');
+            navigate('/staff');
+            return;
+          }
 
           const role = profile?.role || 'staff';
           const accountType = profile?.account_type || 'staff';

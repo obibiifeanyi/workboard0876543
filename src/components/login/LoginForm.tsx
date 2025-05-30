@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -58,6 +59,7 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
       }
 
       if (user) {
+        // Use proper Supabase client method instead of direct REST API
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('role, account_type')
@@ -65,13 +67,15 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
           .single();
 
         if (profileError) {
-          setError("Error fetching user profile");
-          throw profileError;
+          console.error('Error fetching user profile:', profileError);
+          // Set default values if profile fetch fails
+          localStorage.setItem('userRole', 'staff');
+          localStorage.setItem('accountType', accountType);
+        } else {
+          // Store role and account type
+          localStorage.setItem('userRole', profile?.role || 'staff');
+          localStorage.setItem('accountType', profile?.account_type || accountType);
         }
-
-        // Store role and account type
-        localStorage.setItem('userRole', profile?.role || 'staff');
-        localStorage.setItem('accountType', profile?.account_type || accountType);
 
         toast({
           title: "Welcome Back!",
@@ -79,10 +83,13 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
         });
 
         // Navigate based on account type
-        if (profile?.account_type === 'accountant') {
+        const finalAccountType = profile?.account_type || accountType;
+        const finalRole = profile?.role || 'staff';
+
+        if (finalAccountType === 'accountant') {
           window.location.href = '/accountant';
         } else {
-          switch (profile?.role) {
+          switch (finalRole) {
             case 'admin':
               window.location.href = '/admin';
               break;

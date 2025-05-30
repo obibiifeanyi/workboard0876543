@@ -14,7 +14,7 @@ export const MemoGeneration = () => {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [department, setDepartment] = useState("");
-  const [status, setStatus] = useState<"draft" | "published" | "archived">("draft");
+  const [status, setStatus] = useState("draft");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,7 +73,7 @@ export const MemoGeneration = () => {
 
           <div>
             <Label htmlFor="memo-status">Status</Label>
-            <Select value={status} onValueChange={(value: "draft" | "published" | "archived") => setStatus(value)}>
+            <Select value={status} onValueChange={setStatus}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>

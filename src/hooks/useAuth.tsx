@@ -15,14 +15,19 @@ export const useAuth = () => {
         if (session?.user) {
           setUser(session.user);
           
-          // Defer profile queries to avoid blocking auth state changes
+          // Use proper Supabase client method instead of direct REST API
           setTimeout(async () => {
             try {
-              const { data: profile } = await supabase
+              const { data: profile, error } = await supabase
                 .from('profiles')
                 .select('role, account_type')
                 .eq('id', session.user.id)
                 .single();
+
+              if (error) {
+                console.error('Error fetching profile:', error);
+                return;
+              }
 
               if (profile?.role) {
                 localStorage.setItem('userRole', profile.role);
