@@ -2,20 +2,38 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { FileText, Plus, Receipt } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { format } from "date-fns";
+import { Badge } from "@/components/ui/badge";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 export const InvoiceManagement = () => {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    vendor_name: "",
+    amount: "",
+    invoice_number: "",
+  });
 
-  const { data: memos, isLoading } = useQuery({
-    queryKey: ['memos'],
+  const { data: invoices, isLoading } = useQuery({
+    queryKey: ['invoices'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('memos')
+        .from('accounts_invoices')
         .select('*')
         .order('created_at', { ascending: false });
 
@@ -24,40 +42,60 @@ export const InvoiceManagement = () => {
     },
   });
 
-  const handleCreateInvoice = async (memo: any) => {
-    try {
+  const createInvoice = useMutation({
+    mutationFn: async (invoiceData: typeof formData) => {
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {
         throw new Error('You must be logged in to create invoices');
       }
 
-      // Generate invoice number
-      const invoiceNumber = `INV-${Date.now()}`;
-
       const { error } = await supabase
         .from('accounts_invoices')
         .insert([{
-          invoice_number: invoiceNumber,
-          vendor_name: `Memo: ${memo.title}`,
-          amount: 0, // Default amount, should be updated
+          invoice_number: invoiceData.invoice_number || `INV-${Date.now()}`,
+          vendor_name: invoiceData.vendor_name,
+          amount: parseFloat(invoiceData.amount),
           payment_status: 'pending',
           created_by: user.id,
         }]);
 
       if (error) throw error;
-
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['invoices'] });
+      setIsDialogOpen(false);
+      setFormData({ vendor_name: "", amount: "", invoice_number: "" });
       toast({
         title: "Success",
-        description: `Invoice ${invoiceNumber} created for memo: ${memo.title}`,
+        description: "Invoice created successfully",
       });
-    } catch (error) {
+    },
+    onError: (error) => {
       console.error('Error creating invoice:', error);
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to create invoice",
+        description: "Failed to create invoice",
         variant: "destructive",
       });
+    },
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await createInvoice.mutateAsync(formData);
+  };
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'paid':
+        return <Badge className="bg-green-500">Paid</Badge>;
+      case 'pending':
+        return <Badge variant="secondary">Pending</Badge>;
+      case 'overdue':
+        return <Badge variant="destructive">Overdue</Badge>;
+      default:
+        return <Badge variant="outline">{status}</Badge>;
     }
   };
 
@@ -71,7 +109,9 @@ export const InvoiceManagement = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center">Loading memos...</div>
+          <div className="flex items-center justify-center h-32">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          </div>
         </CardContent>
       </Card>
     );
@@ -80,40 +120,89 @@ export const InvoiceManagement = () => {
   return (
     <Card className="bg-black/10 dark:bg-white/5 backdrop-blur-lg border-none">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-lg font-medium">
-          <Receipt className="h-5 w-5 text-primary" />
-          Invoice Management
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2 text-lg font-medium">
+            <Receipt className="h-5 w-5 text-primary" />
+            Invoice Management
+          </CardTitle>
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="h-4 w-4 mr-2" />
+                Create Invoice
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Create New Invoice</DialogTitle>
+              </DialogHeader>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <Label htmlFor="vendor_name">Vendor Name</Label>
+                  <Input
+                    id="vendor_name"
+                    value={formData.vendor_name}
+                    onChange={(e) => setFormData({ ...formData, vendor_name: e.target.value })}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="amount">Amount</Label>
+                  <Input
+                    id="amount"
+                    type="number"
+                    step="0.01"
+                    value={formData.amount}
+                    onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="invoice_number">Invoice Number (Optional)</Label>
+                  <Input
+                    id="invoice_number"
+                    value={formData.invoice_number}
+                    onChange={(e) => setFormData({ ...formData, invoice_number: e.target.value })}
+                    placeholder="Auto-generated if empty"
+                  />
+                </div>
+                <Button type="submit" disabled={createInvoice.isPending}>
+                  {createInvoice.isPending ? "Creating..." : "Create Invoice"}
+                </Button>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </div>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
-          <div className="grid gap-4">
-            {memos && memos.length > 0 ? (
-              memos.map((memo) => (
-                <Card key={memo.id} className="p-4 bg-white/5">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="font-medium">{memo.title}</h3>
-                      <p className="text-sm text-muted-foreground">
-                        {memo.department} - {format(new Date(memo.created_at), 'PPP')}
-                      </p>
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleCreateInvoice(memo)}
-                    >
-                      <Plus className="h-4 w-4 mr-2" />
-                      Create Invoice
-                    </Button>
-                  </div>
-                </Card>
-              ))
-            ) : (
-              <div className="text-center text-muted-foreground">No memos found</div>
-            )}
+        {invoices && invoices.length > 0 ? (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Invoice #</TableHead>
+                <TableHead>Vendor</TableHead>
+                <TableHead>Amount</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Created</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {invoices.map((invoice) => (
+                <TableRow key={invoice.id}>
+                  <TableCell className="font-medium">{invoice.invoice_number}</TableCell>
+                  <TableCell>{invoice.vendor_name}</TableCell>
+                  <TableCell>${Number(invoice.amount).toFixed(2)}</TableCell>
+                  <TableCell>{getStatusBadge(invoice.payment_status)}</TableCell>
+                  <TableCell>{new Date(invoice.created_at).toLocaleDateString()}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        ) : (
+          <div className="text-center py-8 text-muted-foreground">
+            No invoices found. Create your first invoice to get started.
           </div>
-        </div>
+        )}
       </CardContent>
     </Card>
   );

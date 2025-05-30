@@ -2,8 +2,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Calendar, CheckCircle, XCircle, Loader } from "lucide-react";
-import { useLeaveRequests } from "@/hooks/useLeaveRequests";
 import { Badge } from "@/components/ui/badge";
+import { useManagerData } from "@/hooks/manager/useManagerData";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 import {
   Table,
   TableBody,
@@ -14,7 +17,69 @@ import {
 } from "@/components/ui/table";
 
 export const LeaveManagement = () => {
-  const { leaveRequests, isLoading, approveLeaveRequest, rejectLeaveRequest } = useLeaveRequests();
+  const { leaveRequests, isLoadingLeave } = useManagerData();
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  const approveLeaveRequest = useMutation({
+    mutationFn: async (requestId: string) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      const { error } = await supabase
+        .from("leave_requests")
+        .update({
+          status: "approved",
+          approved_by: user.id,
+          approved_at: new Date().toISOString(),
+        })
+        .eq("id", requestId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["leave-requests"] });
+      toast({
+        title: "Success",
+        description: "Leave request approved",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to approve leave request",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const rejectLeaveRequest = useMutation({
+    mutationFn: async ({ requestId, reason }: { requestId: string; reason: string }) => {
+      const { error } = await supabase
+        .from("leave_requests")
+        .update({
+          status: "rejected",
+          rejection_reason: reason,
+        })
+        .eq("id", requestId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["leave-requests"] });
+      toast({
+        title: "Success",
+        description: "Leave request rejected",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to reject leave request",
+        variant: "destructive",
+      });
+    },
+  });
 
   const handleApprove = async (requestId: string) => {
     await approveLeaveRequest.mutateAsync(requestId);
@@ -40,7 +105,7 @@ export const LeaveManagement = () => {
     }
   };
 
-  if (isLoading) {
+  if (isLoadingLeave) {
     return (
       <Card>
         <CardHeader>
@@ -69,10 +134,11 @@ export const LeaveManagement = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Employee ID</TableHead>
+                <TableHead>Employee</TableHead>
                 <TableHead>Type</TableHead>
                 <TableHead>Start Date</TableHead>
                 <TableHead>End Date</TableHead>
+                <TableHead>Reason</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
@@ -80,10 +146,11 @@ export const LeaveManagement = () => {
             <TableBody>
               {leaveRequests.map((request) => (
                 <TableRow key={request.id}>
-                  <TableCell>{request.user_id.slice(0, 8)}...</TableCell>
+                  <TableCell>{request.profiles?.full_name || 'Unknown'}</TableCell>
                   <TableCell>{request.leave_type}</TableCell>
                   <TableCell>{new Date(request.start_date).toLocaleDateString()}</TableCell>
                   <TableCell>{new Date(request.end_date).toLocaleDateString()}</TableCell>
+                  <TableCell className="max-w-xs truncate">{request.reason || '-'}</TableCell>
                   <TableCell>{getStatusBadge(request.status)}</TableCell>
                   <TableCell>
                     {request.status === 'pending' && (
