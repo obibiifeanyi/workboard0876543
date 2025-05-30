@@ -18,8 +18,8 @@ export const SignupForm = ({ onSignup, error }: SignupFormProps) => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
-  const [role, setRole] = useState("technician");
-  const [accountType, setAccountType] = useState("employee");
+  const [role, setRole] = useState("staff");
+  const [accountType, setAccountType] = useState("staff");
   const [loading, setLoading] = useState(false);
   const [formErrors, setFormErrors] = useState<string[]>([]);
 
@@ -140,39 +140,31 @@ export const SignupForm = ({ onSignup, error }: SignupFormProps) => {
       </div>
 
       <div className="space-y-2 text-left">
-        <Label htmlFor="role">Job Role *</Label>
+        <Label htmlFor="role">Role *</Label>
         <Select value={role} onValueChange={setRole} disabled={loading}>
           <SelectTrigger className="bg-black/5 dark:bg-white/5 border-none">
-            <SelectValue placeholder="Select your job role" />
+            <SelectValue placeholder="Select your role" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="technician">Technician</SelectItem>
-            <SelectItem value="engineer">Engineer</SelectItem>
-            <SelectItem value="field_supervisor">Field Supervisor</SelectItem>
-            <SelectItem value="project_manager">Project Manager</SelectItem>
-            <SelectItem value="site_manager">Site Manager</SelectItem>
-            <SelectItem value="maintenance_staff">Maintenance Staff</SelectItem>
-            <SelectItem value="quality_inspector">Quality Inspector</SelectItem>
-            <SelectItem value="safety_officer">Safety Officer</SelectItem>
+            <SelectItem value="staff">Staff</SelectItem>
+            <SelectItem value="manager">Manager</SelectItem>
+            <SelectItem value="admin">Admin</SelectItem>
+            <SelectItem value="accountant">Accountant</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
       <div className="space-y-2 text-left">
-        <Label htmlFor="accountType">Department *</Label>
+        <Label htmlFor="accountType">Account Type *</Label>
         <Select value={accountType} onValueChange={setAccountType} disabled={loading}>
           <SelectTrigger className="bg-black/5 dark:bg-white/5 border-none">
-            <SelectValue placeholder="Select your department" />
+            <SelectValue placeholder="Select account type" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="employee">General Employee</SelectItem>
-            <SelectItem value="operations">Operations</SelectItem>
-            <SelectItem value="engineering">Engineering</SelectItem>
-            <SelectItem value="maintenance">Maintenance</SelectItem>
-            <SelectItem value="quality_assurance">Quality Assurance</SelectItem>
-            <SelectItem value="safety">Safety & Compliance</SelectItem>
-            <SelectItem value="management">Management</SelectItem>
-            <SelectItem value="administration">Administration</SelectItem>
+            <SelectItem value="staff">Staff</SelectItem>
+            <SelectItem value="manager">Manager</SelectItem>
+            <SelectItem value="admin">Admin</SelectItem>
+            <SelectItem value="accountant">Accountant</SelectItem>
           </SelectContent>
         </Select>
       </div>
