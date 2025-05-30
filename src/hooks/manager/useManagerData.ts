@@ -61,7 +61,7 @@ export const useManagerData = () => {
     },
   });
 
-  // Fetch leave requests
+  // Fetch leave requests - using user_id to join with profiles
   const { data: leaveRequests, isLoading: isLoadingLeave } = useQuery({
     queryKey: ["leave-requests"],
     queryFn: async () => {
@@ -69,7 +69,7 @@ export const useManagerData = () => {
         .from("leave_requests")
         .select(`
           *,
-          profiles(full_name)
+          profiles!leave_requests_user_id_fkey(full_name)
         `)
         .order("created_at", { ascending: false });
 
