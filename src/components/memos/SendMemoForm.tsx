@@ -21,20 +21,24 @@ export const SendMemoForm = ({ onMemoSent }: SendMemoFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
-  // Fetch available recipients
+  // Fetch available recipients using proper Supabase client
   useEffect(() => {
     const fetchRecipients = async () => {
       try {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('id, full_name, role')
-          .neq('id', (await supabase.auth.getUser()).data.user?.id)
-          .order('full_name');
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (user) {
+          const { data, error } = await supabase
+            .from('profiles')
+            .select('id, full_name, role')
+            .neq('id', user.id)
+            .order('full_name');
 
-        if (error) {
-          console.error('Error fetching recipients:', error);
-        } else {
-          setRecipients(data || []);
+          if (error) {
+            console.error('Error fetching recipients:', error);
+          } else {
+            setRecipients(data || []);
+          }
         }
       } catch (error) {
         console.error('Error fetching recipients:', error);
