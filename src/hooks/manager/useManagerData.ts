@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -69,7 +68,7 @@ export const useManagerData = () => {
         .from("leave_requests")
         .select(`
           *,
-          profiles!leave_requests_user_id_fkey(full_name)
+          profiles(full_name)
         `)
         .order("created_at", { ascending: false });
 
