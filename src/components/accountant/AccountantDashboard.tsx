@@ -1,45 +1,142 @@
 
-import { DashboardLayout } from "@/components/DashboardLayout";
-import { AccountantNavigation } from "@/components/accountant/AccountantNavigation";
-import { Outlet } from "react-router-dom";
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AccountantTabContent } from "./AccountantTabContent";
+import { Search, Bell, Settings, DollarSign, FileText, TrendingUp, Calculator } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
-const AccountantDashboard = () => {
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    const checkAccountantAccess = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        navigate('/login');
-        return;
-      }
-
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role_id')
-        .eq('id', session.user.id)
-        .single();
-
-      if (!profile || !profile.role_id) {
-        navigate('/login');
-      }
-    };
-
-    checkAccountantAccess();
-  }, [navigate]);
-
+export const AccountantDashboard = () => {
   return (
-    <DashboardLayout
-      title="Accountant Dashboard"
-      navigation={<AccountantNavigation />}
-    >
-      <Outlet />
-    </DashboardLayout>
+    <div className="space-y-6 animate-fade-in p-6">
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-3xl font-bold text-primary">Accountant Dashboard</h1>
+          <p className="text-muted-foreground mt-1">Manage financial operations</p>
+        </div>
+        <div className="flex items-center gap-4">
+          <div className="relative w-64">
+            <input
+              type="text"
+              placeholder="Search..."
+              className="w-full px-4 py-2 pl-10 rounded-full bg-white/10 dark:bg-black/5 
+                       border border-primary/20 focus:outline-none focus:ring-2 
+                       focus:ring-primary/50"
+            />
+            <Search className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
+          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="relative">
+                <Bell className="h-5 w-5 text-primary" />
+                <span className="absolute -top-1 -right-1 h-4 w-4 bg-destructive rounded-full text-[10px] flex items-center justify-center text-white">
+                  2
+                </span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-64">
+              <DropdownMenuItem>New invoice pending</DropdownMenuItem>
+              <DropdownMenuItem>Payment received</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <Button variant="ghost" size="icon">
+            <Settings className="h-5 w-5 text-primary" />
+          </Button>
+        </div>
+      </div>
+
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">$45,231.89</div>
+            <p className="text-xs text-muted-foreground">+20.1% from last month</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Pending Invoices</CardTitle>
+            <FileText className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">23</div>
+            <p className="text-xs text-muted-foreground">+180.1% from last month</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Monthly Expenses</CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">$12,234</div>
+            <p className="text-xs text-muted-foreground">+19% from last month</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Profit Margin</CardTitle>
+            <Calculator className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">73%</div>
+            <p className="text-xs text-muted-foreground">+2% from last month</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Tabs defaultValue="overview" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-3 md:grid-cols-6 gap-2 bg-primary/5 p-1 rounded-xl">
+          <TabsTrigger 
+            value="overview" 
+            className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-white"
+          >
+            Overview
+          </TabsTrigger>
+          <TabsTrigger 
+            value="financial-reports"
+            className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-white"
+          >
+            Reports
+          </TabsTrigger>
+          <TabsTrigger 
+            value="invoices"
+            className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-white"
+          >
+            Invoices
+          </TabsTrigger>
+          <TabsTrigger 
+            value="payments"
+            className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-white"
+          >
+            Payments
+          </TabsTrigger>
+          <TabsTrigger 
+            value="inventory"
+            className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-white"
+          >
+            Inventory
+          </TabsTrigger>
+          <TabsTrigger 
+            value="settings"
+            className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-white"
+          >
+            Settings
+          </TabsTrigger>
+        </TabsList>
+
+        <div className="mt-6 bg-primary/5 backdrop-blur-xl rounded-3xl p-6 border border-primary/20">
+          <AccountantTabContent />
+        </div>
+      </Tabs>
+    </div>
   );
 };
-
-export default AccountantDashboard;
