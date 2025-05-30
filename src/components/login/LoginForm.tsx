@@ -59,22 +59,28 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
       }
 
       if (user) {
-        // Use proper Supabase client method instead of direct REST API
-        const { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('role, account_type')
-          .eq('id', user.id)
-          .single();
+        // Profile should exist due to trigger, but fetch it to get role info
+        try {
+          const { data: profile, error: profileError } = await supabase
+            .from('profiles')
+            .select('role, account_type')
+            .eq('id', user.id)
+            .single();
 
-        if (profileError) {
-          console.error('Error fetching user profile:', profileError);
-          // Set default values if profile fetch fails
+          if (profileError) {
+            console.error('Error fetching user profile:', profileError);
+            // Set default values if profile fetch fails
+            localStorage.setItem('userRole', 'staff');
+            localStorage.setItem('accountType', accountType);
+          } else if (profile) {
+            // Store role and account type
+            localStorage.setItem('userRole', profile.role || 'staff');
+            localStorage.setItem('accountType', profile.account_type || accountType);
+          }
+        } catch (profileError) {
+          console.error('Profile fetch error:', profileError);
           localStorage.setItem('userRole', 'staff');
           localStorage.setItem('accountType', accountType);
-        } else {
-          // Store role and account type
-          localStorage.setItem('userRole', profile?.role || 'staff');
-          localStorage.setItem('accountType', profile?.account_type || accountType);
         }
 
         toast({
@@ -82,24 +88,7 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
           description: "You have successfully logged in.",
         });
 
-        // Navigate based on account type
-        const finalAccountType = profile?.account_type || accountType;
-        const finalRole = profile?.role || 'staff';
-
-        if (finalAccountType === 'accountant') {
-          window.location.href = '/accountant';
-        } else {
-          switch (finalRole) {
-            case 'admin':
-              window.location.href = '/admin';
-              break;
-            case 'manager':
-              window.location.href = '/manager';
-              break;
-            default:
-              window.location.href = '/staff';
-          }
-        }
+        // Navigation will be handled by the auth state change in Login.tsx
       }
     } catch (error) {
       console.error('Login error:', error);

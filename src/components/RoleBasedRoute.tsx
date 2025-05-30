@@ -37,7 +37,7 @@ export const RoleBasedRoute = ({ children, allowedRoles, userRole: propUserRole 
           return;
         }
         
-        // If no stored role/accountType, fetch from database using proper client method
+        // If no stored role/accountType, fetch from database
         if (!storedRole || !accountType) {
           const { data: profile, error } = await supabase
             .from('profiles')
@@ -47,7 +47,13 @@ export const RoleBasedRoute = ({ children, allowedRoles, userRole: propUserRole 
 
           if (error) {
             console.error('Error fetching profile:', error);
-            setShouldRedirect(true);
+            // Profile should exist due to trigger, but handle gracefully
+            localStorage.setItem('userRole', 'staff');
+            localStorage.setItem('accountType', 'staff');
+            
+            if (!allowedRoles.includes('staff')) {
+              setShouldRedirect(true);
+            }
             setIsLoading(false);
             return;
           }

@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { AuthError, User } from "@supabase/supabase-js";
+import { User } from "@supabase/supabase-js";
 
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -15,7 +15,7 @@ export const useAuth = () => {
         if (session?.user) {
           setUser(session.user);
           
-          // Use proper Supabase client method instead of direct REST API
+          // Defer profile fetch to avoid blocking auth state change
           setTimeout(async () => {
             try {
               const { data: profile, error } = await supabase
@@ -26,17 +26,20 @@ export const useAuth = () => {
 
               if (error) {
                 console.error('Error fetching profile:', error);
+                // Profile should exist due to trigger, but set defaults if not
+                localStorage.setItem('userRole', 'staff');
+                localStorage.setItem('accountType', 'staff');
                 return;
               }
 
-              if (profile?.role) {
-                localStorage.setItem('userRole', profile.role);
-              }
-              if (profile?.account_type) {
-                localStorage.setItem('accountType', profile.account_type);
+              if (profile) {
+                localStorage.setItem('userRole', profile.role || 'staff');
+                localStorage.setItem('accountType', profile.account_type || 'staff');
               }
             } catch (error) {
               console.error('Error fetching profile:', error);
+              localStorage.setItem('userRole', 'staff');
+              localStorage.setItem('accountType', 'staff');
             }
           }, 0);
         } else {
