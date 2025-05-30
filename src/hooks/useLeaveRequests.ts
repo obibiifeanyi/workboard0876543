@@ -27,7 +27,7 @@ export const useLeaveRequests = () => {
     queryKey: ['leave-requests'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('leave_requests')
+        .from('leave_requests' as any)
         .select('*')
         .order('created_at', { ascending: false });
 
@@ -48,7 +48,7 @@ export const useLeaveRequests = () => {
       if (!user) throw new Error('User not authenticated');
 
       const { data, error } = await supabase
-        .from('leave_requests')
+        .from('leave_requests' as any)
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
@@ -73,7 +73,7 @@ export const useLeaveRequests = () => {
       if (!user) throw new Error('User not authenticated');
 
       const { data, error } = await supabase
-        .from('leave_requests')
+        .from('leave_requests' as any)
         .insert([
           {
             user_id: user.id,
@@ -118,7 +118,7 @@ export const useLeaveRequests = () => {
       if (!user) throw new Error('User not authenticated');
 
       const { data, error } = await supabase
-        .from('leave_requests')
+        .from('leave_requests' as any)
         .update({
           status: 'approved',
           approved_by: user.id,
@@ -158,7 +158,7 @@ export const useLeaveRequests = () => {
       if (!user) throw new Error('User not authenticated');
 
       const { data, error } = await supabase
-        .from('leave_requests')
+        .from('leave_requests' as any)
         .update({
           status: 'rejected',
           approved_by: user.id,
