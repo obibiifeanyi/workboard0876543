@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -23,6 +24,7 @@ interface Department {
   manager_id?: string;
   employee_count?: number;
   created_at: string;
+  updated_at: string;
   manager?: {
     full_name: string;
   } | null;
@@ -56,7 +58,7 @@ export const DepartmentManagement = () => {
         .from('departments')
         .select(`
           *,
-          manager:profiles!manager_id(full_name)
+          profiles!manager_id(full_name)
         `)
         .order('name', { ascending: true });
 
@@ -64,10 +66,16 @@ export const DepartmentManagement = () => {
       
       // Transform the data to handle the manager relationship correctly
       const transformedData = data?.map(dept => ({
-        ...dept,
-        manager: Array.isArray(dept.manager) && dept.manager.length > 0 
-          ? dept.manager[0] 
-          : dept.manager || null
+        id: dept.id,
+        name: dept.name,
+        description: dept.description,
+        manager_id: dept.manager_id,
+        employee_count: dept.employee_count,
+        created_at: dept.created_at,
+        updated_at: dept.updated_at,
+        manager: Array.isArray(dept.profiles) && dept.profiles.length > 0 
+          ? dept.profiles[0] 
+          : dept.profiles || null
       })) || [];
       
       setDepartments(transformedData);
