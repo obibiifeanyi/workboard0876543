@@ -1,6 +1,18 @@
 
 import { Users, FolderOpen, ClipboardList, Building2, BarChart3 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarHeader,
+} from "@/components/ui/sidebar";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const navigationItems = [
   {
@@ -42,36 +54,56 @@ interface ManagerNavigationProps {
 
 export const ManagerNavigation = ({ activeTab, onTabChange }: ManagerNavigationProps) => {
   return (
-    <nav className="flex flex-col p-4 space-y-2">
-      <div className="px-3 py-2 mb-4">
-        <h2 className="text-lg font-semibold text-red-700">Manager Dashboard</h2>
-        <p className="text-sm text-muted-foreground">Manage your team and projects</p>
-      </div>
+    <Sidebar className="w-64 border-r border-red-600/20">
+      <SidebarHeader className="border-b border-red-600/20 bg-gradient-to-r from-red-600/10 to-red-500/10">
+        <div className="px-4 py-4">
+          <h2 className="text-lg font-semibold text-red-700">Manager Dashboard</h2>
+          <p className="text-sm text-muted-foreground">Manage your team and projects</p>
+        </div>
+      </SidebarHeader>
       
-      {navigationItems.map((item) => {
-        const Icon = item.icon;
-        const isActive = activeTab === item.value;
-        
-        return (
-          <button
-            key={item.value}
-            onClick={() => onTabChange?.(item.value)}
-            className={cn(
-              "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-left",
-              "hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-900/20",
-              isActive 
-                ? "bg-red-100 text-red-700 dark:bg-red-900/30" 
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            <Icon className="h-4 w-4" />
-            <div className="flex flex-col">
-              <span>{item.title}</span>
-              <span className="text-xs text-muted-foreground">{item.description}</span>
-            </div>
-          </button>
-        );
-      })}
-    </nav>
+      <SidebarContent>
+        <ScrollArea className="flex-1">
+          <SidebarGroup>
+            <SidebarGroupLabel className="text-red-700 font-medium">
+              Navigation
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu className="space-y-1">
+                {navigationItems.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = activeTab === item.value;
+                  
+                  return (
+                    <SidebarMenuItem key={item.value}>
+                      <SidebarMenuButton
+                        onClick={() => onTabChange?.(item.value)}
+                        isActive={isActive}
+                        className={cn(
+                          "w-full justify-start gap-3 px-3 py-2 h-auto",
+                          "hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-900/20",
+                          "transition-all duration-200",
+                          isActive 
+                            ? "bg-red-100 text-red-700 dark:bg-red-900/30 border-r-2 border-red-600" 
+                            : "text-muted-foreground hover:text-foreground"
+                        )}
+                      >
+                        <Icon className="h-4 w-4 shrink-0" />
+                        <div className="flex flex-col items-start min-w-0">
+                          <span className="font-medium truncate">{item.title}</span>
+                          <span className="text-xs text-muted-foreground truncate w-full">
+                            {item.description}
+                          </span>
+                        </div>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        </ScrollArea>
+      </SidebarContent>
+    </Sidebar>
   );
 };
