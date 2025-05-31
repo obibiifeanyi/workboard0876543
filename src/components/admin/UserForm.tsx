@@ -130,6 +130,6 @@ export const UserForm = ({ defaultValues, onSubmit }: UserFormProps) => {
           {defaultValues ? "Update User" : "Create User"}
         </Button>
       </div>
-    </div>
+    </form>
   );
 };
