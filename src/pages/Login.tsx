@@ -31,6 +31,7 @@ const Login = () => {
 
   useEffect(() => {
     let mounted = true;
+    let timeoutId: NodeJS.Timeout;
 
     const checkSession = async () => {
       try {
@@ -92,11 +93,12 @@ const Login = () => {
     };
 
     // Set timeout to prevent infinite checking
-    const checkTimeout = setTimeout(() => {
+    timeoutId = setTimeout(() => {
       if (mounted) {
+        console.log('Auth check timeout reached');
         setIsChecking(false);
       }
-    }, 3000);
+    }, 2000);
 
     checkSession();
 
@@ -147,7 +149,9 @@ const Login = () => {
 
     return () => {
       mounted = false;
-      clearTimeout(checkTimeout);
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
       subscription.unsubscribe();
     };
   }, [navigate, toast]);
@@ -163,8 +167,8 @@ const Login = () => {
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
           <p className="text-muted-foreground mt-2">Checking authentication...</p>
         </div>
-      );
-    }
+      </div>
+    );
   }
 
   return (
