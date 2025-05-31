@@ -47,7 +47,13 @@ export const CreateSiteForm = ({ onSuccess }: CreateSiteFormProps) => {
       const { error } = await supabase
         .from('telecom_sites')
         .insert({
-          ...data,
+          name: data.name,
+          site_number: data.site_number,
+          location: data.location,
+          address: data.address || null,
+          region: data.region || null,
+          status: data.status,
+          notes: data.notes || null,
           manager_id: user.user.id,
         });
 

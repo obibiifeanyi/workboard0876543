@@ -1,9 +1,11 @@
+
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ManagerStats } from "@/components/manager/dashboard/ManagerStats";
 import { ManagerTabContent } from "@/components/manager/dashboard/ManagerTabContent";
 import { DocumentAnalytics } from "@/components/documents/DocumentAnalytics";
-import { Search } from "lucide-react";
+import { Search, FileText, Users, BarChart } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { AIDocumentButton } from "@/components/shared/AIDocumentButton";
 import { CreateSiteButton } from "@/components/shared/CreateSiteButton";
 

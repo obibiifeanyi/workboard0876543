@@ -1,23 +1,53 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AdminDashboardModule } from "./dashboard/AdminDashboardModule";
 import { UserList } from "@/components/admin/UserList";
 import { UserForm } from "@/components/admin/UserForm";
-import { useToast } from "@/components/ui/use-toast";
+import { DepartmentManagement } from "@/components/admin/DepartmentManagement";
+import { ProjectManagement } from "@/components/admin/ProjectManagement";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface User {
   id: string;
-  name: string;
+  full_name: string;
   email: string;
-  role: string;
+  account_type: string;
   department: string;
-  avatar?: string;
+  status: string;
 }
 
 export const UserManagement = () => {
   const { toast } = useToast();
   const [users, setUsers] = useState<User[]>([]);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const fetchUsers = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setUsers(data || []);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch users",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleEditUser = (user: User) => {
     setSelectedUser(user);
@@ -29,47 +59,65 @@ export const UserManagement = () => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     
     const userData = {
-      id: selectedUser?.id || crypto.randomUUID(),
-      name: formData.get('name') as string,
+      full_name: formData.get('name') as string,
       email: formData.get('email') as string,
-      role: formData.get('role') as string,
+      account_type: formData.get('role') as string,
       department: formData.get('department') as string,
     };
 
-    if (selectedUser) {
-      // Update existing user
-      setUsers(users.map(user => 
-        user.id === selectedUser.id ? { ...user, ...userData } : user
-      ));
+    try {
+      if (selectedUser) {
+        // Update existing user
+        const { error } = await supabase
+          .from('profiles')
+          .update(userData)
+          .eq('id', selectedUser.id);
+
+        if (error) throw error;
+
+        toast({
+          title: "Success",
+          description: "User updated successfully",
+        });
+      } else {
+        // For new users, you'd typically handle this through auth signup
+        toast({
+          title: "Info",
+          description: "New user creation requires invitation system",
+        });
+      }
+
+      // Reset form and selected user
+      setSelectedUser(null);
+      e.currentTarget.reset();
+      fetchUsers();
+    } catch (error) {
+      console.error('Error saving user:', error);
       toast({
-        title: "Success",
-        description: "User updated successfully",
-      });
-    } else {
-      // Add new user
-      setUsers([...users, userData]);
-      toast({
-        title: "Success",
-        description: "User added successfully",
+        title: "Error",
+        description: "Failed to save user",
+        variant: "destructive",
       });
     }
-
-    // Reset form and selected user
-    setSelectedUser(null);
-    e.currentTarget.reset();
   };
+
+  if (loading) {
+    return <div className="flex justify-center p-8">Loading users...</div>;
+  }
 
   return (
     <Tabs defaultValue="dashboard" className="space-y-6">
-      <TabsList className="grid w-full grid-cols-1 md:grid-cols-3 gap-4">
+      <TabsList className="grid w-full grid-cols-1 md:grid-cols-5 gap-4">
         <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-        <TabsTrigger value="users">User List</TabsTrigger>
+        <TabsTrigger value="users">Users</TabsTrigger>
         <TabsTrigger value="new">Add User</TabsTrigger>
+        <TabsTrigger value="departments">Departments</TabsTrigger>
+        <TabsTrigger value="projects">Projects</TabsTrigger>
       </TabsList>
 
       <TabsContent value="dashboard" className="space-y-4">
@@ -88,6 +136,14 @@ export const UserManagement = () => {
           onSubmit={handleSubmit}
           defaultValues={selectedUser || undefined}
         />
+      </TabsContent>
+
+      <TabsContent value="departments" className="space-y-4">
+        <DepartmentManagement />
+      </TabsContent>
+
+      <TabsContent value="projects" className="space-y-4">
+        <ProjectManagement />
       </TabsContent>
     </Tabs>
   );

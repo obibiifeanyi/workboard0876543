@@ -89,7 +89,7 @@ export const TelecomSiteReport = () => {
               onValueChange={setSelectedSite}
               required
             >
-              <SelectTrigger>
+              <SelectTrigger className="rounded-[30px]">
                 <SelectValue placeholder="Select a site" />
               </SelectTrigger>
               <SelectContent>
@@ -109,6 +109,7 @@ export const TelecomSiteReport = () => {
               name="reportDateTime"
               value={reportDateTime}
               onChange={(e) => setReportDateTime(e.target.value)}
+              className="rounded-[30px]"
               required
             />
           </div>
@@ -121,18 +122,19 @@ export const TelecomSiteReport = () => {
               placeholder="Enter generator runtime in hours"
               min="0"
               step="0.1"
+              className="rounded-[30px]"
               required
             />
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">Diesel Level (%)</label>
+            <label className="text-sm font-medium">Diesel Level (Liters)</label>
             <Input
               type="number"
               name="dieselLevel"
-              placeholder="Enter diesel level percentage"
+              placeholder="Enter diesel level in liters"
               min="0"
-              max="100"
+              className="rounded-[30px]"
               required
             />
           </div>
@@ -140,7 +142,7 @@ export const TelecomSiteReport = () => {
           <div className="space-y-2">
             <label className="text-sm font-medium">Site Status</label>
             <Select name="status" defaultValue="operational">
-              <SelectTrigger>
+              <SelectTrigger className="rounded-[30px]">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -155,7 +157,7 @@ export const TelecomSiteReport = () => {
             <label className="text-sm font-medium">Comments</label>
             <textarea
               name="comments"
-              className="w-full rounded-md border border-white/10 bg-white/5 p-2 min-h-[100px]"
+              className="w-full rounded-[30px] border border-white/10 bg-white/5 p-3 min-h-[100px]"
               placeholder="Enter any additional comments or observations..."
               required
             />
@@ -163,7 +165,7 @@ export const TelecomSiteReport = () => {
 
           <div className="space-y-2">
             <label className="text-sm font-medium">Upload Site Images</label>
-            <div className="border-2 border-dashed border-white/10 rounded-lg p-4 text-center">
+            <div className="border-2 border-dashed border-white/10 rounded-[30px] p-4 text-center">
               <Upload className="h-8 w-8 mx-auto text-primary" />
               <p className="text-sm text-muted-foreground mt-2">
                 Drop files here or click to upload
@@ -177,7 +179,7 @@ export const TelecomSiteReport = () => {
             </div>
           </div>
 
-          <Button type="submit" className="w-full md:w-auto" disabled={isSubmitting}>
+          <Button type="submit" className="w-full md:w-auto rounded-[30px]" disabled={isSubmitting}>
             {isSubmitting ? 'Submitting...' : 'Submit Site Report'}
           </Button>
         </form>

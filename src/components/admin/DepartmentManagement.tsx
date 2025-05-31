@@ -1,207 +1,235 @@
 
-import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Textarea } from "@/components/ui/textarea";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Edit, Trash2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { Building, Edit, Trash2 } from "lucide-react";
 
 interface Department {
   id: string;
   name: string;
+  description?: string;
+  manager_id?: string;
+  employee_count?: number;
   created_at: string;
-  updated_at: string;
 }
 
 export const DepartmentManagement = () => {
-  const [newDepartmentName, setNewDepartmentName] = useState("");
-  const [editingDepartment, setEditingDepartment] = useState<Department | null>(null);
+  const [departments, setDepartments] = useState<Department[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [editingDept, setEditingDept] = useState<Department | null>(null);
+  const [formData, setFormData] = useState({ name: "", description: "" });
   const { toast } = useToast();
-  const queryClient = useQueryClient();
 
-  const { data: departments, isLoading } = useQuery({
-    queryKey: ['departments'],
-    queryFn: async () => {
+  useEffect(() => {
+    fetchDepartments();
+  }, []);
+
+  const fetchDepartments = async () => {
+    try {
       const { data, error } = await supabase
         .from('departments')
         .select('*')
-        .order('name');
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data as Department[];
-    },
-  });
-
-  const createDepartment = useMutation({
-    mutationFn: async (name: string) => {
-      const { data, error } = await supabase
-        .from('departments')
-        .insert([{ name }])
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['departments'] });
-      setNewDepartmentName("");
-      toast({
-        title: "Success",
-        description: "Department created successfully",
-      });
-    },
-    onError: (error) => {
+      setDepartments(data || []);
+    } catch (error) {
+      console.error('Error fetching departments:', error);
       toast({
         title: "Error",
-        description: error.message,
+        description: "Failed to fetch departments",
         variant: "destructive",
       });
-    },
-  });
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const updateDepartment = useMutation({
-    mutationFn: async ({ id, name }: { id: string; name: string }) => {
-      const { data, error } = await supabase
-        .from('departments')
-        .update({ name })
-        .eq('id', id)
-        .select()
-        .single();
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    try {
+      if (editingDept) {
+        // Update existing department
+        const { error } = await supabase
+          .from('departments')
+          .update({
+            name: formData.name,
+            description: formData.description,
+          })
+          .eq('id', editingDept.id);
 
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['departments'] });
-      setEditingDepartment(null);
-      toast({
-        title: "Success",
-        description: "Department updated successfully",
-      });
-    },
-    onError: (error) => {
+        if (error) throw error;
+
+        toast({
+          title: "Success",
+          description: "Department updated successfully",
+        });
+      } else {
+        // Create new department
+        const { error } = await supabase
+          .from('departments')
+          .insert({
+            name: formData.name,
+            description: formData.description,
+          });
+
+        if (error) throw error;
+
+        toast({
+          title: "Success",
+          description: "Department created successfully",
+        });
+      }
+
+      setFormData({ name: "", description: "" });
+      setEditingDept(null);
+      fetchDepartments();
+    } catch (error) {
+      console.error('Error saving department:', error);
       toast({
         title: "Error",
-        description: error.message,
+        description: "Failed to save department",
         variant: "destructive",
       });
-    },
-  });
+    }
+  };
 
-  const deleteDepartment = useMutation({
-    mutationFn: async (id: string) => {
+  const handleEdit = (dept: Department) => {
+    setEditingDept(dept);
+    setFormData({ name: dept.name, description: dept.description || "" });
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this department?")) return;
+
+    try {
       const { error } = await supabase
         .from('departments')
         .delete()
         .eq('id', id);
 
       if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['departments'] });
+
       toast({
         title: "Success",
         description: "Department deleted successfully",
       });
-    },
-    onError: (error) => {
+
+      fetchDepartments();
+    } catch (error) {
+      console.error('Error deleting department:', error);
       toast({
         title: "Error",
-        description: error.message,
+        description: "Failed to delete department",
         variant: "destructive",
       });
-    },
-  });
-
-  const handleCreateDepartment = () => {
-    if (newDepartmentName.trim()) {
-      createDepartment.mutate(newDepartmentName.trim());
     }
   };
 
-  const handleUpdateDepartment = (name: string) => {
-    if (editingDepartment && name.trim()) {
-      updateDepartment.mutate({ id: editingDepartment.id, name: name.trim() });
-    }
-  };
+  if (loading) {
+    return <div className="flex justify-center p-8">Loading departments...</div>;
+  }
 
   return (
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Department Management</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <Building className="h-5 w-5" />
+            {editingDept ? "Edit Department" : "Add New Department"}
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex gap-2 mb-4">
-            <Input
-              placeholder="Department name"
-              value={newDepartmentName}
-              onChange={(e) => setNewDepartmentName(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleCreateDepartment()}
-            />
-            <Button onClick={handleCreateDepartment} disabled={createDepartment.isPending}>
-              <Plus className="h-4 w-4 mr-2" />
-              Add Department
-            </Button>
-          </div>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="text-sm font-medium">Department Name</label>
+              <Input
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                placeholder="Enter department name"
+                className="rounded-[30px]"
+                required
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium">Description</label>
+              <Textarea
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                placeholder="Enter department description"
+                className="rounded-[30px]"
+              />
+            </div>
+            <div className="flex gap-2">
+              <Button type="submit" className="rounded-[30px]">
+                {editingDept ? "Update Department" : "Create Department"}
+              </Button>
+              {editingDept && (
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  className="rounded-[30px]"
+                  onClick={() => {
+                    setEditingDept(null);
+                    setFormData({ name: "", description: "" });
+                  }}
+                >
+                  Cancel
+                </Button>
+              )}
+            </div>
+          </form>
+        </CardContent>
+      </Card>
 
-          <div className="space-y-2">
-            {isLoading ? (
-              <p>Loading departments...</p>
-            ) : departments && departments.length > 0 ? (
-              departments.map((department) => (
-                <div key={department.id} className="flex items-center justify-between p-3 border rounded-lg">
-                  {editingDepartment?.id === department.id ? (
-                    <div className="flex gap-2 flex-1">
-                      <Input
-                        defaultValue={department.name}
-                        onBlur={(e) => handleUpdateDepartment(e.target.value)}
-                        onKeyPress={(e) => {
-                          if (e.key === 'Enter') {
-                            handleUpdateDepartment((e.target as HTMLInputElement).value);
-                          }
-                        }}
-                        autoFocus
-                      />
+      <Card>
+        <CardHeader>
+          <CardTitle>Departments</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead>Description</TableHead>
+                <TableHead>Employees</TableHead>
+                <TableHead>Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {departments.map((dept) => (
+                <TableRow key={dept.id}>
+                  <TableCell className="font-medium">{dept.name}</TableCell>
+                  <TableCell>{dept.description || "No description"}</TableCell>
+                  <TableCell>{dept.employee_count || 0}</TableCell>
+                  <TableCell>
+                    <div className="flex gap-2">
                       <Button
-                        variant="outline"
+                        variant="ghost"
                         size="sm"
-                        onClick={() => setEditingDepartment(null)}
+                        onClick={() => handleEdit(dept)}
                       >
-                        Cancel
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDelete(dept.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
-                  ) : (
-                    <>
-                      <span className="font-medium">{department.name}</span>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setEditingDepartment(department)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => deleteDepartment.mutate(department.id)}
-                          disabled={deleteDepartment.isPending}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </>
-                  )}
-                </div>
-              ))
-            ) : (
-              <p className="text-center text-muted-foreground">No departments found</p>
-            )}
-          </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </CardContent>
       </Card>
     </div>
