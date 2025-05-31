@@ -6,15 +6,26 @@ import { ClockInButton } from "@/components/ClockInButton";
 import { useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { MainNavBar } from "@/components/navigation/MainNavBar";
+import { SEOBreadcrumbs } from "@/components/shared/SEOBreadcrumbs";
+import { SEOHead } from "@/components/shared/SEOHead";
 
 interface DashboardLayoutProps {
   title: string;
   children: React.ReactNode;
   navigation?: React.ReactNode;
   actions?: React.ReactNode;
+  seoDescription?: string;
+  seoKeywords?: string;
 }
 
-export const DashboardLayout = ({ title, children, navigation, actions }: DashboardLayoutProps) => {
+export const DashboardLayout = ({ 
+  title, 
+  children, 
+  navigation, 
+  actions,
+  seoDescription,
+  seoKeywords
+}: DashboardLayoutProps) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const location = useLocation();
   const { profile } = useAuth();
@@ -35,6 +46,11 @@ export const DashboardLayout = ({ title, children, navigation, actions }: Dashbo
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900">
+      <SEOHead 
+        title={title}
+        description={seoDescription}
+        keywords={seoKeywords}
+      />
       <NeuralNetwork />
       
       <MainNavBar title={title} actions={navbarActions} />
@@ -81,6 +97,7 @@ export const DashboardLayout = ({ title, children, navigation, actions }: Dashbo
         )}>
           <div className="p-6">
             <div className="max-w-7xl mx-auto">
+              <SEOBreadcrumbs />
               {children}
             </div>
           </div>
