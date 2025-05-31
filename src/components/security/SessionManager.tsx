@@ -11,12 +11,13 @@ import { useToast } from '@/hooks/use-toast';
 interface UserSession {
   id: string;
   session_token: string;
-  ip_address: string;
-  user_agent: string;
+  ip_address: string | null;
+  user_agent: string | null;
   is_active: boolean;
   last_activity: string;
   expires_at: string;
   created_at: string;
+  user_id: string;
 }
 
 export const SessionManager = () => {
@@ -38,7 +39,14 @@ export const SessionManager = () => {
           .order('last_activity', { ascending: false });
 
         if (error) throw error;
-        setSessions(data || []);
+        
+        // Transform the data to handle ip_address type conversion
+        const transformedData = (data || []).map(session => ({
+          ...session,
+          ip_address: session.ip_address ? String(session.ip_address) : null
+        }));
+        
+        setSessions(transformedData);
       } catch (error) {
         console.error('Failed to fetch sessions:', error);
       } finally {
@@ -73,7 +81,8 @@ export const SessionManager = () => {
     }
   };
 
-  const getBrowserInfo = (userAgent: string) => {
+  const getBrowserInfo = (userAgent: string | null) => {
+    if (!userAgent) return 'Unknown';
     if (userAgent.includes('Chrome')) return 'Chrome';
     if (userAgent.includes('Firefox')) return 'Firefox';
     if (userAgent.includes('Safari')) return 'Safari';
@@ -81,7 +90,8 @@ export const SessionManager = () => {
     return 'Unknown';
   };
 
-  const getDeviceInfo = (userAgent: string) => {
+  const getDeviceInfo = (userAgent: string | null) => {
+    if (!userAgent) return 'Unknown';
     if (userAgent.includes('Mobile')) return 'Mobile';
     if (userAgent.includes('Tablet')) return 'Tablet';
     return 'Desktop';
@@ -134,7 +144,7 @@ export const SessionManager = () => {
                     <div className="flex items-center gap-4 text-sm text-muted-foreground">
                       <div className="flex items-center gap-1">
                         <MapPin className="h-3 w-3" />
-                        {session.ip_address}
+                        {session.ip_address || 'Unknown IP'}
                       </div>
                       <div className="flex items-center gap-1">
                         <Clock className="h-3 w-3" />
