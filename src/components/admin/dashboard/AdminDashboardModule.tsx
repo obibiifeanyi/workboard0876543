@@ -4,14 +4,7 @@ import { AdminPerformanceChart } from "./AdminPerformanceChart";
 import { WorkProgressDonut } from "./WorkProgressDonut";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AdminTabContent } from "./AdminTabContent";
-import { Search, Bell, Settings } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Search } from "lucide-react";
 
 export const AdminDashboardModule = () => {
   return (
@@ -32,24 +25,6 @@ export const AdminDashboardModule = () => {
             />
             <Search className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
           </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="relative">
-                <Bell className="h-5 w-5 text-primary" />
-                <span className="absolute -top-1 -right-1 h-4 w-4 bg-destructive rounded-full text-[10px] flex items-center justify-center text-white">
-                  5
-                </span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-64">
-              <DropdownMenuItem>New user registration</DropdownMenuItem>
-              <DropdownMenuItem>System alert</DropdownMenuItem>
-              <DropdownMenuItem>Backup completed</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-          <Button variant="ghost" size="icon">
-            <Settings className="h-5 w-5 text-primary" />
-          </Button>
         </div>
       </div>
 
@@ -105,7 +80,7 @@ export const AdminDashboardModule = () => {
             value="settings"
             className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-white"
           >
-            Settings
+            API Keys
           </TabsTrigger>
         </TabsList>
 

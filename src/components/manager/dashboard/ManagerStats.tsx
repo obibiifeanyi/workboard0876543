@@ -1,119 +1,143 @@
 
-import { StatsCards } from "@/components/StatsCards";
-import { Users, FileText, BarChart, Clock } from "lucide-react";
-import { Card } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { useManagerData } from "@/hooks/manager/useManagerData";
+import { useEffect, useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Clock, Users, FileText, TrendingUp } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+
+interface Stats {
+  totalTeamMembers: number;
+  activeProjects: number;
+  completedReports: number;
+  totalHoursLogged: number;
+}
 
 export const ManagerStats = () => {
-  const { teamMembers, projects, timeLogs, isLoadingTeam, isLoadingProjects } = useManagerData();
+  const [stats, setStats] = useState<Stats>({
+    totalTeamMembers: 0,
+    activeProjects: 0,
+    completedReports: 0,
+    totalHoursLogged: 0,
+  });
+  const [isLoading, setIsLoading] = useState(true);
 
-  const activeProjects = projects?.filter(p => p.status === 'in_progress').length || 0;
-  const completedProjects = projects?.filter(p => p.status === 'completed').length || 0;
-  const totalHours = timeLogs?.reduce((total, log) => {
-    if (log.total_hours) return total + Number(log.total_hours);
-    return total;
-  }, 0) || 0;
+  useEffect(() => {
+    fetchStats();
+  }, []);
 
-  const stats = [
+  const fetchStats = async () => {
+    try {
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) return;
+
+      // Fetch team members count
+      const { count: teamCount } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact' })
+        .neq('id', user.user.id);
+
+      // Fetch active projects count
+      const { count: projectCount } = await supabase
+        .from('projects')
+        .select('*', { count: 'exact' })
+        .in('status', ['planning', 'in_progress']);
+
+      // Fetch completed reports count
+      const { count: reportCount } = await supabase
+        .from('site_reports')
+        .select('*', { count: 'exact' })
+        .eq('status', 'completed');
+
+      // Fetch total hours logged this month
+      const startOfMonth = new Date();
+      startOfMonth.setDate(1);
+      startOfMonth.setHours(0, 0, 0, 0);
+
+      const { data: timeLogs } = await supabase
+        .from('time_logs')
+        .select('total_hours')
+        .gte('created_at', startOfMonth.toISOString())
+        .not('total_hours', 'is', null);
+
+      const totalHours = timeLogs?.reduce((sum, log) => sum + (log.total_hours || 0), 0) || 0;
+
+      setStats({
+        totalTeamMembers: teamCount || 0,
+        activeProjects: projectCount || 0,
+        completedReports: reportCount || 0,
+        totalHoursLogged: Math.round(totalHours * 10) / 10,
+      });
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const statsData = [
     {
       title: "Team Members",
-      value: teamMembers?.length.toString() || "0",
-      description: "Active members",
+      value: stats.totalTeamMembers.toString(),
+      description: "Active team members",
       icon: Users,
+      color: "text-blue-600",
     },
     {
       title: "Active Projects",
-      value: activeProjects.toString(),
-      description: `${completedProjects} completed`,
+      value: stats.activeProjects.toString(),
+      description: "In progress",
       icon: FileText,
+      color: "text-green-600",
     },
     {
-      title: "Performance",
-      value: "92%",
-      description: "+5% from last month",
-      icon: BarChart,
+      title: "Reports Completed",
+      value: stats.completedReports.toString(),
+      description: "This month",
+      icon: TrendingUp,
+      color: "text-purple-600",
     },
     {
-      title: "Time Tracked",
-      value: `${Math.round(totalHours)}h`,
+      title: "Hours Logged",
+      value: stats.totalHoursLogged.toString(),
       description: "This month",
       icon: Clock,
+      color: "text-orange-600",
     },
   ];
 
-  if (isLoadingTeam || isLoadingProjects) {
+  if (isLoading) {
     return (
-      <div className="space-y-6">
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {[1, 2, 3, 4].map((i) => (
-            <Card key={i} className="p-6">
-              <div className="animate-pulse space-y-2">
-                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                <div className="h-8 bg-gray-200 rounded w-1/2"></div>
-                <div className="h-3 bg-gray-200 rounded w-full"></div>
-              </div>
-            </Card>
-          ))}
-        </div>
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        {[...Array(4)].map((_, i) => (
+          <Card key={i} className="animate-pulse">
+            <CardHeader className="pb-2">
+              <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+            </CardHeader>
+            <CardContent>
+              <div className="h-8 bg-gray-200 rounded w-1/2 mb-2"></div>
+              <div className="h-3 bg-gray-200 rounded w-2/3"></div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <StatsCards stats={stats} />
-      
-      <div className="grid gap-4 md:grid-cols-2">
-        <Card className="p-6 glass-card">
-          <h3 className="text-lg font-semibold mb-4">Team Performance</h3>
-          <div className="space-y-4">
-            <div>
-              <div className="flex justify-between mb-2">
-                <span className="text-sm">Project Completion</span>
-                <span className="text-sm font-medium">
-                  {projects ? Math.round((completedProjects / (projects.length || 1)) * 100) : 0}%
-                </span>
-              </div>
-              <Progress 
-                value={projects ? (completedProjects / (projects.length || 1)) * 100 : 0} 
-                className="h-2" 
-              />
-            </div>
-            <div>
-              <div className="flex justify-between mb-2">
-                <span className="text-sm">Task Efficiency</span>
-                <span className="text-sm font-medium">92%</span>
-              </div>
-              <Progress value={92} className="h-2" />
-            </div>
-            <div>
-              <div className="flex justify-between mb-2">
-                <span className="text-sm">Resource Utilization</span>
-                <span className="text-sm font-medium">78%</span>
-              </div>
-              <Progress value={78} className="h-2" />
-            </div>
-          </div>
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      {statsData.map((stat, index) => (
+        <Card key={index} className="glass-card hover:shadow-lg transition-shadow">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-manager-primary">
+              {stat.title}
+            </CardTitle>
+            <stat.icon className={`h-5 w-5 ${stat.color}`} />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-manager-primary">{stat.value}</div>
+            <p className="text-xs text-muted-foreground">{stat.description}</p>
+          </CardContent>
         </Card>
-
-        <Card className="p-6 glass-card">
-          <h3 className="text-lg font-semibold mb-4">Recent Activity</h3>
-          <div className="space-y-4">
-            {projects && projects.slice(0, 4).map((project, index) => (
-              <div key={project.id} className="flex justify-between items-center">
-                <span className="text-sm">{project.name}</span>
-                <span className="text-xs text-muted-foreground">
-                  {new Date(project.created_at).toLocaleDateString()}
-                </span>
-              </div>
-            ))}
-            {(!projects || projects.length === 0) && (
-              <div className="text-sm text-muted-foreground">No recent activity</div>
-            )}
-          </div>
-        </Card>
-      </div>
+      ))}
     </div>
   );
 };

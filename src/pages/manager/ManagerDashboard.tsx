@@ -4,12 +4,29 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ManagerStats } from "@/components/manager/dashboard/ManagerStats";
 import { ManagerTabContent } from "@/components/manager/dashboard/ManagerTabContent";
 import { DocumentAnalytics } from "@/components/documents/DocumentAnalytics";
-import { Search, FileText, Users, BarChart } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Search } from "lucide-react";
 import { AIDocumentButton } from "@/components/shared/AIDocumentButton";
 import { CreateSiteButton } from "@/components/shared/CreateSiteButton";
+import { QuickActions } from "@/components/manager/QuickActions";
+import { useEffect } from "react";
 
 const ManagerDashboard = () => {
+  useEffect(() => {
+    // Listen for tab switch events from QuickActions
+    const handleTabSwitch = (event: CustomEvent) => {
+      const tabValue = event.detail;
+      const tabElement = document.querySelector(`[data-value="${tabValue}"]`) as HTMLButtonElement;
+      if (tabElement) {
+        tabElement.click();
+      }
+    };
+
+    window.addEventListener('switchTab', handleTabSwitch as EventListener);
+    return () => {
+      window.removeEventListener('switchTab', handleTabSwitch as EventListener);
+    };
+  }, []);
+
   return (
     <DashboardLayout title="Manager Dashboard">
       <div className="space-y-6 animate-fade-in p-6 bg-manager-muted/5">
@@ -37,23 +54,7 @@ const ManagerDashboard = () => {
           <div className="col-span-2">
             <ManagerStats />
           </div>
-          <div className="glass-card p-6 bg-gradient-to-br from-manager-primary/10 to-manager-secondary/5">
-            <h3 className="text-lg font-semibold mb-4 text-manager-primary">Quick Actions</h3>
-            <div className="space-y-2">
-              <Button className="w-full justify-start" variant="ghost">
-                <FileText className="mr-2 h-4 w-4 text-manager-secondary" />
-                Create New Report
-              </Button>
-              <Button className="w-full justify-start" variant="ghost">
-                <Users className="mr-2 h-4 w-4 text-manager-secondary" />
-                Team Overview
-              </Button>
-              <Button className="w-full justify-start" variant="ghost">
-                <BarChart className="mr-2 h-4 w-4 text-manager-secondary" />
-                View Analytics
-              </Button>
-            </div>
-          </div>
+          <QuickActions />
         </div>
 
         <DocumentAnalytics />
@@ -62,54 +63,63 @@ const ManagerDashboard = () => {
           <TabsList className="grid w-full grid-cols-2 md:grid-cols-9 gap-2 bg-manager-primary/5 p-1 rounded-xl">
             <TabsTrigger 
               value="time" 
+              data-value="time"
               className="rounded-lg data-[state=active]:bg-manager-primary data-[state=active]:text-white"
             >
               Time Logs
             </TabsTrigger>
             <TabsTrigger 
               value="workboard"
+              data-value="workboard"
               className="rounded-lg data-[state=active]:bg-manager-primary data-[state=active]:text-white"
             >
               Work Board
             </TabsTrigger>
             <TabsTrigger 
               value="leave"
+              data-value="leave"
               className="rounded-lg data-[state=active]:bg-manager-primary data-[state=active]:text-white"
             >
               Leave
             </TabsTrigger>
             <TabsTrigger 
               value="team"
+              data-value="team"
               className="rounded-lg data-[state=active]:bg-manager-primary data-[state=active]:text-white"
             >
               Team
             </TabsTrigger>
             <TabsTrigger 
               value="sites"
+              data-value="sites"
               className="rounded-lg data-[state=active]:bg-manager-primary data-[state=active]:text-white"
             >
               Sites
             </TabsTrigger>
             <TabsTrigger 
               value="reports"
+              data-value="reports"
               className="rounded-lg data-[state=active]:bg-manager-primary data-[state=active]:text-white"
             >
               Reports
             </TabsTrigger>
             <TabsTrigger 
               value="memos"
+              data-value="memos"
               className="rounded-lg data-[state=active]:bg-manager-primary data-[state=active]:text-white"
             >
               Memos
             </TabsTrigger>
             <TabsTrigger 
               value="invoices"
+              data-value="invoices"
               className="rounded-lg data-[state=active]:bg-manager-primary data-[state=active]:text-white"
             >
               Invoices
             </TabsTrigger>
             <TabsTrigger 
               value="settings"
+              data-value="settings"
               className="rounded-lg data-[state=active]:bg-manager-primary data-[state=active]:text-white"
             >
               Settings
