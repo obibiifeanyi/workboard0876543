@@ -1,23 +1,23 @@
 
-import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 import { NeuralNetwork } from "@/components/NeuralNetwork";
 import { ClockInButton } from "@/components/ClockInButton";
 import { useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { MainNavBar } from "@/components/navigation/MainNavBar";
 
 interface DashboardLayoutProps {
   title: string;
   children: React.ReactNode;
   navigation?: React.ReactNode;
+  actions?: React.ReactNode;
 }
 
-export const DashboardLayout = ({ title, children, navigation }: DashboardLayoutProps) => {
+export const DashboardLayout = ({ title, children, navigation, actions }: DashboardLayoutProps) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const location = useLocation();
-  const { user, profile } = useAuth();
+  const { profile } = useAuth();
 
   // Only show ClockInButton for staff users and not on manager/admin dashboards
   const showClockInButton = profile?.role === 'staff' && 
@@ -26,59 +26,59 @@ export const DashboardLayout = ({ title, children, navigation }: DashboardLayout
     !location.pathname.includes('/accountant') &&
     !location.pathname.includes('/hr');
 
+  const navbarActions = (
+    <div className="flex items-center space-x-2">
+      {showClockInButton && <ClockInButton />}
+      {actions}
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900">
       <NeuralNetwork />
       
-      {/* Top Bar */}
-      <header className="fixed w-full top-0 z-40 bg-white/90 dark:bg-black/80 backdrop-blur-sm border-b">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <button
-              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="lg:hidden text-gray-500 hover:text-gray-700 focus:outline-none"
-            >
-              <svg
-                className="h-6 w-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M4 6h16M4 12h16M4 18h16"
-                ></path>
-              </svg>
-            </button>
-            <h1 className="text-xl font-semibold font-unica">{title}</h1>
-          </div>
-          <div className="flex items-center space-x-4">
-            {showClockInButton && <ClockInButton />}
-            <ThemeSwitcher />
-          </div>
-        </div>
-      </header>
+      <MainNavBar title={title} actions={navbarActions} />
 
       {/* Main Content */}
       <div className="flex">
         {/* Sidebar */}
-        <aside
-          className={cn(
-            "fixed left-0 top-0 z-30 h-full w-64 bg-white border-r transition-transform duration-300 dark:bg-gray-900 dark:border-gray-800",
-            isSidebarOpen ? "translate-x-0" : "-translate-x-full",
-            "lg:translate-x-0 lg:border-r"
-          )}
-        >
-          {navigation}
-        </aside>
+        {navigation && (
+          <aside
+            className={cn(
+              "fixed left-0 top-16 z-30 h-[calc(100vh-4rem)] w-64 bg-white border-r transition-transform duration-300 dark:bg-gray-900 dark:border-gray-800",
+              isSidebarOpen ? "translate-x-0" : "-translate-x-full",
+              "lg:translate-x-0 lg:border-r"
+            )}
+          >
+            <div className="p-4">
+              <button
+                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                className="mb-4 lg:hidden text-gray-500 hover:text-gray-700 focus:outline-none"
+              >
+                <svg
+                  className="h-6 w-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M4 6h16M4 12h16M4 18h16"
+                  />
+                </svg>
+              </button>
+              {navigation}
+            </div>
+          </aside>
+        )}
 
         {/* Main Content Area */}
-        <main className={`flex-1 transition-all duration-300 ${
-          isSidebarOpen ? "ml-64" : "ml-0"
-        } pt-16`}>
+        <main className={cn(
+          "flex-1 transition-all duration-300 pt-0",
+          navigation ? (isSidebarOpen ? "ml-64" : "ml-0 lg:ml-64") : "ml-0"
+        )}>
           <div className="p-6">
             <div className="max-w-7xl mx-auto">
               {children}

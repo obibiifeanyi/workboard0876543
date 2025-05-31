@@ -8,7 +8,6 @@ import { useToast } from "@/hooks/use-toast";
 import { TaskList } from "@/components/staff/TaskList";
 import { LeaveApplication } from "@/components/staff/LeaveApplication";
 import { ProfileSection } from "@/components/staff/ProfileSection";
-import { EnhancedNotificationCenter } from "@/components/notifications/EnhancedNotificationCenter";
 import { AIDocumentButton } from "@/components/shared/AIDocumentButton";
 import { BackToAdminButton } from "@/components/shared/BackToAdminButton";
 import { useQuery } from "@tanstack/react-query";
@@ -110,15 +109,15 @@ const StaffDashboard = () => {
     },
   ];
 
+  const dashboardActions = (
+    <div className="flex gap-2">
+      <AIDocumentButton />
+      <BackToAdminButton />
+    </div>
+  );
+
   return (
-    <DashboardLayout title="Staff Dashboard">
-      <div className="flex justify-between items-center mb-6">
-        <EnhancedNotificationCenter />
-        <div className="flex gap-4">
-          <AIDocumentButton />
-          <BackToAdminButton />
-        </div>
-      </div>
+    <DashboardLayout title="Staff Dashboard" actions={dashboardActions}>
       <div className="space-y-6 p-4 md:p-6 max-w-7xl mx-auto">
         <div className="grid gap-4 md:gap-6">
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
