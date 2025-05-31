@@ -45,9 +45,7 @@ interface APIUsage {
   request_count: number;
   cost: number;
   date: string;
-  profiles?: {
-    full_name: string;
-  };
+  user_name?: string;
 }
 
 export const APIKeyManagement = () => {
@@ -91,17 +89,42 @@ export const APIKeyManagement = () => {
 
   const fetchAPIUsage = async () => {
     try {
-      const { data, error } = await supabase
+      // First get the API usage data
+      const { data: usageData, error: usageError } = await supabase
         .from('api_usage')
-        .select(`
-          *,
-          profiles:user_id (full_name)
-        `)
+        .select('*')
         .order('created_at', { ascending: false })
         .limit(100);
 
-      if (error) throw error;
-      setApiUsage(data || []);
+      if (usageError) throw usageError;
+
+      // Then get user profiles separately and match them
+      const userIds = [...new Set(usageData?.map(usage => usage.user_id).filter(Boolean) || [])];
+      
+      let profilesData: any[] = [];
+      if (userIds.length > 0) {
+        const { data: profiles, error: profilesError } = await supabase
+          .from('profiles')
+          .select('id, full_name')
+          .in('id', userIds);
+
+        if (profilesError) {
+          console.error('Error fetching profiles:', profilesError);
+        } else {
+          profilesData = profiles || [];
+        }
+      }
+
+      // Merge the data
+      const enrichedUsage = usageData?.map(usage => {
+        const profile = profilesData.find(p => p.id === usage.user_id);
+        return {
+          ...usage,
+          user_name: profile?.full_name || 'Unknown User'
+        };
+      }) || [];
+
+      setApiUsage(enrichedUsage);
     } catch (error) {
       console.error('Error fetching API usage:', error);
     } finally {
@@ -408,7 +431,7 @@ export const APIKeyManagement = () => {
                 {apiUsage.map((usage) => (
                   <div key={usage.id} className="flex items-center justify-between p-4 border rounded-lg">
                     <div>
-                      <div className="font-medium">{usage.profiles?.full_name || 'Unknown User'}</div>
+                      <div className="font-medium">{usage.user_name}</div>
                       <div className="text-sm text-muted-foreground">
                         {usage.endpoint} | {usage.request_count} requests
                       </div>
