@@ -1,17 +1,11 @@
-
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ManagerStats } from "@/components/manager/dashboard/ManagerStats";
 import { ManagerTabContent } from "@/components/manager/dashboard/ManagerTabContent";
 import { DocumentAnalytics } from "@/components/documents/DocumentAnalytics";
-import { Search, Bell, Settings, FileText, Users, BarChart } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Search } from "lucide-react";
+import { AIDocumentButton } from "@/components/shared/AIDocumentButton";
+import { CreateSiteButton } from "@/components/shared/CreateSiteButton";
 
 const ManagerDashboard = () => {
   return (
@@ -19,7 +13,6 @@ const ManagerDashboard = () => {
       <div className="space-y-6 animate-fade-in p-6 bg-manager-muted/5">
         <div className="flex items-center justify-between mb-8">
           <div>
-          
             <p className="text-muted-foreground mt-1">Welcome back</p>
           </div>
           <div className="flex items-center gap-4">
@@ -33,24 +26,8 @@ const ManagerDashboard = () => {
               />
               <Search className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
             </div>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="relative">
-                  <Bell className="h-5 w-5 text-manager-primary" />
-                  <span className="absolute -top-1 -right-1 h-4 w-4 bg-manager-secondary rounded-full text-[10px] flex items-center justify-center text-white">
-                    3
-                  </span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-64 bg-white/95 dark:bg-black/95 backdrop-blur-lg">
-                <DropdownMenuItem>New task assigned</DropdownMenuItem>
-                <DropdownMenuItem>Report ready</DropdownMenuItem>
-                <DropdownMenuItem>System update</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            <Button variant="ghost" size="icon">
-              <Settings className="h-5 w-5 text-manager-primary" />
-            </Button>
+            <AIDocumentButton />
+            <CreateSiteButton />
           </div>
         </div>
 

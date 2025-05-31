@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { StatsCards } from "@/components/StatsCards";
@@ -9,6 +10,8 @@ import { TaskList } from "@/components/staff/TaskList";
 import { LeaveApplication } from "@/components/staff/LeaveApplication";
 import { ProfileSection } from "@/components/staff/ProfileSection";
 import { EnhancedNotificationCenter } from "@/components/notifications/EnhancedNotificationCenter";
+import { AIDocumentButton } from "@/components/shared/AIDocumentButton";
+import { BackToAdminButton } from "@/components/shared/BackToAdminButton";
 
 const StaffDashboard = () => {
   const [date, setDate] = useState<Date | undefined>(new Date());
@@ -43,8 +46,12 @@ const StaffDashboard = () => {
 
   return (
     <DashboardLayout title="Staff Dashboard">
-      <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
+      <div className="flex justify-between items-center mb-6">
         <EnhancedNotificationCenter />
+        <div className="flex gap-4">
+          <AIDocumentButton />
+          <BackToAdminButton />
+        </div>
       </div>
       <div className="space-y-6 p-4 md:p-6 max-w-7xl mx-auto">
         <div className="grid gap-4 md:gap-6">

@@ -343,6 +343,44 @@ export type Database = {
         }
         Relationships: []
       }
+      document_access_logs: {
+        Row: {
+          action: string
+          created_at: string | null
+          document_id: string | null
+          id: string
+          ip_address: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          document_id?: string | null
+          id?: string
+          ip_address?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          document_id?: string | null
+          id?: string
+          ip_address?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_access_logs_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       document_analysis: {
         Row: {
           analysis_result: Json | null
@@ -370,6 +408,60 @@ export type Database = {
           id?: string
           status?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      documents: {
+        Row: {
+          access_level: string | null
+          category: string | null
+          created_at: string | null
+          description: string | null
+          file_name: string
+          file_path: string
+          file_size: number | null
+          file_type: string
+          id: string
+          status: string | null
+          tags: string[] | null
+          title: string
+          updated_at: string | null
+          uploaded_by: string | null
+          version: number | null
+        }
+        Insert: {
+          access_level?: string | null
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          file_name: string
+          file_path: string
+          file_size?: number | null
+          file_type: string
+          id?: string
+          status?: string | null
+          tags?: string[] | null
+          title: string
+          updated_at?: string | null
+          uploaded_by?: string | null
+          version?: number | null
+        }
+        Update: {
+          access_level?: string | null
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          file_name?: string
+          file_path?: string
+          file_size?: number | null
+          file_type?: string
+          id?: string
+          status?: string | null
+          tags?: string[] | null
+          title?: string
+          updated_at?: string | null
+          uploaded_by?: string | null
+          version?: number | null
         }
         Relationships: []
       }
@@ -404,6 +496,54 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      expenses: {
+        Row: {
+          amount: number
+          approved_at: string | null
+          approved_by: string | null
+          category: string
+          created_at: string | null
+          created_by: string
+          description: string | null
+          expense_date: string
+          id: string
+          receipt_url: string | null
+          status: string | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          amount: number
+          approved_at?: string | null
+          approved_by?: string | null
+          category: string
+          created_at?: string | null
+          created_by: string
+          description?: string | null
+          expense_date: string
+          id?: string
+          receipt_url?: string | null
+          status?: string | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          amount?: number
+          approved_at?: string | null
+          approved_by?: string | null
+          category?: string
+          created_at?: string | null
+          created_by?: string
+          description?: string | null
+          expense_date?: string
+          id?: string
+          receipt_url?: string | null
+          status?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       health_check: {
         Row: {
@@ -863,6 +1003,62 @@ export type Database = {
         }
         Relationships: []
       }
+      site_reports: {
+        Row: {
+          attachments: string[] | null
+          created_at: string | null
+          data: Json | null
+          description: string | null
+          id: string
+          report_date: string
+          report_type: string
+          reported_by: string
+          reviewed_by: string | null
+          site_id: string | null
+          status: string | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          attachments?: string[] | null
+          created_at?: string | null
+          data?: Json | null
+          description?: string | null
+          id?: string
+          report_date: string
+          report_type: string
+          reported_by: string
+          reviewed_by?: string | null
+          site_id?: string | null
+          status?: string | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          attachments?: string[] | null
+          created_at?: string | null
+          data?: Json | null
+          description?: string | null
+          id?: string
+          report_date?: string
+          report_type?: string
+          reported_by?: string
+          reviewed_by?: string | null
+          site_id?: string | null
+          status?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "site_reports_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "telecom_sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       system_activities: {
         Row: {
           created_at: string
@@ -981,6 +1177,63 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      telecom_sites: {
+        Row: {
+          address: string | null
+          client_list: string[] | null
+          coordinates: unknown | null
+          created_at: string | null
+          id: string
+          installation_date: string | null
+          last_maintenance: string | null
+          location: string
+          manager_id: string | null
+          name: string
+          next_maintenance: string | null
+          notes: string | null
+          region: string | null
+          site_number: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          address?: string | null
+          client_list?: string[] | null
+          coordinates?: unknown | null
+          created_at?: string | null
+          id?: string
+          installation_date?: string | null
+          last_maintenance?: string | null
+          location: string
+          manager_id?: string | null
+          name: string
+          next_maintenance?: string | null
+          notes?: string | null
+          region?: string | null
+          site_number?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          address?: string | null
+          client_list?: string[] | null
+          coordinates?: unknown | null
+          created_at?: string | null
+          id?: string
+          installation_date?: string | null
+          last_maintenance?: string | null
+          location?: string
+          manager_id?: string | null
+          name?: string
+          next_maintenance?: string | null
+          notes?: string | null
+          region?: string | null
+          site_number?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       time_logs: {
         Row: {
