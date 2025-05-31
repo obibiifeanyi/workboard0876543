@@ -31,7 +31,6 @@ const Login = () => {
 
   useEffect(() => {
     let mounted = true;
-    let timeoutId: NodeJS.Timeout;
 
     const checkSession = async () => {
       try {
@@ -88,16 +87,6 @@ const Login = () => {
       }
     };
 
-    // Set timeout to prevent infinite checking
-    timeoutId = setTimeout(() => {
-      if (mounted) {
-        console.log('Auth check timeout reached');
-        setIsChecking(false);
-      }
-    }, 3000);
-
-    checkSession();
-
     // Set up auth state listener for new sign-ins
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!mounted) return;
@@ -143,11 +132,10 @@ const Login = () => {
       }
     });
 
+    checkSession();
+
     return () => {
       mounted = false;
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
       subscription.unsubscribe();
     };
   }, [navigate, toast]);

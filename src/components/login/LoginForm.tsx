@@ -31,7 +31,6 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
     try {
       if (!email || !password) {
         setError("Please enter both email and password");
-        setLoading(false);
         return;
       }
 
@@ -74,11 +73,30 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
 
       if (data.user) {
         console.log('Login successful for user:', data.user.id);
+        
+        // Fetch user profile to determine role-based routing
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('role, account_type')
+          .eq('id', data.user.id)
+          .single();
+
+        if (!profileError && profile) {
+          const role = profile.role || 'staff';
+          const accountType = profile.account_type || 'staff';
+          
+          localStorage.setItem('userRole', role);
+          localStorage.setItem('accountType', accountType);
+        } else {
+          // Default to staff if no profile found
+          localStorage.setItem('userRole', 'staff');
+          localStorage.setItem('accountType', 'staff');
+        }
+
         toast({
           title: "Welcome Back!",
           description: "You have successfully logged in.",
         });
-        // Navigation will be handled by the auth state change listener
       }
     } catch (error) {
       console.error('Unexpected login error:', error);
@@ -101,7 +119,10 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
     }
 
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email);
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      
       if (error) {
         setError(error.message);
       } else {

@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { User } from "@supabase/supabase-js";
+import { User, Session } from "@supabase/supabase-js";
 
 interface Profile {
   id: string;
@@ -16,103 +16,23 @@ export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [session, setSession] = useState<Session | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     let mounted = true;
-    let timeoutId: NodeJS.Timeout;
-
-    const getSession = async () => {
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        
-        if (error) {
-          console.error('Session error:', error);
-          if (mounted) {
-            setLoading(false);
-          }
-          return;
-        }
-
-        if (session?.user && mounted) {
-          setUser(session.user);
-          
-          try {
-            const { data: profileData, error: profileError } = await supabase
-              .from('profiles')
-              .select('id, role, account_type, full_name, email')
-              .eq('id', session.user.id)
-              .single();
-
-            if (mounted) {
-              if (!profileError && profileData) {
-                setProfile(profileData);
-                localStorage.setItem('userRole', profileData.role || 'staff');
-                localStorage.setItem('accountType', profileData.account_type || 'staff');
-              } else {
-                console.error('Profile error:', profileError);
-                // Create default profile if none exists
-                const defaultProfile = {
-                  id: session.user.id,
-                  role: 'staff',
-                  account_type: 'staff',
-                  full_name: session.user.user_metadata?.full_name || null,
-                  email: session.user.email || null,
-                };
-                setProfile(defaultProfile);
-                localStorage.setItem('userRole', 'staff');
-                localStorage.setItem('accountType', 'staff');
-              }
-            }
-          } catch (error) {
-            console.error('Profile fetch error:', error);
-            if (mounted) {
-              // Set default profile on error
-              const defaultProfile = {
-                id: session.user.id,
-                role: 'staff',
-                account_type: 'staff',
-                full_name: session.user.user_metadata?.full_name || null,
-                email: session.user.email || null,
-              };
-              setProfile(defaultProfile);
-              localStorage.setItem('userRole', 'staff');
-              localStorage.setItem('accountType', 'staff');
-            }
-          }
-        } else if (mounted) {
-          setUser(null);
-          setProfile(null);
-          localStorage.removeItem('userRole');
-          localStorage.removeItem('accountType');
-        }
-      } catch (error) {
-        console.error('Session fetch error:', error);
-      } finally {
-        if (mounted) {
-          setLoading(false);
-        }
-      }
-    };
-
-    // Set timeout to prevent infinite loading
-    timeoutId = setTimeout(() => {
-      if (mounted) {
-        console.log('Auth timeout reached, stopping loading');
-        setLoading(false);
-      }
-    }, 5000);
 
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!mounted) return;
 
-      console.log('Auth state change:', event);
+      console.log('Auth state change:', event, session?.user?.id);
       
+      setSession(session);
+      setUser(session?.user ?? null);
+
       if (session?.user) {
-        setUser(session.user);
-        
-        // Fetch profile for the user
+        // Fetch user profile
         try {
           const { data: profileData, error: profileError } = await supabase
             .from('profiles')
@@ -120,12 +40,13 @@ export const useAuth = () => {
             .eq('id', session.user.id)
             .single();
 
-          if (!profileError && profileData) {
+          if (!profileError && profileData && mounted) {
             setProfile(profileData);
             localStorage.setItem('userRole', profileData.role || 'staff');
             localStorage.setItem('accountType', profileData.account_type || 'staff');
           } else {
-            // Create default profile
+            console.error('Profile fetch error:', profileError);
+            // Create default profile if none exists
             const defaultProfile = {
               id: session.user.id,
               role: 'staff',
@@ -138,27 +59,100 @@ export const useAuth = () => {
             localStorage.setItem('accountType', 'staff');
           }
         } catch (error) {
-          console.error('Profile fetch error in auth state change:', error);
+          console.error('Profile fetch error:', error);
+          if (mounted) {
+            const defaultProfile = {
+              id: session.user.id,
+              role: 'staff',
+              account_type: 'staff',
+              full_name: session.user.user_metadata?.full_name || null,
+              email: session.user.email || null,
+            };
+            setProfile(defaultProfile);
+            localStorage.setItem('userRole', 'staff');
+            localStorage.setItem('accountType', 'staff');
+          }
         }
       } else {
-        setUser(null);
         setProfile(null);
         localStorage.removeItem('userRole');
         localStorage.removeItem('accountType');
       }
-      
+
       if (mounted) {
         setLoading(false);
       }
     });
 
-    getSession();
+    // Check for existing session
+    const getInitialSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('Session error:', error);
+          if (mounted) {
+            setLoading(false);
+          }
+          return;
+        }
+
+        if (session?.user && mounted) {
+          setSession(session);
+          setUser(session.user);
+          
+          try {
+            const { data: profileData, error: profileError } = await supabase
+              .from('profiles')
+              .select('id, role, account_type, full_name, email')
+              .eq('id', session.user.id)
+              .single();
+
+            if (!profileError && profileData && mounted) {
+              setProfile(profileData);
+              localStorage.setItem('userRole', profileData.role || 'staff');
+              localStorage.setItem('accountType', profileData.account_type || 'staff');
+            } else {
+              const defaultProfile = {
+                id: session.user.id,
+                role: 'staff',
+                account_type: 'staff',
+                full_name: session.user.user_metadata?.full_name || null,
+                email: session.user.email || null,
+              };
+              setProfile(defaultProfile);
+              localStorage.setItem('userRole', 'staff');
+              localStorage.setItem('accountType', 'staff');
+            }
+          } catch (error) {
+            console.error('Profile fetch error:', error);
+            if (mounted) {
+              const defaultProfile = {
+                id: session.user.id,
+                role: 'staff',
+                account_type: 'staff',
+                full_name: session.user.user_metadata?.full_name || null,
+                email: session.user.email || null,
+              };
+              setProfile(defaultProfile);
+              localStorage.setItem('userRole', 'staff');
+              localStorage.setItem('accountType', 'staff');
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Session fetch error:', error);
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    getInitialSession();
 
     return () => {
       mounted = false;
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
       subscription.unsubscribe();
     };
   }, []);
@@ -173,6 +167,10 @@ export const useAuth = () => {
       localStorage.removeItem('accountType');
       localStorage.removeItem('rememberedEmail');
       
+      setUser(null);
+      setProfile(null);
+      setSession(null);
+      
       navigate('/login');
     } catch (error) {
       console.error('Sign out error:', error);
@@ -182,6 +180,7 @@ export const useAuth = () => {
   return {
     user,
     profile,
+    session,
     loading,
     signOut,
   };
