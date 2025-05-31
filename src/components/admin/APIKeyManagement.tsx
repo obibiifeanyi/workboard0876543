@@ -248,23 +248,25 @@ export const APIKeyManagement = () => {
                   required
                 />
               </div>
-              <div>
-                <Label htmlFor="key_type">API Type</Label>
-                <Select
-                  value={formData.key_type}
-                  onValueChange={(value) => setFormData({ ...formData, key_type: value })}
-                >
-                  <SelectTrigger className="rounded-[30px]">
-                    <SelectValue placeholder="Select API type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="openai">OpenAI</SelectItem>
-                    <SelectItem value="anthropic">Anthropic</SelectItem>
-                    <SelectItem value="google">Google AI</SelectItem>
-                    <SelectItem value="aws">AWS</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+              {!editingKey && (
+                <div>
+                  <Label htmlFor="key_type">API Type</Label>
+                  <Select
+                    value={formData.key_type}
+                    onValueChange={(value) => setFormData({ ...formData, key_type: value })}
+                  >
+                    <SelectTrigger className="rounded-[30px]">
+                      <SelectValue placeholder="Select API type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="openai">OpenAI</SelectItem>
+                      <SelectItem value="anthropic">Anthropic</SelectItem>
+                      <SelectItem value="google">Google AI</SelectItem>
+                      <SelectItem value="aws">AWS</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
               <div>
                 <Label htmlFor="usage_limit">Usage Limit</Label>
                 <Input

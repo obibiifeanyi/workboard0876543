@@ -89,6 +89,92 @@ export type Database = {
         }
         Relationships: []
       }
+      api_keys: {
+        Row: {
+          cost_per_request: number
+          created_at: string
+          created_by: string | null
+          current_usage: number
+          id: string
+          is_active: boolean
+          key_type: string
+          last_used: string | null
+          name: string
+          total_cost: number
+          updated_at: string
+          usage_limit: number
+        }
+        Insert: {
+          cost_per_request?: number
+          created_at?: string
+          created_by?: string | null
+          current_usage?: number
+          id?: string
+          is_active?: boolean
+          key_type: string
+          last_used?: string | null
+          name: string
+          total_cost?: number
+          updated_at?: string
+          usage_limit?: number
+        }
+        Update: {
+          cost_per_request?: number
+          created_at?: string
+          created_by?: string | null
+          current_usage?: number
+          id?: string
+          is_active?: boolean
+          key_type?: string
+          last_used?: string | null
+          name?: string
+          total_cost?: number
+          updated_at?: string
+          usage_limit?: number
+        }
+        Relationships: []
+      }
+      api_usage: {
+        Row: {
+          api_key_id: string | null
+          cost: number
+          created_at: string
+          date: string
+          endpoint: string
+          id: string
+          request_count: number
+          user_id: string | null
+        }
+        Insert: {
+          api_key_id?: string | null
+          cost?: number
+          created_at?: string
+          date?: string
+          endpoint: string
+          id?: string
+          request_count?: number
+          user_id?: string | null
+        }
+        Update: {
+          api_key_id?: string | null
+          cost?: number
+          created_at?: string
+          date?: string
+          endpoint?: string
+          id?: string
+          request_count?: number
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "api_usage_api_key_id_fkey"
+            columns: ["api_key_id"]
+            isOneToOne: false
+            referencedRelation: "api_keys"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       assets_inventory: {
         Row: {
           condition: string | null
