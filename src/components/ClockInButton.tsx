@@ -5,19 +5,18 @@ import { useToast } from "@/hooks/use-toast";
 import { Timer } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 
 export const ClockInButton = () => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const handleClockIn = async () => {
     if (!user) {
-      toast({
-        title: "Authentication Required",
-        description: "Please log in to clock in.",
-        variant: "destructive",
-      });
+      // Redirect to login if not authenticated
+      navigate('/login');
       return;
     }
 
@@ -125,9 +124,6 @@ export const ClockInButton = () => {
     }
   };
 
-  // Don't render if user is not authenticated
-  if (!user) return null;
-
   return (
     <div className="relative">
       <div className="loader">
@@ -179,7 +175,7 @@ export const ClockInButton = () => {
             >
               <Timer className="h-8 w-8 group-hover:scale-110 transition-transform duration-300" />
               <span className="font-semibold tracking-wide text-sm">
-                {loading ? "Processing..." : "Clock In/Out"}
+                {loading ? "Processing..." : user ? "Clock In/Out" : "Clock In/Login"}
               </span>
             </Button>
           </div>
