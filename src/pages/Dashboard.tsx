@@ -32,7 +32,7 @@ const Dashboard = () => {
           break;
         case 'staff':
         default:
-          navigate("/documents", { replace: true });
+          navigate("/staff", { replace: true });
           break;
       }
     }
