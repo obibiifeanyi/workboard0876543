@@ -279,6 +279,56 @@ export type Database = {
           },
         ]
       }
+      audit_logs: {
+        Row: {
+          action: string
+          created_at: string
+          id: string
+          ip_address: unknown | null
+          new_values: Json | null
+          old_values: Json | null
+          record_id: string | null
+          session_id: string | null
+          table_name: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          id?: string
+          ip_address?: unknown | null
+          new_values?: Json | null
+          old_values?: Json | null
+          record_id?: string | null
+          session_id?: string | null
+          table_name?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          id?: string
+          ip_address?: unknown | null
+          new_values?: Json | null
+          old_values?: Json | null
+          record_id?: string | null
+          session_id?: string | null
+          table_name?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_logs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       auth_users: {
         Row: {
           created_at: string | null
@@ -623,6 +673,36 @@ export type Database = {
           },
         ]
       }
+      data_retention_policies: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean | null
+          last_cleanup: string | null
+          retention_days: number
+          table_name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          last_cleanup?: string | null
+          retention_days: number
+          table_name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          last_cleanup?: string | null
+          retention_days?: number
+          table_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       departments: {
         Row: {
           created_at: string | null
@@ -800,6 +880,59 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "email_verification_tokens_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      error_logs: {
+        Row: {
+          created_at: string
+          error_message: string
+          error_type: string
+          id: string
+          ip_address: unknown | null
+          metadata: Json | null
+          resolved: boolean | null
+          severity: string | null
+          stack_trace: string | null
+          url: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          error_message: string
+          error_type: string
+          id?: string
+          ip_address?: unknown | null
+          metadata?: Json | null
+          resolved?: boolean | null
+          severity?: string | null
+          stack_trace?: string | null
+          url?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          error_message?: string
+          error_type?: string
+          id?: string
+          ip_address?: unknown | null
+          metadata?: Json | null
+          resolved?: boolean | null
+          severity?: string | null
+          stack_trace?: string | null
+          url?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "error_logs_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
@@ -1294,6 +1427,33 @@ export type Database = {
           },
         ]
       }
+      performance_metrics: {
+        Row: {
+          id: string
+          metric_name: string
+          metric_unit: string | null
+          metric_value: number
+          recorded_at: string
+          tags: Json | null
+        }
+        Insert: {
+          id?: string
+          metric_name: string
+          metric_unit?: string | null
+          metric_value: number
+          recorded_at?: string
+          tags?: Json | null
+        }
+        Update: {
+          id?: string
+          metric_name?: string
+          metric_unit?: string | null
+          metric_value?: number
+          recorded_at?: string
+          tags?: Json | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           account_type: string | null
@@ -1612,6 +1772,54 @@ export type Database = {
         }
         Relationships: []
       }
+      security_settings: {
+        Row: {
+          created_at: string
+          id: string
+          lockout_duration_minutes: number | null
+          login_attempt_limit: number | null
+          max_concurrent_sessions: number | null
+          password_min_length: number | null
+          password_require_lowercase: boolean | null
+          password_require_numbers: boolean | null
+          password_require_symbols: boolean | null
+          password_require_uppercase: boolean | null
+          session_timeout_minutes: number | null
+          two_factor_required: boolean | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          lockout_duration_minutes?: number | null
+          login_attempt_limit?: number | null
+          max_concurrent_sessions?: number | null
+          password_min_length?: number | null
+          password_require_lowercase?: boolean | null
+          password_require_numbers?: boolean | null
+          password_require_symbols?: boolean | null
+          password_require_uppercase?: boolean | null
+          session_timeout_minutes?: number | null
+          two_factor_required?: boolean | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          lockout_duration_minutes?: number | null
+          login_attempt_limit?: number | null
+          max_concurrent_sessions?: number | null
+          password_min_length?: number | null
+          password_require_lowercase?: boolean | null
+          password_require_numbers?: boolean | null
+          password_require_symbols?: boolean | null
+          password_require_uppercase?: boolean | null
+          session_timeout_minutes?: number | null
+          two_factor_required?: boolean | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       site_reports: {
         Row: {
           attachments: string[] | null
@@ -1813,6 +2021,36 @@ export type Database = {
           metadata?: Json | null
           type?: string
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      system_health: {
+        Row: {
+          checked_at: string
+          error_message: string | null
+          id: string
+          metadata: Json | null
+          response_time_ms: number | null
+          service_name: string
+          status: string
+        }
+        Insert: {
+          checked_at?: string
+          error_message?: string | null
+          id?: string
+          metadata?: Json | null
+          response_time_ms?: number | null
+          service_name: string
+          status?: string
+        }
+        Update: {
+          checked_at?: string
+          error_message?: string | null
+          id?: string
+          metadata?: Json | null
+          response_time_ms?: number | null
+          service_name?: string
+          status?: string
         }
         Relationships: []
       }
@@ -2069,13 +2307,81 @@ export type Database = {
         }
         Relationships: []
       }
+      user_sessions: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          ip_address: unknown | null
+          is_active: boolean | null
+          last_activity: string | null
+          session_token: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          id?: string
+          ip_address?: unknown | null
+          is_active?: boolean | null
+          last_activity?: string | null
+          session_token: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          ip_address?: unknown | null
+          is_active?: boolean | null
+          last_activity?: string | null
+          session_token?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_sessions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      cleanup_old_data: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
       get_current_user_role: {
         Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      log_user_action: {
+        Args: {
+          p_action: string
+          p_table_name?: string
+          p_record_id?: string
+          p_old_values?: Json
+          p_new_values?: Json
+        }
+        Returns: string
+      }
+      record_health_check: {
+        Args: {
+          p_service_name: string
+          p_status: string
+          p_response_time_ms?: number
+          p_error_message?: string
+          p_metadata?: Json
+        }
         Returns: string
       }
     }
