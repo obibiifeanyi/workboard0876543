@@ -1,51 +1,105 @@
+
 import { NavLink } from "react-router-dom";
 import {
   LayoutDashboard,
   Users,
   Building2,
   FileText,
-  CalendarClock,
   Clock,
   Network,
   Activity,
   Brain,
-  Database,
   Mail,
+  Shield,
+  ChevronRight,
 } from "lucide-react";
 
 export const AdminNavigation = () => {
   const navItems = [
-    { to: "/admin", icon: LayoutDashboard, label: "Dashboard", end: true },
-    { to: "/admin/users", icon: Users, label: "Users & Teams" },
-    { to: "/admin/departments", icon: Building2, label: "Departments" },
-    { to: "/admin/projects", icon: FileText, label: "Projects & Tasks" },
-    { to: "/admin/time", icon: Clock, label: "Time & Attendance" },
-    { to: "/admin/telecom-sites", icon: Network, label: "Sites & Reports" },
-    { to: "/admin/activity", icon: Activity, label: "Activity & Analytics" },
-    { to: "/admin/ai", icon: Brain, label: "AI & Knowledge" },
-    { to: "/admin/communication", icon: Mail, label: "Communication" },
+    { to: "/admin", icon: LayoutDashboard, label: "Dashboard", end: true, color: "from-blue-500 to-cyan-500" },
+    { to: "/admin/users", icon: Users, label: "Users & Teams", color: "from-purple-500 to-pink-500" },
+    { to: "/admin/departments", icon: Building2, label: "Departments", color: "from-green-500 to-emerald-500" },
+    { to: "/admin/projects", icon: FileText, label: "Projects & Tasks", color: "from-orange-500 to-red-500" },
+    { to: "/admin/time", icon: Clock, label: "Time & Attendance", color: "from-yellow-500 to-orange-500" },
+    { to: "/admin/telecom-sites", icon: Network, label: "Sites & Reports", color: "from-teal-500 to-blue-500" },
+    { to: "/admin/activity", icon: Activity, label: "Activity & Analytics", color: "from-indigo-500 to-purple-500" },
+    { to: "/admin/ai", icon: Brain, label: "AI & Knowledge", color: "from-violet-500 to-purple-500" },
+    { to: "/admin/communication", icon: Mail, label: "Communication", color: "from-pink-500 to-rose-500" },
   ];
 
   return (
-    <nav className="space-y-2">
-      {navItems.map((item) => (
-        <NavLink
-          key={item.to}
-          to={item.to}
-          end={item.end}
-          className={({ isActive }) =>
-            `flex items-center gap-2 rounded-lg px-3 py-2 transition-colors
-             ${
-               isActive
-                 ? "bg-admin-primary text-white dark:bg-admin-primary/90"
-                 : "text-foreground hover:bg-admin-accent hover:text-admin-primary"
-             }`
-          }
-        >
-          <item.icon className="h-4 w-4" />
-          {item.label}
-        </NavLink>
-      ))}
-    </nav>
+    <div className="space-y-2 p-4">
+      {/* Header Section */}
+      <div className="mb-6 p-4 rounded-2xl bg-gradient-to-r from-admin-primary/10 to-admin-secondary/10 
+                     border border-admin-primary/20 backdrop-blur-sm">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-xl bg-gradient-to-r from-admin-primary to-admin-secondary">
+            <Shield className="h-5 w-5 text-white" />
+          </div>
+          <div>
+            <h3 className="font-semibold text-admin-primary">Admin Control</h3>
+            <p className="text-xs text-muted-foreground">System Management</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Navigation Items */}
+      <nav className="space-y-1">
+        {navItems.map((item, index) => (
+          <NavLink
+            key={item.to}
+            to={item.to}
+            end={item.end}
+            className={({ isActive }) =>
+              `group relative flex items-center gap-3 rounded-2xl px-4 py-3 transition-all duration-300
+               ${
+                 isActive
+                   ? "bg-gradient-to-r from-admin-primary to-admin-secondary text-white shadow-lg shadow-admin-primary/25 scale-[1.02]"
+                   : "text-foreground hover:bg-gradient-to-r hover:from-admin-primary/10 hover:to-admin-secondary/10 hover:text-admin-primary hover:scale-[1.01]"
+               }`
+            }
+          >
+            {/* Animated Background */}
+            <div className={`absolute inset-0 rounded-2xl bg-gradient-to-r ${item.color} opacity-0 
+                           group-hover:opacity-10 transition-opacity duration-300`} />
+            
+            {/* Icon with Glow Effect */}
+            <div className={`relative p-2 rounded-xl transition-all duration-300
+                           ${({ isActive }: { isActive: boolean }) =>
+                             isActive 
+                               ? "bg-white/20 shadow-lg" 
+                               : "group-hover:bg-admin-primary/10 group-hover:shadow-md"
+                           }`}>
+              <item.icon className="h-4 w-4 transition-transform duration-300 group-hover:scale-110" />
+            </div>
+
+            {/* Label */}
+            <span className="font-medium transition-all duration-300 group-hover:translate-x-1">
+              {item.label}
+            </span>
+
+            {/* Arrow Indicator */}
+            <ChevronRight className="ml-auto h-4 w-4 opacity-0 -translate-x-2 transition-all duration-300 
+                                   group-hover:opacity-100 group-hover:translate-x-0" />
+
+            {/* Active Indicator */}
+            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-gradient-to-b from-white to-transparent 
+                           rounded-r-full opacity-0 group-data-[active]:opacity-100 transition-opacity duration-300" />
+          </NavLink>
+        ))}
+      </nav>
+
+      {/* Footer Section */}
+      <div className="mt-8 p-4 rounded-2xl bg-gradient-to-r from-admin-primary/5 to-admin-secondary/5 
+                     border border-admin-primary/10">
+        <div className="text-center">
+          <div className="text-xs text-muted-foreground mb-2">System Status</div>
+          <div className="flex items-center justify-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+            <span className="text-xs font-medium text-green-600">All Systems Operational</span>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
