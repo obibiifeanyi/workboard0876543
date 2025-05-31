@@ -1,11 +1,13 @@
 
 import { useState } from "react";
-import { MessageCircle, Send, X, Minimize2, Maximize2 } from "lucide-react";
+import { MessageCircle, Send, X, Minimize2, Maximize2, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Message {
   id: string;
@@ -27,6 +29,7 @@ export const AIChatBox = () => {
   ]);
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
   const sendMessage = async () => {
@@ -42,27 +45,62 @@ export const AIChatBox = () => {
     setMessages(prev => [...prev, userMessage]);
     setInputValue("");
     setIsLoading(true);
+    setError(null);
 
     try {
-      // TODO: Replace with actual AI service call
-      // For now, simulate AI response
-      setTimeout(() => {
-        const aiResponse: Message = {
-          id: (Date.now() + 1).toString(),
-          text: `I understand you're asking about: "${userMessage.text}". I'm here to help! As your AI assistant for CT Communication Towers, I can assist with document analysis, project management insights, and system guidance. What specific area would you like me to help you with?`,
-          isUser: false,
-          timestamp: new Date(),
-        };
-        setMessages(prev => [...prev, aiResponse]);
-        setIsLoading(false);
-      }, 1500);
-    } catch (error) {
+      const { data, error: functionError } = await supabase.functions.invoke('ai-chat', {
+        body: { 
+          message: userMessage.text,
+          context: 'CT Communication Towers system assistance'
+        }
+      });
+
+      if (functionError) {
+        throw new Error(functionError.message || 'Failed to get AI response');
+      }
+
+      if (!data || !data.response) {
+        throw new Error('Invalid response from AI service');
+      }
+
+      const aiResponse: Message = {
+        id: (Date.now() + 1).toString(),
+        text: data.response,
+        isUser: false,
+        timestamp: new Date(),
+      };
+
+      setMessages(prev => [...prev, aiResponse]);
+    } catch (error: any) {
       console.error('AI chat error:', error);
+      
+      let errorMessage = "I'm having trouble connecting to the AI service. Please try again later.";
+      
+      if (error.message?.includes('API key') || error.message?.includes('authentication')) {
+        errorMessage = "AI service is not properly configured. Please contact your administrator.";
+      } else if (error.message?.includes('quota') || error.message?.includes('limit')) {
+        errorMessage = "AI service usage limit has been reached. Please try again later or contact your administrator.";
+      } else if (error.message?.includes('subscription')) {
+        errorMessage = "AI service subscription is not active. Please contact your administrator.";
+      }
+
+      setError(errorMessage);
+      
+      const errorResponse: Message = {
+        id: (Date.now() + 1).toString(),
+        text: errorMessage,
+        isUser: false,
+        timestamp: new Date(),
+      };
+      
+      setMessages(prev => [...prev, errorResponse]);
+      
       toast({
-        title: "Error",
-        description: "Failed to get AI response. Please try again.",
+        title: "AI Service Error",
+        description: errorMessage,
         variant: "destructive",
       });
+    } finally {
       setIsLoading(false);
     }
   };
@@ -78,7 +116,7 @@ export const AIChatBox = () => {
     return (
       <Button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 rounded-[30px] shadow-lg z-50 h-14 w-14 p-0"
+        className="fixed bottom-6 right-6 rounded-[30px] shadow-lg z-50 h-14 w-14 p-0 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800"
         size="icon"
       >
         <MessageCircle className="h-6 w-6" />
@@ -88,20 +126,20 @@ export const AIChatBox = () => {
 
   return (
     <Card
-      className={`fixed bottom-6 right-6 z-50 shadow-2xl transition-all duration-300 ${
+      className={`fixed bottom-6 right-6 z-50 shadow-2xl transition-all duration-300 border-red-600/20 ${
         isMinimized ? "h-14 w-80" : "h-96 w-80"
       }`}
     >
-      <div className="flex items-center justify-between p-3 border-b bg-primary text-primary-foreground rounded-t-lg">
+      <div className="flex items-center justify-between p-3 border-b bg-gradient-to-r from-red-600 to-red-700 text-white rounded-t-lg">
         <div className="flex items-center gap-2">
           <MessageCircle className="h-4 w-4" />
-          <span className="font-medium text-sm">AI Assistant</span>
+          <span className="font-medium text-sm">CTNL AI Assistant</span>
         </div>
         <div className="flex items-center gap-1">
           <Button
             variant="ghost"
             size="icon"
-            className="h-6 w-6 text-primary-foreground hover:bg-primary-foreground/20 rounded-[30px]"
+            className="h-6 w-6 text-white hover:bg-white/20 rounded-[30px]"
             onClick={() => setIsMinimized(!isMinimized)}
           >
             {isMinimized ? (
@@ -113,7 +151,7 @@ export const AIChatBox = () => {
           <Button
             variant="ghost"
             size="icon"
-            className="h-6 w-6 text-primary-foreground hover:bg-primary-foreground/20 rounded-[30px]"
+            className="h-6 w-6 text-white hover:bg-white/20 rounded-[30px]"
             onClick={() => setIsOpen(false)}
           >
             <X className="h-3 w-3" />
@@ -123,6 +161,15 @@ export const AIChatBox = () => {
 
       {!isMinimized && (
         <>
+          {error && (
+            <Alert className="m-3 border-red-200 bg-red-50">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription className="text-red-800">
+                {error}
+              </AlertDescription>
+            </Alert>
+          )}
+
           <ScrollArea className="h-64 p-3">
             <div className="space-y-3">
               {messages.map((message) => (
@@ -133,7 +180,7 @@ export const AIChatBox = () => {
                   <div
                     className={`max-w-[80%] p-2 rounded-[20px] text-sm ${
                       message.isUser
-                        ? "bg-primary text-primary-foreground"
+                        ? "bg-gradient-to-r from-red-600 to-red-700 text-white"
                         : "bg-muted text-muted-foreground"
                     }`}
                   >
@@ -167,15 +214,15 @@ export const AIChatBox = () => {
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="Ask me anything about CT Communication Towers..."
-                className="flex-1 rounded-[30px] border-primary/20"
+                placeholder="Ask me anything about CTNL..."
+                className="flex-1 rounded-[30px] border-red-200 focus:border-red-500"
                 disabled={isLoading}
               />
               <Button
                 onClick={sendMessage}
                 disabled={!inputValue.trim() || isLoading}
                 size="icon"
-                className="rounded-[30px] shrink-0"
+                className="rounded-[30px] shrink-0 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800"
               >
                 <Send className="h-4 w-4" />
               </Button>

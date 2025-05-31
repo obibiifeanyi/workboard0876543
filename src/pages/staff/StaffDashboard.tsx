@@ -7,12 +7,11 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { 
   Clock, CalendarIcon, CheckCircle, Bell, User, ListTodo, 
-  ClipboardList, FileText, Signal, Battery, MessageSquare,
+  ClipboardList, FileText, Signal, Battery,
   Users, Settings, StickyNote
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { ChatBox } from "@/components/ChatBox";
 import { TaskList } from "@/components/staff/TaskList";
 import { LeaveApplication } from "@/components/staff/LeaveApplication";
 import { ProfileSection } from "@/components/staff/ProfileSection";
@@ -23,6 +22,7 @@ import { WeeklyReport } from "@/components/staff/reports/WeeklyReport";
 import { TelecomSiteReport } from "@/components/staff/reports/TelecomSiteReport";
 import { ProjectReport } from "@/components/staff/reports/ProjectReport";
 import { MeetingCenter } from "@/components/staff/MeetingCenter";
+import { AIChatBox } from "@/components/ai/AIChatBox";
 
 const StaffDashboard = () => {
   const navigate = useNavigate();
@@ -241,7 +241,7 @@ const StaffDashboard = () => {
           </div>
         </Tabs>
 
-        <ChatBox />
+        <AIChatBox />
       </div>
     </DashboardLayout>
   );
