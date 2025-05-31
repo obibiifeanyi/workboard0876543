@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AccountantTabContent } from "./AccountantTabContent";
@@ -11,7 +12,7 @@ export const AccountantDashboard = () => {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-3xl font-bold bg-gradient-to-r from-red-600 to-red-700 bg-clip-text text-transparent">
-            Accountant Dashboard
+            Financial Center
           </h1>
           <p className="text-muted-foreground mt-1">Manage financial operations and approvals</p>
         </div>
