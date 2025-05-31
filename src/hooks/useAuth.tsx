@@ -18,26 +18,11 @@ export const useAuth = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  const redirectUserBasedOnRole = (role: string, accountType: string) => {
-    console.log('Redirecting user based on role:', role, 'accountType:', accountType);
-    
-    if (accountType === 'accountant') {
-      navigate('/accountant');
-    } else if (accountType === 'hr' || role === 'hr') {
-      navigate('/hr');
-    } else if (accountType === 'admin' || role === 'admin') {
-      navigate('/admin');
-    } else if (accountType === 'manager' || role === 'manager') {
-      navigate('/manager');
-    } else {
-      navigate('/staff');
-    }
-  };
-
   useEffect(() => {
     let mounted = true;
+    let timeoutId: NodeJS.Timeout;
 
-    const getInitialSession = async () => {
+    const getSession = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
         
@@ -52,7 +37,6 @@ export const useAuth = () => {
         if (session?.user && mounted) {
           setUser(session.user);
           
-          // Try to get profile data
           try {
             const { data: profileData, error: profileError } = await supabase
               .from('profiles')
@@ -66,7 +50,6 @@ export const useAuth = () => {
                 localStorage.setItem('userRole', profileData.role || 'staff');
                 localStorage.setItem('accountType', profileData.account_type || 'staff');
               } else {
-                // Set defaults if profile not found
                 const defaultProfile = {
                   id: session.user.id,
                   role: 'staff',
@@ -81,22 +64,10 @@ export const useAuth = () => {
             }
           } catch (error) {
             console.error('Profile fetch error:', error);
-            if (mounted) {
-              const defaultProfile = {
-                id: session.user.id,
-                role: 'staff',
-                account_type: 'staff',
-                full_name: null,
-                email: session.user.email || null,
-              };
-              setProfile(defaultProfile);
-              localStorage.setItem('userRole', 'staff');
-              localStorage.setItem('accountType', 'staff');
-            }
           }
         }
       } catch (error) {
-        console.error('Initial session error:', error);
+        console.error('Session fetch error:', error);
       } finally {
         if (mounted) {
           setLoading(false);
@@ -104,68 +75,41 @@ export const useAuth = () => {
       }
     };
 
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log('Auth state change:', event, session?.user?.id);
-        
-        if (!mounted) return;
-
-        if (session?.user) {
-          setUser(session.user);
-          
-          // Don't fetch profile again if we already have it for this user
-          if (profile?.id === session.user.id) {
-            setLoading(false);
-            return;
-          }
-
-          try {
-            const { data: profileData, error } = await supabase
-              .from('profiles')
-              .select('id, role, account_type, full_name, email')
-              .eq('id', session.user.id)
-              .maybeSingle();
-
-            if (mounted) {
-              if (!error && profileData) {
-                setProfile(profileData);
-                localStorage.setItem('userRole', profileData.role || 'staff');
-                localStorage.setItem('accountType', profileData.account_type || 'staff');
-              } else {
-                const defaultProfile = {
-                  id: session.user.id,
-                  role: 'staff',
-                  account_type: 'staff',
-                  full_name: null,
-                  email: session.user.email || null,
-                };
-                setProfile(defaultProfile);
-                localStorage.setItem('userRole', 'staff');
-                localStorage.setItem('accountType', 'staff');
-              }
-            }
-          } catch (error) {
-            console.error('Auth state profile error:', error);
-          }
-        } else {
-          setUser(null);
-          setProfile(null);
-          localStorage.removeItem('userRole');
-          localStorage.removeItem('accountType');
-        }
-        
-        if (mounted) {
-          setLoading(false);
-        }
+    // Set timeout to prevent infinite loading
+    timeoutId = setTimeout(() => {
+      if (mounted) {
+        console.log('Auth timeout reached');
+        setLoading(false);
       }
-    );
+    }, 3000);
 
-    // Get initial session
-    getInitialSession();
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!mounted) return;
+
+      console.log('Auth state change:', event);
+      
+      if (session?.user) {
+        setUser(session.user);
+      } else {
+        setUser(null);
+        setProfile(null);
+        localStorage.removeItem('userRole');
+        localStorage.removeItem('accountType');
+      }
+      
+      if (mounted) {
+        setLoading(false);
+      }
+    });
+
+    getSession();
 
     return () => {
       mounted = false;
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
       subscription.unsubscribe();
     };
   }, []);
