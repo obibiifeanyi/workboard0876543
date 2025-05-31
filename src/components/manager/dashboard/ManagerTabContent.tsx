@@ -16,23 +16,37 @@ import { TaskAssignment } from "@/components/manager/TaskAssignment";
 import { DepartmentManagement } from "@/components/manager/DepartmentManagement";
 import { TabsContent } from "@/components/ui/tabs";
 import { StaffMemoManagement } from "@/components/manager/StaffMemoManagement";
+import { ManagerStats } from "@/components/manager/dashboard/ManagerStats";
+import { ManagerPerformanceChart } from "@/components/manager/dashboard/ManagerPerformanceChart";
+import { ManagerOverview } from "@/components/manager/dashboard/ManagerOverview";
 
 export const ManagerTabContent = () => {
   return (
     <>
       <TabsContent value="team" className="space-y-6 mt-0">
-        <TeamOverview />
+        <ManagerStats />
+        <div className="grid gap-6 lg:grid-cols-3">
+          <div className="lg:col-span-2">
+            <TeamOverview />
+          </div>
+          <div className="space-y-6">
+            <ManagerOverview />
+          </div>
+        </div>
       </TabsContent>
 
       <TabsContent value="sites" className="space-y-6 mt-0">
+        <ManagerStats />
         <ProjectManagement />
       </TabsContent>
 
       <TabsContent value="workboard" className="space-y-6 mt-0">
+        <ManagerStats />
         <TaskAssignment />
       </TabsContent>
 
       <TabsContent value="construction" className="space-y-6 mt-0">
+        <ManagerStats />
         <DepartmentManagement />
       </TabsContent>
 
@@ -65,6 +79,11 @@ export const ManagerTabContent = () => {
 
       <TabsContent value="settings" className="space-y-6 mt-0">
         <EmailNotificationCenter />
+      </TabsContent>
+
+      <TabsContent value="analytics" className="space-y-6 mt-0">
+        <ManagerStats />
+        <ManagerPerformanceChart />
       </TabsContent>
     </>
   );

@@ -1,5 +1,5 @@
 
-import { Users, FolderOpen, ClipboardList, Building2 } from "lucide-react";
+import { Users, FolderOpen, ClipboardList, Building2, BarChart3 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navigationItems = [
@@ -26,6 +26,12 @@ const navigationItems = [
     icon: Building2,
     value: "construction",
     description: "Manage department information"
+  },
+  {
+    title: "Analytics",
+    icon: BarChart3,
+    value: "analytics",
+    description: "View performance metrics and charts"
   }
 ];
 
