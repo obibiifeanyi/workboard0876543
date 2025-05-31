@@ -18,35 +18,33 @@ const Dashboard = () => {
       // Redirect based on account_type, with role as fallback
       const accountType = profile.account_type || profile.role;
       
+      console.log('Dashboard redirect - User:', user.id, 'Account Type:', accountType, 'Role:', profile.role);
+      
       switch (accountType) {
         case 'admin':
-          navigate("/admin");
+          navigate("/admin", { replace: true });
           break;
         case 'manager':
-          navigate("/manager");
+          navigate("/manager", { replace: true });
           break;
         case 'accountant':
-          navigate("/accountant");
+          navigate("/accountant", { replace: true });
           break;
         case 'staff':
         default:
-          navigate("/documents");
+          navigate("/documents", { replace: true });
           break;
       }
     }
   }, [user, profile, loading, navigate]);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
+  // Show loading while determining redirect
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <Loader className="h-8 w-8 animate-spin text-primary" />
+    <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="text-center">
+        <Loader className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
+        <p className="text-muted-foreground">Loading your dashboard...</p>
+      </div>
     </div>
   );
 };

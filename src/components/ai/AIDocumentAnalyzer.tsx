@@ -1,375 +1,489 @@
 
-import { useState, useCallback } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { useToast } from "@/hooks/use-toast";
-import { FileText, Upload, Download, Brain, Loader, Trash2, Eye } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { useDropzone } from "react-dropzone";
+import React, { useState, useCallback } from 'react';
+import { useDropzone } from 'react-dropzone';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { useSystemData } from '@/hooks/useSystemData';
+import {
+  Upload,
+  File,
+  FileText,
+  Download,
+  Loader,
+  CheckCircle,
+  AlertCircle,
+  Brain,
+  Database
+} from 'lucide-react';
+import * as XLSX from 'xlsx';
+import mammoth from 'mammoth';
 
 interface AnalysisResult {
-  id: string;
-  fileName: string;
-  fileType: string;
-  analysis: {
-    summary: string;
-    keyPoints: string[];
-    suggestedActions: string[];
-    categories: string[];
-    sentiment?: string;
-    wordCount?: number;
+  summary: string;
+  keyPoints: string[];
+  suggestedActions: string[];
+  categories: string[];
+  sentiment: string;
+  wordCount: number;
+  systemInsights?: {
+    relatedProjects?: any[];
+    relevantTasks?: any[];
+    connectedPersonnel?: any[];
+    departmentContext?: any[];
   };
-  createdAt: string;
-}
-
-interface UploadedFile {
-  id: string;
-  name: string;
-  type: string;
-  size: number;
-  progress: number;
-  status: 'uploading' | 'analyzing' | 'completed' | 'error';
-  result?: AnalysisResult;
 }
 
 export const AIDocumentAnalyzer = () => {
-  const [files, setFiles] = useState<UploadedFile[]>([]);
-  const [selectedAnalysis, setSelectedAnalysis] = useState<AnalysisResult | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [analyses, setAnalyses] = useState<{[key: string]: AnalysisResult}>({});
+  const [processingFiles, setProcessingFiles] = useState<Set<string>>(new Set());
   const { toast } = useToast();
 
-  const onDrop = useCallback(async (acceptedFiles: File[]) => {
-    const newFiles: UploadedFile[] = acceptedFiles.map(file => ({
-      id: Math.random().toString(36).substr(2, 9),
-      name: file.name,
-      type: file.type,
-      size: file.size,
-      progress: 0,
-      status: 'uploading' as const
-    }));
+  // System data hooks for context
+  const systemData = useSystemData();
+  const { data: profiles } = systemData.useProfiles();
+  const { data: projects } = systemData.useProjects();
+  const { data: tasks } = systemData.useTasks();
+  const { data: memos } = systemData.useMemos();
+  const { data: departments } = systemData.useDepartments();
 
-    setFiles(prev => [...prev, ...newFiles]);
-
-    for (const [index, file] of acceptedFiles.entries()) {
-      const fileId = newFiles[index].id;
-      
-      try {
-        // Simulate upload progress
-        const uploadInterval = setInterval(() => {
-          setFiles(prev => prev.map(f => 
-            f.id === fileId && f.progress < 90 
-              ? { ...f, progress: f.progress + 10 }
-              : f
-          ));
-        }, 200);
-
-        // Read file content
-        const content = await readFileContent(file);
-        
-        clearInterval(uploadInterval);
-        setFiles(prev => prev.map(f => 
-          f.id === fileId 
-            ? { ...f, progress: 100, status: 'analyzing' }
-            : f
-        ));
-
-        // Analyze with AI
-        const { data, error } = await supabase.functions.invoke('analyze-document', {
-          body: { 
-            content,
-            fileName: file.name,
-            fileType: file.type
-          }
-        });
-
-        if (error) throw error;
-
-        const result: AnalysisResult = {
-          id: Math.random().toString(36).substr(2, 9),
-          fileName: file.name,
-          fileType: file.type,
-          analysis: data.analysis,
-          createdAt: new Date().toISOString()
-        };
-
-        setFiles(prev => prev.map(f => 
-          f.id === fileId 
-            ? { ...f, status: 'completed', result }
-            : f
-        ));
-
-        toast({
-          title: "Analysis Complete",
-          description: `${file.name} has been analyzed successfully`,
-        });
-
-      } catch (error) {
-        console.error('Error analyzing file:', error);
-        setFiles(prev => prev.map(f => 
-          f.id === fileId 
-            ? { ...f, status: 'error' }
-            : f
-        ));
-        
-        toast({
-          title: "Analysis Failed",
-          description: `Failed to analyze ${file.name}`,
-          variant: "destructive",
-        });
-      }
-    }
-  }, [toast]);
-
-  const readFileContent = async (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const content = e.target?.result as string;
-        resolve(content);
-      };
-      reader.onerror = reject;
-      
-      if (file.type.includes('text') || file.name.endsWith('.csv')) {
-        reader.readAsText(file);
-      } else {
-        reader.readAsDataURL(file);
-      }
+  const onDrop = useCallback((acceptedFiles: File[]) => {
+    const validFiles = acceptedFiles.filter(file => {
+      const validTypes = [
+        'application/pdf',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'application/vnd.ms-excel',
+        'text/plain',
+        'text/csv'
+      ];
+      return validTypes.includes(file.type) && file.size <= 10 * 1024 * 1024; // 10MB limit
     });
-  };
+
+    if (validFiles.length !== acceptedFiles.length) {
+      toast({
+        title: "Invalid Files",
+        description: "Some files were rejected. Only PDF, DOCX, XLSX, CSV, and TXT files under 10MB are allowed.",
+        variant: "destructive",
+      });
+    }
+
+    setFiles(prev => [...prev, ...validFiles]);
+  }, [toast]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
-      'text/plain': ['.txt'],
-      'text/csv': ['.csv'],
       'application/pdf': ['.pdf'],
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
-      'application/vnd.ms-excel': ['.xls']
+      'application/vnd.ms-excel': ['.xls'],
+      'text/plain': ['.txt'],
+      'text/csv': ['.csv'],
     },
-    maxSize: 10 * 1024 * 1024 // 10MB
+    multiple: true,
   });
 
-  const deleteFile = (fileId: string) => {
-    setFiles(prev => prev.filter(f => f.id !== fileId));
-    toast({
-      title: "File Removed",
-      description: "File has been removed from the analyzer",
+  const extractFileContent = async (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      if (file.type === 'text/plain' || file.type === 'text/csv') {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target?.result as string);
+        reader.onerror = reject;
+        reader.readAsText(file);
+      } else if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+          try {
+            const arrayBuffer = e.target?.result as ArrayBuffer;
+            const result = await mammoth.extractRawText({ arrayBuffer });
+            resolve(result.value);
+          } catch (error) {
+            reject(error);
+          }
+        };
+        reader.onerror = reject;
+        reader.readAsArrayBuffer(file);
+      } else if (file.type.includes('sheet') || file.type.includes('excel')) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          try {
+            const data = new Uint8Array(e.target?.result as ArrayBuffer);
+            const workbook = XLSX.read(data, { type: 'array' });
+            let content = '';
+            workbook.SheetNames.forEach(sheetName => {
+              const sheet = workbook.Sheets[sheetName];
+              content += XLSX.utils.sheet_to_txt(sheet) + '\n';
+            });
+            resolve(content);
+          } catch (error) {
+            reject(error);
+          }
+        };
+        reader.onerror = reject;
+        reader.readAsArrayBuffer(file);
+      } else {
+        reject(new Error('Unsupported file type'));
+      }
     });
   };
 
-  const downloadReport = async (analysis: AnalysisResult) => {
-    const reportContent = generateReport(analysis);
-    const blob = new Blob([reportContent], { type: 'text/plain' });
+  const createSystemContext = () => {
+    return {
+      profiles: profiles || [],
+      projects: projects || [],
+      tasks: tasks || [],
+      memos: memos || [],
+      departments: departments || [],
+    };
+  };
+
+  const analyzeFile = async (file: File) => {
+    const fileId = `${file.name}_${file.size}`;
+    setProcessingFiles(prev => new Set(prev).add(fileId));
+    
+    try {
+      setProgress(10);
+      const content = await extractFileContent(file);
+      setProgress(30);
+
+      const systemContext = createSystemContext();
+      
+      setProgress(60);
+      const { data, error } = await supabase.functions.invoke('analyze-document', {
+        body: { 
+          content,
+          fileName: file.name,
+          fileType: file.type,
+          systemContext // Include system data for AI context
+        }
+      });
+
+      if (error) throw error;
+
+      setProgress(100);
+      const analysis = data.analysis as AnalysisResult;
+      
+      setAnalyses(prev => ({
+        ...prev,
+        [fileId]: analysis
+      }));
+
+      toast({
+        title: "Analysis Complete",
+        description: `Successfully analyzed ${file.name}`,
+      });
+
+    } catch (error) {
+      console.error('Analysis error:', error);
+      toast({
+        title: "Analysis Failed",
+        description: `Failed to analyze ${file.name}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        variant: "destructive",
+      });
+    } finally {
+      setProcessingFiles(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(fileId);
+        return newSet;
+      });
+      setProgress(0);
+    }
+  };
+
+  const analyzeAllFiles = async () => {
+    if (files.length === 0) {
+      toast({
+        title: "No Files",
+        description: "Please upload files first",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setUploading(true);
+    for (const file of files) {
+      await analyzeFile(file);
+    }
+    setUploading(false);
+  };
+
+  const removeFile = (index: number) => {
+    setFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const downloadAnalysis = (fileName: string, analysis: AnalysisResult) => {
+    const report = `
+# Analysis Report: ${fileName}
+
+## Summary
+${analysis.summary}
+
+## Key Points
+${analysis.keyPoints.map(point => `• ${point}`).join('\n')}
+
+## Suggested Actions
+${analysis.suggestedActions.map(action => `• ${action}`).join('\n')}
+
+## Categories
+${analysis.categories.join(', ')}
+
+## Sentiment
+${analysis.sentiment}
+
+## Word Count
+${analysis.wordCount}
+
+${analysis.systemInsights ? `
+## System Insights
+### Related Projects
+${analysis.systemInsights.relatedProjects?.map(p => `• ${p.name}`).join('\n') || 'None found'}
+
+### Relevant Tasks
+${analysis.systemInsights.relevantTasks?.map(t => `• ${t.title}`).join('\n') || 'None found'}
+
+### Connected Personnel
+${analysis.systemInsights.connectedPersonnel?.map(p => `• ${p.full_name}`).join('\n') || 'None found'}
+` : ''}
+
+Generated on: ${new Date().toLocaleString()}
+    `;
+
+    const blob = new Blob([report], { type: 'text/markdown' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${analysis.fileName}_analysis.txt`;
+    a.download = `analysis_${fileName.replace(/\.[^/.]+$/, '')}.md`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   };
 
-  const generateReport = (analysis: AnalysisResult): string => {
-    return `
-AI DOCUMENT ANALYSIS REPORT
-============================
-
-File: ${analysis.fileName}
-Type: ${analysis.fileType}
-Analyzed: ${new Date(analysis.createdAt).toLocaleString()}
-
-SUMMARY
--------
-${analysis.analysis.summary}
-
-KEY POINTS
-----------
-${analysis.analysis.keyPoints.map(point => `• ${point}`).join('\n')}
-
-SUGGESTED ACTIONS
------------------
-${analysis.analysis.suggestedActions.map(action => `• ${action}`).join('\n')}
-
-CATEGORIES
-----------
-${analysis.analysis.categories.join(', ')}
-
-${analysis.analysis.sentiment ? `SENTIMENT: ${analysis.analysis.sentiment}` : ''}
-${analysis.analysis.wordCount ? `WORD COUNT: ${analysis.analysis.wordCount}` : ''}
-    `.trim();
-  };
-
   return (
     <div className="space-y-6">
-      {/* Upload Zone */}
+      {/* Upload Section */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Brain className="h-5 w-5 text-primary" />
+            <Brain className="h-5 w-5" />
             AI Document Analyzer
+            <Badge variant="secondary" className="ml-2">
+              <Database className="h-3 w-3 mr-1" />
+              System Context Enabled
+            </Badge>
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div
             {...getRootProps()}
             className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
-              isDragActive 
-                ? 'border-primary bg-primary/5' 
+              isDragActive
+                ? 'border-primary bg-primary/5'
                 : 'border-muted-foreground/25 hover:border-primary/50'
             }`}
           >
             <input {...getInputProps()} />
             <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-            <p className="text-lg font-medium mb-2">
-              {isDragActive ? 'Drop files here' : 'Drag & drop files here'}
-            </p>
-            <p className="text-sm text-muted-foreground mb-4">
-              Supports: PDF, DOCX, XLSX, CSV, TXT (Max 10MB)
-            </p>
-            <Button variant="outline">
-              <FileText className="h-4 w-4 mr-2" />
-              Select Files
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* File List */}
-      {files.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Processing Queue</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {files.map((file) => (
-              <div key={file.id} className="flex items-center gap-4 p-4 border rounded-lg">
-                <FileText className="h-8 w-8 text-primary" />
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium truncate">{file.name}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {(file.size / 1024).toFixed(1)} KB • {file.status}
-                  </p>
-                  {file.status === 'uploading' || file.status === 'analyzing' ? (
-                    <Progress value={file.progress} className="mt-2" />
-                  ) : null}
-                </div>
-                <div className="flex items-center gap-2">
-                  {file.status === 'analyzing' && (
-                    <Loader className="h-4 w-4 animate-spin text-primary" />
-                  )}
-                  {file.status === 'completed' && file.result && (
-                    <>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setSelectedAnalysis(file.result!)}
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => downloadReport(file.result!)}
-                      >
-                        <Download className="h-4 w-4" />
-                      </Button>
-                    </>
-                  )}
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => deleteFile(file.id)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Analysis Results */}
-      {selectedAnalysis && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              Analysis Results: {selectedAnalysis.fileName}
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => downloadReport(selectedAnalysis)}
-                >
-                  <Download className="h-4 w-4 mr-2" />
-                  Download Report
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setSelectedAnalysis(null)}
-                >
-                  Close
-                </Button>
-              </div>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div>
-              <h3 className="font-semibold mb-2">Summary</h3>
-              <p className="text-sm text-muted-foreground bg-muted/50 p-4 rounded-lg">
-                {selectedAnalysis.analysis.summary}
-              </p>
-            </div>
-
-            <div>
-              <h3 className="font-semibold mb-2">Key Points</h3>
-              <ul className="space-y-1">
-                {selectedAnalysis.analysis.keyPoints.map((point, index) => (
-                  <li key={index} className="text-sm flex items-start gap-2">
-                    <span className="text-primary">•</span>
-                    {point}
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div>
-              <h3 className="font-semibold mb-2">Suggested Actions</h3>
-              <ul className="space-y-1">
-                {selectedAnalysis.analysis.suggestedActions.map((action, index) => (
-                  <li key={index} className="text-sm flex items-start gap-2">
-                    <span className="text-primary">→</span>
-                    {action}
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div>
-              <h3 className="font-semibold mb-2">Categories</h3>
-              <div className="flex flex-wrap gap-2">
-                {selectedAnalysis.analysis.categories.map((category, index) => (
-                  <span
-                    key={index}
-                    className="px-2 py-1 bg-primary/10 text-primary text-xs rounded-full"
-                  >
-                    {category}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            {selectedAnalysis.analysis.sentiment && (
+            {isDragActive ? (
+              <p className="text-lg">Drop the files here...</p>
+            ) : (
               <div>
-                <h3 className="font-semibold mb-2">Sentiment Analysis</h3>
+                <p className="text-lg mb-2">Drag & drop files here, or click to select</p>
                 <p className="text-sm text-muted-foreground">
-                  {selectedAnalysis.analysis.sentiment}
+                  Supports PDF, DOCX, XLSX, CSV, TXT (max 10MB each)
                 </p>
               </div>
             )}
+          </div>
+
+          {files.length > 0 && (
+            <div className="mt-6">
+              <h3 className="text-lg font-semibold mb-3">Uploaded Files</h3>
+              <div className="space-y-2">
+                {files.map((file, index) => {
+                  const fileId = `${file.name}_${file.size}`;
+                  const isProcessing = processingFiles.has(fileId);
+                  const hasAnalysis = analyses[fileId];
+                  
+                  return (
+                    <div key={index} className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <FileText className="h-5 w-5" />
+                        <div>
+                          <p className="font-medium">{file.name}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {(file.size / 1024 / 1024).toFixed(2)} MB
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {isProcessing && <Loader className="h-4 w-4 animate-spin" />}
+                        {hasAnalysis && <CheckCircle className="h-4 w-4 text-green-500" />}
+                        {!isProcessing && !hasAnalysis && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeFile(index)}
+                          >
+                            Remove
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="mt-4 space-y-2">
+                {progress > 0 && <Progress value={progress} className="w-full" />}
+                <Button 
+                  onClick={analyzeAllFiles} 
+                  disabled={uploading || processingFiles.size > 0}
+                  className="w-full"
+                >
+                  {uploading || processingFiles.size > 0 ? (
+                    <>
+                      <Loader className="mr-2 h-4 w-4 animate-spin" />
+                      Analyzing...
+                    </>
+                  ) : (
+                    <>
+                      <Brain className="mr-2 h-4 w-4" />
+                      Analyze All Files
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Results Section */}
+      {Object.keys(analyses).length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Analysis Results</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {Object.entries(analyses).map(([fileId, analysis]) => {
+              const fileName = fileId.split('_')[0];
+              return (
+                <div key={fileId} className="border rounded-lg p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold">{fileName}</h3>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => downloadAnalysis(fileName, analysis)}
+                    >
+                      <Download className="mr-2 h-4 w-4" />
+                      Download Report
+                    </Button>
+                  </div>
+
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div>
+                      <h4 className="font-medium mb-2">Summary</h4>
+                      <p className="text-sm text-muted-foreground">{analysis.summary}</p>
+                    </div>
+                    <div>
+                      <h4 className="font-medium mb-2">Key Points</h4>
+                      <ul className="text-sm space-y-1">
+                        {analysis.keyPoints.map((point, i) => (
+                          <li key={i} className="flex items-start gap-2">
+                            <span className="text-primary">•</span>
+                            <span>{point}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+
+                  <Separator className="my-4" />
+
+                  <div className="grid gap-4 md:grid-cols-3">
+                    <div>
+                      <h4 className="font-medium mb-2">Categories</h4>
+                      <div className="flex flex-wrap gap-1">
+                        {analysis.categories.map((category, i) => (
+                          <Badge key={i} variant="secondary">{category}</Badge>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <h4 className="font-medium mb-2">Sentiment</h4>
+                      <Badge variant={
+                        analysis.sentiment === 'positive' ? 'default' :
+                        analysis.sentiment === 'negative' ? 'destructive' : 'secondary'
+                      }>
+                        {analysis.sentiment}
+                      </Badge>
+                    </div>
+                    <div>
+                      <h4 className="font-medium mb-2">Word Count</h4>
+                      <p className="text-lg font-semibold">{analysis.wordCount}</p>
+                    </div>
+                  </div>
+
+                  {analysis.systemInsights && (
+                    <>
+                      <Separator className="my-4" />
+                      <div>
+                        <h4 className="font-medium mb-2 flex items-center gap-2">
+                          <Database className="h-4 w-4" />
+                          System Context Insights
+                        </h4>
+                        <div className="grid gap-4 md:grid-cols-2">
+                          {analysis.systemInsights.relatedProjects?.length > 0 && (
+                            <div>
+                              <h5 className="text-sm font-medium mb-1">Related Projects</h5>
+                              <ul className="text-sm space-y-1">
+                                {analysis.systemInsights.relatedProjects.map((project, i) => (
+                                  <li key={i} className="text-muted-foreground">• {project.name}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                          {analysis.systemInsights.relevantTasks?.length > 0 && (
+                            <div>
+                              <h5 className="text-sm font-medium mb-1">Relevant Tasks</h5>
+                              <ul className="text-sm space-y-1">
+                                {analysis.systemInsights.relevantTasks.map((task, i) => (
+                                  <li key={i} className="text-muted-foreground">• {task.title}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </>
+                  )}
+
+                  <Separator className="my-4" />
+
+                  <div>
+                    <h4 className="font-medium mb-2">Suggested Actions</h4>
+                    <ul className="text-sm space-y-1">
+                      {analysis.suggestedActions.map((action, i) => (
+                        <li key={i} className="flex items-start gap-2">
+                          <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                          <span>{action}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              );
+            })}
           </CardContent>
         </Card>
       )}

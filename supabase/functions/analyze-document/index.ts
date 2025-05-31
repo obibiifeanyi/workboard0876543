@@ -13,7 +13,7 @@ serve(async (req) => {
   }
 
   try {
-    const { content, fileName, fileType } = await req.json()
+    const { content, fileName, fileType, systemContext } = await req.json()
 
     if (!content) {
       return new Response(
@@ -22,15 +22,22 @@ serve(async (req) => {
       )
     }
 
+    console.log('Analyzing document with system context:', {
+      fileName,
+      fileType,
+      contentLength: content.length,
+      hasSystemContext: !!systemContext
+    })
+
     // Try OpenAI first, fallback to Google AI
     let analysisResult;
     const openaiKey = Deno.env.get('OPENAI_API_KEY');
     const googleKey = Deno.env.get('GOOGLE_AI_API_KEY');
 
     if (openaiKey) {
-      analysisResult = await analyzeWithOpenAI(content, fileName, fileType, openaiKey);
+      analysisResult = await analyzeWithOpenAI(content, fileName, fileType, systemContext, openaiKey);
     } else if (googleKey) {
-      analysisResult = await analyzeWithGoogleAI(content, fileName, fileType, googleKey);
+      analysisResult = await analyzeWithGoogleAI(content, fileName, fileType, systemContext, googleKey);
     } else {
       throw new Error('No AI API keys configured');
     }
@@ -45,10 +52,7 @@ serve(async (req) => {
       .from('document_analysis')
       .insert({
         file_name: fileName,
-        file_path: `ai-analysis/${Date.now()}-${fileName}`,
-        file_type: fileType,
-        file_size: content.length,
-        analysis_status: 'completed',
+        status: 'completed',
         analysis_result: analysisResult,
         created_by: req.headers.get('x-user-id')
       })
@@ -75,7 +79,19 @@ serve(async (req) => {
   }
 })
 
-async function analyzeWithOpenAI(content: string, fileName: string, fileType: string, apiKey: string) {
+async function analyzeWithOpenAI(content: string, fileName: string, fileType: string, systemContext: any, apiKey: string) {
+  const contextPrompt = systemContext ? `
+  
+SYSTEM CONTEXT:
+You have access to the following system data for cross-referencing:
+- Projects: ${JSON.stringify(systemContext.projects?.slice(0, 10) || [])}
+- Tasks: ${JSON.stringify(systemContext.tasks?.slice(0, 10) || [])}
+- Departments: ${JSON.stringify(systemContext.departments || [])}
+- Profiles: ${JSON.stringify(systemContext.profiles?.slice(0, 10) || [])}
+
+Use this context to identify connections, relationships, and provide insights about how this document relates to existing system data.
+` : '';
+
   const response = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
@@ -87,15 +103,23 @@ async function analyzeWithOpenAI(content: string, fileName: string, fileType: st
       messages: [
         {
           role: 'system',
-          content: `You are an AI document analyzer. Analyze the provided document and return a JSON response with the following structure:
+          content: `You are an AI document analyzer with access to organizational system data. Analyze the provided document and return a JSON response with the following structure:
           {
             "summary": "Brief summary of the document",
             "keyPoints": ["key point 1", "key point 2", ...],
             "suggestedActions": ["action 1", "action 2", ...],
             "categories": ["category1", "category2", ...],
             "sentiment": "positive/negative/neutral",
-            "wordCount": number
-          }`
+            "wordCount": number,
+            "systemInsights": {
+              "relatedProjects": [relevant projects from system context],
+              "relevantTasks": [relevant tasks from system context],
+              "connectedPersonnel": [relevant personnel from system context],
+              "departmentContext": [relevant departments from system context]
+            }
+          }
+          
+          ${contextPrompt}`
         },
         {
           role: 'user',
@@ -103,7 +127,7 @@ async function analyzeWithOpenAI(content: string, fileName: string, fileType: st
         }
       ],
       temperature: 0.3,
-      max_tokens: 2000
+      max_tokens: 3000
     })
   })
 
@@ -120,12 +144,30 @@ async function analyzeWithOpenAI(content: string, fileName: string, fileType: st
       suggestedActions: ["Review the document"],
       categories: ["General"],
       sentiment: "neutral",
-      wordCount: content.split(/\s+/).length
+      wordCount: content.split(/\s+/).length,
+      systemInsights: {
+        relatedProjects: [],
+        relevantTasks: [],
+        connectedPersonnel: [],
+        departmentContext: []
+      }
     }
   }
 }
 
-async function analyzeWithGoogleAI(content: string, fileName: string, fileType: string, apiKey: string) {
+async function analyzeWithGoogleAI(content: string, fileName: string, fileType: string, systemContext: any, apiKey: string) {
+  const contextPrompt = systemContext ? `
+  
+SYSTEM CONTEXT:
+You have access to the following system data for cross-referencing:
+- Projects: ${JSON.stringify(systemContext.projects?.slice(0, 10) || [])}
+- Tasks: ${JSON.stringify(systemContext.tasks?.slice(0, 10) || [])}
+- Departments: ${JSON.stringify(systemContext.departments || [])}
+- Profiles: ${JSON.stringify(systemContext.profiles?.slice(0, 10) || [])}
+
+Use this context to identify connections, relationships, and provide insights about how this document relates to existing system data.
+` : '';
+
   const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`, {
     method: 'POST',
     headers: {
@@ -134,12 +176,16 @@ async function analyzeWithGoogleAI(content: string, fileName: string, fileType: 
     body: JSON.stringify({
       contents: [{
         parts: [{
-          text: `Analyze this document (${fileName}, ${fileType}) and provide a JSON response with summary, keyPoints, suggestedActions, categories, sentiment, and wordCount:\n\n${content}`
+          text: `Analyze this document (${fileName}, ${fileType}) and provide a JSON response with summary, keyPoints, suggestedActions, categories, sentiment, wordCount, and systemInsights with connections to system data.
+          
+          ${contextPrompt}
+          
+          Document content:\n\n${content}`
         }]
       }],
       generationConfig: {
         temperature: 0.3,
-        maxOutputTokens: 2000
+        maxOutputTokens: 3000
       }
     })
   })
@@ -157,7 +203,13 @@ async function analyzeWithGoogleAI(content: string, fileName: string, fileType: 
       suggestedActions: ["Review the document"],
       categories: ["General"],
       sentiment: "neutral",
-      wordCount: content.split(/\s+/).length
+      wordCount: content.split(/\s+/).length,
+      systemInsights: {
+        relatedProjects: [],
+        relevantTasks: [],
+        connectedPersonnel: [],
+        departmentContext: []
+      }
     }
   }
 }
