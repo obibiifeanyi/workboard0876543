@@ -49,24 +49,43 @@
     --ring: 0 100% 51%;  /* Updated to match primary */
   }
 
+  * {
+    @apply border-border font-poppins;
+  }
+  
+  body {
+    @apply bg-background text-foreground font-poppins;
+  }
+
+  h1, h2, h3, h4, h5, h6, .heading {
+    @apply font-unica;
+  }
+
   .glass-card {
     @apply bg-black/10 dark:bg-white/5 backdrop-blur-lg 
-           border border-primary/20
+           border border-primary/20 shadow-soft
            hover:bg-black/20 dark:hover:bg-white/10
-           hover:border-primary/40
-           transition-all duration-200;
+           hover:border-primary/40 hover:shadow-medium
+           transition-all duration-300;
+  }
+
+  .enhanced-card {
+    @apply glass-card relative overflow-hidden
+           before:absolute before:inset-0 before:bg-gradient-to-r 
+           before:from-primary/5 before:via-transparent before:to-secondary/5 
+           before:opacity-0 hover:before:opacity-100 before:transition-opacity;
   }
 
   .chat-message {
     @apply max-w-[80%] p-4 rounded-xl backdrop-blur-lg
-           animate-fade-in;
+           animate-fade-in shadow-soft;
   }
 
   .ai-thinking {
     @apply flex items-center gap-4 p-4
            bg-secondary/10 dark:bg-secondary/5
            rounded-xl backdrop-blur-lg
-           animate-pulse;
+           animate-pulse shadow-soft;
   }
 
   .neo-glow {
@@ -81,8 +100,23 @@
 
   .neo-border {
     @apply border border-white/10 dark:border-white/5
-           shadow-lg hover:shadow-primary/5
+           shadow-medium hover:shadow-primary
            transition-all duration-300;
+  }
+
+  .interactive-card {
+    @apply transform transition-all duration-300 hover:scale-[1.02] 
+           hover:shadow-strong active:scale-[0.98];
+  }
+
+  .shimmer-effect {
+    @apply relative overflow-hidden;
+    &::after {
+      content: '';
+      @apply absolute top-0 left-0 w-full h-full
+             bg-gradient-to-r from-transparent via-white/20 to-transparent
+             transform -translate-x-full animate-shimmer;
+    }
   }
 
   /* Loader Animation Styles */
@@ -110,21 +144,9 @@
   }
 }
 
-@layer base {
-  * {
-    @apply border-border;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
-}
-
 @layer components {
   .card-enhanced {
-    @apply bg-black/10 border-none shadow-lg rounded-2xl 
-           hover:bg-black/20 transition-all duration-200
-           dark:bg-white/5 dark:hover:bg-white/10
-           dark:shadow-lg dark:shadow-white/5
+    @apply enhanced-card interactive-card
            p-6 relative overflow-hidden;
   }
 
@@ -141,11 +163,20 @@
   }
 
   .responsive-heading {
-    @apply text-xl sm:text-2xl lg:text-3xl font-bold;
+    @apply text-xl sm:text-2xl lg:text-3xl font-bold font-unica;
   }
 
   .responsive-container {
     @apply w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
   }
-}
 
+  .icon-hover {
+    @apply transition-all duration-200 hover:scale-110 hover:text-primary 
+           active:scale-95;
+  }
+
+  .button-enhanced {
+    @apply transition-all duration-200 hover:shadow-medium 
+           active:scale-95 relative overflow-hidden;
+  }
+}

@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -18,6 +19,10 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        'unica': ['Unica One', 'sans-serif'],
+        'poppins': ['Poppins', 'sans-serif'],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -102,6 +107,18 @@ export default {
           "0%, 100%": { opacity: "1", transform: "scale(1)" },
           "50%": { opacity: "0.7", transform: "scale(0.95)" },
         },
+        "float": {
+          "0%, 100%": { transform: "translateY(0px)" },
+          "50%": { transform: "translateY(-5px)" },
+        },
+        "shimmer": {
+          "0%": { transform: "translateX(-100%)" },
+          "100%": { transform: "translateX(100%)" },
+        },
+        "bounce-soft": {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-2px)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -113,6 +130,16 @@ export default {
         "pulse-beacon": "pulse-beacon 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
         "slide-in-bottom": "slide-in-bottom 0.3s ease-out",
         "logo-pulse": "logo-pulse 2s ease-in-out infinite",
+        "float": "float 3s ease-in-out infinite",
+        "shimmer": "shimmer 2s linear infinite",
+        "bounce-soft": "bounce-soft 1s ease-in-out infinite",
+      },
+      boxShadow: {
+        'soft': '0 2px 8px rgba(0, 0, 0, 0.08)',
+        'medium': '0 4px 12px rgba(0, 0, 0, 0.12)',
+        'strong': '0 8px 24px rgba(0, 0, 0, 0.16)',
+        'primary': '0 4px 20px rgba(255, 28, 4, 0.15)',
+        'secondary': '0 4px 20px rgba(15, 160, 206, 0.15)',
       },
     },
   },
