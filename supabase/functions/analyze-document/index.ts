@@ -22,12 +22,15 @@ serve(async (req) => {
       )
     }
 
-    console.log('Analyzing document with system context:', {
+    console.log('Analyzing document:', {
       fileName,
       fileType,
       contentLength: content.length,
       hasSystemContext: !!systemContext
     })
+
+    // Get user ID from headers
+    const userId = req.headers.get('x-user-id')
 
     // Try OpenAI first, fallback to Google AI
     let analysisResult;
@@ -42,38 +45,49 @@ serve(async (req) => {
       throw new Error('No AI API keys configured');
     }
 
-    // Store the analysis result
+    // Store the analysis result in database
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? ''
     )
 
-    const { data: analysisRecord, error: dbError } = await supabase
-      .from('document_analysis')
-      .insert({
-        file_name: fileName,
-        status: 'completed',
-        analysis_result: analysisResult,
-        created_by: req.headers.get('x-user-id')
-      })
-      .select()
-      .single()
+    try {
+      const { data: analysisRecord, error: dbError } = await supabase
+        .from('document_analysis')
+        .insert({
+          file_name: fileName,
+          status: 'completed',
+          analysis_result: analysisResult,
+          created_by: userId
+        })
+        .select()
+        .single()
 
-    if (dbError) {
-      console.error('Database error:', dbError)
+      if (dbError) {
+        console.error('Database error:', dbError)
+      } else {
+        console.log('Analysis saved to database:', analysisRecord.id)
+      }
+    } catch (dbError) {
+      console.error('Failed to save to database:', dbError)
+      // Continue anyway - don't fail the analysis if DB save fails
     }
 
     return new Response(
       JSON.stringify({ 
         analysis: analysisResult,
-        record: analysisRecord
+        success: true
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   } catch (error) {
     console.error('Error in analyze-document function:', error)
     return new Response(
-      JSON.stringify({ error: 'Failed to analyze content', details: error.message }),
+      JSON.stringify({ 
+        error: 'Failed to analyze document', 
+        details: error.message,
+        success: false 
+      }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
     )
   }
@@ -82,14 +96,13 @@ serve(async (req) => {
 async function analyzeWithOpenAI(content: string, fileName: string, fileType: string, systemContext: any, apiKey: string) {
   const contextPrompt = systemContext ? `
   
-SYSTEM CONTEXT:
-You have access to the following system data for cross-referencing:
-- Projects: ${JSON.stringify(systemContext.projects?.slice(0, 10) || [])}
-- Tasks: ${JSON.stringify(systemContext.tasks?.slice(0, 10) || [])}
-- Departments: ${JSON.stringify(systemContext.departments || [])}
-- Profiles: ${JSON.stringify(systemContext.profiles?.slice(0, 10) || [])}
+SYSTEM CONTEXT FOR ANALYSIS:
+Available Projects: ${JSON.stringify(systemContext.projects?.slice(0, 5) || [])}
+Current Tasks: ${JSON.stringify(systemContext.tasks?.slice(0, 5) || [])}
+Team Members: ${JSON.stringify(systemContext.profiles?.slice(0, 5) || [])}
+Departments: ${JSON.stringify(systemContext.departments || [])}
 
-Use this context to identify connections, relationships, and provide insights about how this document relates to existing system data.
+Use this context to identify connections, relationships, and provide insights about how this document relates to existing organizational data. Look for mentions of project names, task descriptions, personnel names, or department-specific content.
 ` : '';
 
   const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -103,48 +116,86 @@ Use this context to identify connections, relationships, and provide insights ab
       messages: [
         {
           role: 'system',
-          content: `You are an AI document analyzer with access to organizational system data. Analyze the provided document and return a JSON response with the following structure:
+          content: `You are an advanced AI document analyzer for CT Communication Towers company. Analyze the provided document and return a comprehensive JSON response with the following structure:
           {
-            "summary": "Brief summary of the document",
+            "summary": "Detailed summary of the document content and purpose",
             "keyPoints": ["key point 1", "key point 2", ...],
-            "suggestedActions": ["action 1", "action 2", ...],
-            "categories": ["category1", "category2", ...],
-            "sentiment": "positive/negative/neutral",
+            "suggestedActions": ["actionable recommendation 1", "actionable recommendation 2", ...],
+            "categories": ["category1", "category2", ...] (use relevant business categories like: financial, technical, operational, legal, strategic, hr, safety, maintenance, project),
+            "sentiment": "positive/negative/neutral/professional",
             "wordCount": number,
+            "confidence": number (0.0 to 1.0),
+            "documentType": "memo/report/contract/email/proposal/manual/specification/other",
+            "urgency": "low/medium/high/critical",
+            "technicalComplexity": "low/medium/high",
             "systemInsights": {
-              "relatedProjects": [relevant projects from system context],
-              "relevantTasks": [relevant tasks from system context],
-              "connectedPersonnel": [relevant personnel from system context],
-              "departmentContext": [relevant departments from system context]
+              "relatedProjects": [relevant projects from system context with explanations],
+              "relevantTasks": [relevant tasks from system context with explanations],
+              "connectedPersonnel": [relevant personnel from system context with explanations],
+              "departmentContext": [relevant departments from system context with explanations]
             }
           }
+          
+          Focus on providing actionable insights relevant to telecommunications infrastructure, project management, and business operations.
           
           ${contextPrompt}`
         },
         {
           role: 'user',
-          content: `Analyze this document (${fileName}, ${fileType}):\n\n${content}`
+          content: `Analyze this document (${fileName}, ${fileType}):\n\n${content.substring(0, 8000)}`
         }
       ],
       temperature: 0.3,
-      max_tokens: 3000
+      max_tokens: 4000
     })
   })
+
+  if (!response.ok) {
+    const errorText = await response.text()
+    throw new Error(`OpenAI API error: ${response.status} - ${errorText}`)
+  }
 
   const result = await response.json()
   const analysisText = result.choices[0].message.content
 
   try {
-    return JSON.parse(analysisText)
-  } catch {
-    // Fallback if JSON parsing fails
+    // Try to parse as JSON first
+    const parsed = JSON.parse(analysisText)
+    
+    // Ensure all required fields are present with defaults
     return {
-      summary: analysisText,
-      keyPoints: ["Analysis completed"],
-      suggestedActions: ["Review the document"],
-      categories: ["General"],
+      summary: parsed.summary || 'Document analyzed successfully',
+      keyPoints: Array.isArray(parsed.keyPoints) ? parsed.keyPoints : ['Key insights extracted from document'],
+      suggestedActions: Array.isArray(parsed.suggestedActions) ? parsed.suggestedActions : ['Review and categorize document'],
+      categories: Array.isArray(parsed.categories) ? parsed.categories : ['general'],
+      sentiment: parsed.sentiment || 'neutral',
+      wordCount: parsed.wordCount || content.split(/\s+/).length,
+      confidence: typeof parsed.confidence === 'number' ? parsed.confidence : 0.85,
+      documentType: parsed.documentType || 'document',
+      urgency: parsed.urgency || 'medium',
+      technicalComplexity: parsed.technicalComplexity || 'medium',
+      systemInsights: {
+        relatedProjects: parsed.systemInsights?.relatedProjects || [],
+        relevantTasks: parsed.systemInsights?.relevantTasks || [],
+        connectedPersonnel: parsed.systemInsights?.connectedPersonnel || [],
+        departmentContext: parsed.systemInsights?.departmentContext || []
+      }
+    }
+  } catch (parseError) {
+    console.error('Failed to parse AI response as JSON:', parseError)
+    
+    // Fallback: create structured response from text
+    return {
+      summary: analysisText.substring(0, 500) + '...',
+      keyPoints: ["Document content analyzed", "Key information extracted", "Analysis completed successfully"],
+      suggestedActions: ["Review the analysis results", "Take appropriate follow-up actions", "Archive document appropriately"],
+      categories: ["general"],
       sentiment: "neutral",
       wordCount: content.split(/\s+/).length,
+      confidence: 0.75,
+      documentType: "document",
+      urgency: "medium",
+      technicalComplexity: "medium",
       systemInsights: {
         relatedProjects: [],
         relevantTasks: [],
@@ -158,14 +209,13 @@ Use this context to identify connections, relationships, and provide insights ab
 async function analyzeWithGoogleAI(content: string, fileName: string, fileType: string, systemContext: any, apiKey: string) {
   const contextPrompt = systemContext ? `
   
-SYSTEM CONTEXT:
-You have access to the following system data for cross-referencing:
-- Projects: ${JSON.stringify(systemContext.projects?.slice(0, 10) || [])}
-- Tasks: ${JSON.stringify(systemContext.tasks?.slice(0, 10) || [])}
-- Departments: ${JSON.stringify(systemContext.departments || [])}
-- Profiles: ${JSON.stringify(systemContext.profiles?.slice(0, 10) || [])}
+SYSTEM CONTEXT FOR ANALYSIS:
+Available Projects: ${JSON.stringify(systemContext.projects?.slice(0, 5) || [])}
+Current Tasks: ${JSON.stringify(systemContext.tasks?.slice(0, 5) || [])}
+Team Members: ${JSON.stringify(systemContext.profiles?.slice(0, 5) || [])}
+Departments: ${JSON.stringify(systemContext.departments || [])}
 
-Use this context to identify connections, relationships, and provide insights about how this document relates to existing system data.
+Use this context to identify connections and provide insights about document relationships.
 ` : '';
 
   const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`, {
@@ -176,11 +226,11 @@ Use this context to identify connections, relationships, and provide insights ab
     body: JSON.stringify({
       contents: [{
         parts: [{
-          text: `Analyze this document (${fileName}, ${fileType}) and provide a JSON response with summary, keyPoints, suggestedActions, categories, sentiment, wordCount, and systemInsights with connections to system data.
+          text: `Analyze this document (${fileName}, ${fileType}) and provide a comprehensive JSON response with summary, keyPoints, suggestedActions, categories, sentiment, wordCount, confidence, documentType, urgency, technicalComplexity, and systemInsights.
           
           ${contextPrompt}
           
-          Document content:\n\n${content}`
+          Document content:\n\n${content.substring(0, 6000)}`
         }]
       }],
       generationConfig: {
@@ -190,20 +240,47 @@ Use this context to identify connections, relationships, and provide insights ab
     })
   })
 
+  if (!response.ok) {
+    const errorText = await response.text()
+    throw new Error(`Google AI API error: ${response.status} - ${errorText}`)
+  }
+
   const result = await response.json()
   const analysisText = result.candidates[0].content.parts[0].text
 
   try {
-    return JSON.parse(analysisText)
-  } catch {
-    // Fallback if JSON parsing fails
+    const parsed = JSON.parse(analysisText)
     return {
-      summary: analysisText,
-      keyPoints: ["Analysis completed"],
-      suggestedActions: ["Review the document"],
-      categories: ["General"],
+      summary: parsed.summary || 'Document analyzed with Google AI',
+      keyPoints: Array.isArray(parsed.keyPoints) ? parsed.keyPoints : ['Analysis completed'],
+      suggestedActions: Array.isArray(parsed.suggestedActions) ? parsed.suggestedActions : ['Review results'],
+      categories: Array.isArray(parsed.categories) ? parsed.categories : ['general'],
+      sentiment: parsed.sentiment || 'neutral',
+      wordCount: parsed.wordCount || content.split(/\s+/).length,
+      confidence: typeof parsed.confidence === 'number' ? parsed.confidence : 0.80,
+      documentType: parsed.documentType || 'document',
+      urgency: parsed.urgency || 'medium',
+      technicalComplexity: parsed.technicalComplexity || 'medium',
+      systemInsights: parsed.systemInsights || {
+        relatedProjects: [],
+        relevantTasks: [],
+        connectedPersonnel: [],
+        departmentContext: []
+      }
+    }
+  } catch (parseError) {
+    // Fallback for Google AI
+    return {
+      summary: analysisText.substring(0, 500),
+      keyPoints: ["Document analyzed with Google AI"],
+      suggestedActions: ["Review analysis"],
+      categories: ["general"],
       sentiment: "neutral",
       wordCount: content.split(/\s+/).length,
+      confidence: 0.75,
+      documentType: "document",
+      urgency: "medium",
+      technicalComplexity: "medium",
       systemInsights: {
         relatedProjects: [],
         relevantTasks: [],

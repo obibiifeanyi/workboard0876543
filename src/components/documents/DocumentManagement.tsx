@@ -1,244 +1,245 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { FileText, Upload, Download, Eye, Search, FolderPlus, Folder } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { Search, FileText, Download, Eye, Brain, Calendar, User } from "lucide-react";
+import { DocumentAnalytics } from "./DocumentAnalytics";
 import { DocumentUploadForm } from "./DocumentUploadForm";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-
-interface Document {
-  id: string;
-  title: string;
-  description?: string;
-  file_name: string;
-  file_type: string;
-  file_size?: number;
-  category: string;
-  access_level: string;
-  status: string;
-  uploaded_by: string;
-  created_at: string;
-}
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AIDocumentAnalyzer } from "@/components/ai/AIDocumentAnalyzer";
 
 export const DocumentManagement = () => {
-  const [documents, setDocuments] = useState<Document[]>([]);
-  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedDepartment, setSelectedDepartment] = useState("all");
-  const [selectedCategory, setSelectedCategory] = useState("all");
-  const [isUploadOpen, setIsUploadOpen] = useState(false);
-  const { toast } = useToast();
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
 
-  useEffect(() => {
-    fetchDocuments();
-  }, []);
-
-  const fetchDocuments = async () => {
-    try {
+  const { data: documents, isLoading: documentsLoading } = useQuery({
+    queryKey: ['documents'],
+    queryFn: async () => {
       const { data, error } = await supabase
         .from('documents')
-        .select('*')
-        .eq('status', 'active')
+        .select(`
+          *,
+          profiles!documents_uploaded_by_fkey(full_name)
+        `)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setDocuments(data || []);
-    } catch (error) {
-      console.error('Error fetching documents:', error);
-      toast({
-        title: "Error",
-        description: "Failed to fetch documents",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const filteredDocuments = documents.filter(doc => {
-    const matchesSearch = doc.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      doc.description?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesDepartment = selectedDepartment === "all" || doc.category === selectedDepartment;
-    const matchesCategory = selectedCategory === "all" || doc.category === selectedCategory;
-    
-    return matchesSearch && matchesDepartment && matchesCategory;
+      return data;
+    },
   });
 
-  const formatFileSize = (bytes?: number) => {
-    if (!bytes) return 'Unknown';
+  const { data: analyses } = useQuery({
+    queryKey: ['document-analyses'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('document_analysis')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const filteredDocuments = documents?.filter(doc => {
+    const matchesSearch = doc.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         doc.file_name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = selectedCategory === "all" || doc.category === selectedCategory;
+    return matchesSearch && matchesCategory;
+  }) || [];
+
+  const categories = Array.from(new Set(documents?.map(doc => doc.category).filter(Boolean))) || [];
+
+  const getAnalysisForDocument = (fileName: string) => {
+    return analyses?.find(analysis => analysis.file_name === fileName);
+  };
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(1024));
-    return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active': return 'bg-green-500';
-      case 'archived': return 'bg-yellow-500';
-      case 'deleted': return 'bg-red-500';
-      default: return 'bg-gray-500';
+      case 'completed': return 'bg-green-100 text-green-800 border-green-200';
+      case 'pending': return 'bg-orange-100 text-orange-800 border-orange-200';
+      case 'error': return 'bg-red-100 text-red-800 border-red-200';
+      default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
-
-  const getCategoryColor = (category: string) => {
-    switch (category) {
-      case 'project': return 'bg-blue-500';
-      case 'financial': return 'bg-green-500';
-      case 'hr': return 'bg-purple-500';
-      case 'technical': return 'bg-orange-500';
-      case 'legal': return 'bg-red-500';
-      default: return 'bg-gray-500';
-    }
-  };
-
-  const departments = ["all", "general", "project", "financial", "hr", "technical", "legal"];
-  const categories = ["all", "general", "project", "financial", "hr", "technical", "legal"];
-
-  if (loading) {
-    return <div className="flex justify-center p-8">Loading documents...</div>;
-  }
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-2xl font-bold">Document Management</h2>
-          <p className="text-muted-foreground">Organize documents by department and category</p>
-        </div>
-        
-        <Dialog open={isUploadOpen} onOpenChange={setIsUploadOpen}>
-          <DialogTrigger asChild>
-            <Button className="rounded-[30px]">
-              <Upload className="h-4 w-4 mr-2" />
-              Upload Document
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>Upload New Document</DialogTitle>
-            </DialogHeader>
-            <DocumentUploadForm 
-              onSuccess={() => {
-                setIsUploadOpen(false);
-                fetchDocuments();
-              }} 
-            />
-          </DialogContent>
-        </Dialog>
-      </div>
+      <Tabs defaultValue="documents" className="w-full">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="documents">Documents</TabsTrigger>
+          <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          <TabsTrigger value="ai-analyzer">AI Analyzer</TabsTrigger>
+          <TabsTrigger value="upload">Upload</TabsTrigger>
+        </TabsList>
 
-      <div className="flex flex-wrap items-center gap-4">
-        <div className="relative flex-1 min-w-[200px]">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-          <Input
-            placeholder="Search documents..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 rounded-[30px]"
-          />
-        </div>
-        
-        <Select value={selectedDepartment} onValueChange={setSelectedDepartment}>
-          <SelectTrigger className="w-[180px] rounded-[30px]">
-            <Folder className="h-4 w-4 mr-2" />
-            <SelectValue placeholder="Department" />
-          </SelectTrigger>
-          <SelectContent>
-            {departments.map((dept) => (
-              <SelectItem key={dept} value={dept}>
-                {dept === "all" ? "All Departments" : dept.charAt(0).toUpperCase() + dept.slice(1)}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-          <SelectTrigger className="w-[180px] rounded-[30px]">
-            <FolderPlus className="h-4 w-4 mr-2" />
-            <SelectValue placeholder="Category" />
-          </SelectTrigger>
-          <SelectContent>
-            {categories.map((cat) => (
-              <SelectItem key={cat} value={cat}>
-                {cat === "all" ? "All Categories" : cat.charAt(0).toUpperCase() + cat.slice(1)}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {filteredDocuments.map((doc) => (
-          <Card key={doc.id} className="hover:shadow-lg transition-shadow">
-            <CardHeader className="pb-3">
-              <div className="flex items-start justify-between">
-                <FileText className="h-8 w-8 text-primary" />
+        <TabsContent value="documents" className="space-y-6">
+          {/* Search and Filters */}
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex flex-col md:flex-row gap-4">
+                <div className="flex-1">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                    <Input
+                      placeholder="Search documents..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+                </div>
                 <div className="flex gap-2">
-                  <Badge className={`${getCategoryColor(doc.category)} text-white`}>
-                    {doc.category}
-                  </Badge>
-                  <Badge className={`${getStatusColor(doc.status)} text-white`}>
-                    {doc.status}
-                  </Badge>
-                </div>
-              </div>
-              <CardTitle className="text-lg">{doc.title}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {doc.description && (
-                  <p className="text-sm text-muted-foreground line-clamp-2">
-                    {doc.description}
-                  </p>
-                )}
-                
-                <div className="text-sm space-y-1">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">File:</span>
-                    <span>{doc.file_name}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Size:</span>
-                    <span>{formatFileSize(doc.file_size)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Type:</span>
-                    <span>{doc.file_type}</span>
-                  </div>
-                </div>
-
-                <div className="flex gap-2 pt-2">
-                  <Button variant="outline" size="sm" className="rounded-[30px] flex-1">
-                    <Eye className="h-4 w-4 mr-1" />
-                    View
+                  <Button
+                    variant={selectedCategory === "all" ? "default" : "outline"}
+                    onClick={() => setSelectedCategory("all")}
+                    size="sm"
+                  >
+                    All
                   </Button>
-                  <Button variant="outline" size="sm" className="rounded-[30px] flex-1">
-                    <Download className="h-4 w-4 mr-1" />
-                    Download
-                  </Button>
+                  {categories.map((category) => (
+                    <Button
+                      key={category}
+                      variant={selectedCategory === category ? "default" : "outline"}
+                      onClick={() => setSelectedCategory(category)}
+                      size="sm"
+                    >
+                      {category.charAt(0).toUpperCase() + category.slice(1)}
+                    </Button>
+                  ))}
                 </div>
               </div>
             </CardContent>
           </Card>
-        ))}
-      </div>
 
-      {filteredDocuments.length === 0 && (
-        <div className="text-center py-12">
-          <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <h3 className="text-lg font-medium">No documents found</h3>
-          <p className="text-muted-foreground">
-            {searchTerm || selectedDepartment !== "all" || selectedCategory !== "all" 
-              ? "Try adjusting your search or filters" 
-              : "Upload your first document to get started"}
-          </p>
-        </div>
-      )}
+          {/* Documents List */}
+          <div className="grid gap-4">
+            {documentsLoading ? (
+              <div className="grid gap-4">
+                {[1, 2, 3].map((i) => (
+                  <Card key={i} className="animate-pulse">
+                    <CardContent className="p-6">
+                      <div className="h-20 bg-muted rounded"></div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : filteredDocuments.length === 0 ? (
+              <Card>
+                <CardContent className="p-12 text-center">
+                  <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">No documents found</h3>
+                  <p className="text-muted-foreground">
+                    {searchTerm ? "Try adjusting your search terms" : "Upload your first document to get started"}
+                  </p>
+                </CardContent>
+              </Card>
+            ) : (
+              filteredDocuments.map((document) => {
+                const analysis = getAnalysisForDocument(document.file_name);
+                return (
+                  <Card key={document.id} className="hover:shadow-md transition-shadow">
+                    <CardContent className="p-6">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1 space-y-3">
+                          <div className="flex items-start gap-3">
+                            <FileText className="h-5 w-5 text-primary mt-1" />
+                            <div className="flex-1">
+                              <h3 className="font-semibold text-lg">{document.title}</h3>
+                              <p className="text-sm text-muted-foreground">{document.description}</p>
+                              <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
+                                <div className="flex items-center gap-1">
+                                  <User className="h-3 w-3" />
+                                  {document.profiles?.full_name || 'Unknown'}
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <Calendar className="h-3 w-3" />
+                                  {new Date(document.created_at).toLocaleDateString()}
+                                </div>
+                                <span>{formatFileSize(document.file_size || 0)}</span>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="flex flex-wrap items-center gap-2">
+                            <Badge variant="secondary">{document.category}</Badge>
+                            <Badge variant={document.status === 'active' ? 'default' : 'secondary'}>
+                              {document.status}
+                            </Badge>
+                            <Badge variant="outline">{document.file_type}</Badge>
+                            {document.tags?.map((tag, index) => (
+                              <Badge key={index} variant="outline" className="text-xs">
+                                {tag}
+                              </Badge>
+                            ))}
+                          </div>
+
+                          {/* AI Analysis Status */}
+                          {analysis && (
+                            <div className="flex items-center gap-2 p-2 bg-muted/50 rounded-lg">
+                              <Brain className="h-4 w-4 text-primary" />
+                              <span className="text-sm font-medium">AI Analysis:</span>
+                              <Badge className={getStatusColor(analysis.status)}>
+                                {analysis.status.charAt(0).toUpperCase() + analysis.status.slice(1)}
+                              </Badge>
+                              {analysis.status === 'completed' && analysis.analysis_result?.confidence && (
+                                <span className="text-xs text-muted-foreground">
+                                  {(analysis.analysis_result.confidence * 100).toFixed(1)}% confidence
+                                </span>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                        
+                        <div className="flex gap-2 ml-4">
+                          <Button size="sm" variant="outline">
+                            <Eye className="h-4 w-4 mr-1" />
+                            View
+                          </Button>
+                          <Button size="sm" variant="outline">
+                            <Download className="h-4 w-4 mr-1" />
+                            Download
+                          </Button>
+                          {!analysis && (
+                            <Button size="sm" variant="outline">
+                              <Brain className="h-4 w-4 mr-1" />
+                              Analyze
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })
+            )}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="analytics">
+          <DocumentAnalytics />
+        </TabsContent>
+
+        <TabsContent value="ai-analyzer">
+          <AIDocumentAnalyzer />
+        </TabsContent>
+
+        <TabsContent value="upload">
+          <DocumentUploadForm />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
