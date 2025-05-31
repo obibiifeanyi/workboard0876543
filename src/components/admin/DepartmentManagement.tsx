@@ -24,6 +24,9 @@ interface Department {
   manager_id?: string;
   employee_count?: number;
   created_at: string;
+  manager?: {
+    full_name: string;
+  };
 }
 
 interface User {
@@ -52,7 +55,10 @@ export const DepartmentManagement = () => {
     try {
       const { data, error } = await supabase
         .from('departments')
-        .select('*, profiles:manager_id(full_name)')
+        .select(`
+          *,
+          manager:profiles!manager_id(full_name)
+        `)
         .order('name', { ascending: true });
 
       if (error) throw error;
@@ -299,7 +305,7 @@ export const DepartmentManagement = () => {
                     <TableCell className="font-medium">{dept.name}</TableCell>
                     <TableCell className="max-w-xs truncate">{dept.description || "No description"}</TableCell>
                     <TableCell>
-                      {dept.profiles?.full_name || "Unassigned"}
+                      {dept.manager?.full_name || "Unassigned"}
                     </TableCell>
                     <TableCell>
                       <Badge variant="outline" className="flex items-center gap-1 w-fit">
