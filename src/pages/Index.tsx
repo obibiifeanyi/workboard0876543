@@ -1,3 +1,4 @@
+
 import { ClockInButton } from "@/components/ClockInButton";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 import { Card } from "@/components/ui/card";
@@ -12,30 +13,32 @@ const Index = () => {
   const navigate = useNavigate();
 
   const redirectUserBasedOnRole = (role: string, accountType: string) => {
-    console.log('Redirecting user based on role:', role, 'accountType:', accountType);
+    console.log('Index: Redirecting user based on role:', role, 'accountType:', accountType);
     
-    // Redirect based on account type first, then role
     if (accountType === 'accountant') {
       navigate('/accountant');
+    } else if (accountType === 'hr' || role === 'hr') {
+      navigate('/hr');
     } else if (accountType === 'admin' || role === 'admin') {
       navigate('/admin');
     } else if (accountType === 'manager' || role === 'manager') {
       navigate('/manager');
     } else {
-      // Default to staff for any other account type or role
       navigate('/staff');
     }
   };
 
   useEffect(() => {
+    let mounted = true;
+
     const checkAuthAndRedirect = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         
-        if (session?.user) {
-          console.log('User is logged in, checking role...');
+        if (session?.user && mounted) {
+          console.log('Index: User is logged in, checking role...');
           
-          // Check if we have stored role info
+          // Check stored credentials first
           const storedRole = localStorage.getItem('userRole');
           const storedAccountType = localStorage.getItem('accountType');
           
@@ -45,37 +48,53 @@ const Index = () => {
           }
           
           // Fetch from database if not stored
-          const { data: profile, error } = await supabase
-            .from('profiles')
-            .select('role, account_type')
-            .eq('id', session.user.id)
-            .maybeSingle();
+          try {
+            const { data: profile, error } = await supabase
+              .from('profiles')
+              .select('role, account_type')
+              .eq('id', session.user.id)
+              .maybeSingle();
 
-          if (!error && profile) {
-            const role = profile.role || 'staff';
-            const accountType = profile.account_type || 'staff';
-            
-            localStorage.setItem('userRole', role);
-            localStorage.setItem('accountType', accountType);
-            
-            redirectUserBasedOnRole(role, accountType);
-          } else {
-            // Default to staff if profile fetch fails
-            navigate('/staff');
+            if (!error && profile && mounted) {
+              const role = profile.role || 'staff';
+              const accountType = profile.account_type || 'staff';
+              
+              localStorage.setItem('userRole', role);
+              localStorage.setItem('accountType', accountType);
+              
+              redirectUserBasedOnRole(role, accountType);
+            } else if (mounted) {
+              navigate('/staff');
+            }
+          } catch (error) {
+            console.error('Index: Profile fetch error:', error);
+            if (mounted) {
+              navigate('/staff');
+            }
           }
         }
       } catch (error) {
-        console.error('Error checking auth:', error);
+        console.error('Index: Error checking auth:', error);
       } finally {
-        setIsLoading(false);
+        if (mounted) {
+          setIsLoading(false);
+        }
       }
     };
 
-    const timer = setTimeout(() => {
-      checkAuthAndRedirect();
+    // Add a timeout to prevent infinite loading
+    const loadingTimeout = setTimeout(() => {
+      if (mounted) {
+        setIsLoading(false);
+      }
     }, 2000);
 
-    return () => clearTimeout(timer);
+    checkAuthAndRedirect();
+
+    return () => {
+      mounted = false;
+      clearTimeout(loadingTimeout);
+    };
   }, [navigate]);
 
   if (isLoading) {
@@ -83,6 +102,7 @@ const Index = () => {
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center space-y-4">
           <Loader className="h-8 w-8 animate-spin text-primary mx-auto" />
+          <p className="text-muted-foreground">Loading...</p>
         </div>
       </div>
     );

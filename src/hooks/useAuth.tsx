@@ -21,111 +21,154 @@ export const useAuth = () => {
   const redirectUserBasedOnRole = (role: string, accountType: string) => {
     console.log('Redirecting user based on role:', role, 'accountType:', accountType);
     
-    // Redirect based on account type first, then role
     if (accountType === 'accountant') {
       navigate('/accountant');
+    } else if (accountType === 'hr' || role === 'hr') {
+      navigate('/hr');
     } else if (accountType === 'admin' || role === 'admin') {
       navigate('/admin');
     } else if (accountType === 'manager' || role === 'manager') {
       navigate('/manager');
     } else {
-      // Default to staff for any other account type or role
       navigate('/staff');
     }
   };
 
   useEffect(() => {
+    let mounted = true;
+
+    const getInitialSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('Session error:', error);
+          if (mounted) {
+            setLoading(false);
+          }
+          return;
+        }
+
+        if (session?.user && mounted) {
+          setUser(session.user);
+          
+          // Try to get profile data
+          try {
+            const { data: profileData, error: profileError } = await supabase
+              .from('profiles')
+              .select('id, role, account_type, full_name, email')
+              .eq('id', session.user.id)
+              .maybeSingle();
+
+            if (mounted) {
+              if (!profileError && profileData) {
+                setProfile(profileData);
+                localStorage.setItem('userRole', profileData.role || 'staff');
+                localStorage.setItem('accountType', profileData.account_type || 'staff');
+              } else {
+                // Set defaults if profile not found
+                const defaultProfile = {
+                  id: session.user.id,
+                  role: 'staff',
+                  account_type: 'staff',
+                  full_name: null,
+                  email: session.user.email || null,
+                };
+                setProfile(defaultProfile);
+                localStorage.setItem('userRole', 'staff');
+                localStorage.setItem('accountType', 'staff');
+              }
+            }
+          } catch (error) {
+            console.error('Profile fetch error:', error);
+            if (mounted) {
+              const defaultProfile = {
+                id: session.user.id,
+                role: 'staff',
+                account_type: 'staff',
+                full_name: null,
+                email: session.user.email || null,
+              };
+              setProfile(defaultProfile);
+              localStorage.setItem('userRole', 'staff');
+              localStorage.setItem('accountType', 'staff');
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Initial session error:', error);
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log('Auth state change:', event, session?.user?.id);
         
+        if (!mounted) return;
+
         if (session?.user) {
           setUser(session.user);
           
-          // Defer profile fetch to avoid blocking auth state change
-          setTimeout(async () => {
-            try {
-              const { data: profileData, error } = await supabase
-                .from('profiles')
-                .select('id, role, account_type, full_name, email')
-                .eq('id', session.user.id)
-                .maybeSingle();
+          // Don't fetch profile again if we already have it for this user
+          if (profile?.id === session.user.id) {
+            setLoading(false);
+            return;
+          }
 
-              if (error) {
-                console.error('Error fetching profile:', error);
-                // Profile should exist due to trigger, but set defaults if not
-                const defaultRole = 'staff';
-                const defaultAccountType = 'staff';
-                setProfile({
+          try {
+            const { data: profileData, error } = await supabase
+              .from('profiles')
+              .select('id, role, account_type, full_name, email')
+              .eq('id', session.user.id)
+              .maybeSingle();
+
+            if (mounted) {
+              if (!error && profileData) {
+                setProfile(profileData);
+                localStorage.setItem('userRole', profileData.role || 'staff');
+                localStorage.setItem('accountType', profileData.account_type || 'staff');
+              } else {
+                const defaultProfile = {
                   id: session.user.id,
-                  role: defaultRole,
-                  account_type: defaultAccountType,
+                  role: 'staff',
+                  account_type: 'staff',
                   full_name: null,
                   email: session.user.email || null,
-                });
-                localStorage.setItem('userRole', defaultRole);
-                localStorage.setItem('accountType', defaultAccountType);
-                redirectUserBasedOnRole(defaultRole, defaultAccountType);
-                return;
+                };
+                setProfile(defaultProfile);
+                localStorage.setItem('userRole', 'staff');
+                localStorage.setItem('accountType', 'staff');
               }
-
-              if (profileData) {
-                console.log('Profile loaded:', profileData);
-                const userRole = profileData.role || 'staff';
-                const accountType = profileData.account_type || profileData.role || 'staff';
-                
-                setProfile(profileData);
-                localStorage.setItem('userRole', userRole);
-                localStorage.setItem('accountType', accountType);
-                
-                // Only redirect if user is not already on the correct dashboard
-                const currentPath = window.location.pathname;
-                const targetPath = accountType === 'accountant' ? '/accountant' : 
-                                  userRole === 'admin' ? '/admin' :
-                                  userRole === 'manager' ? '/manager' : '/staff';
-                
-                if (!currentPath.startsWith(targetPath)) {
-                  redirectUserBasedOnRole(userRole, accountType);
-                }
-              }
-            } catch (error) {
-              console.error('Error fetching profile:', error);
-              const defaultRole = 'staff';
-              const defaultAccountType = 'staff';
-              setProfile({
-                id: session.user.id,
-                role: defaultRole,
-                account_type: defaultAccountType,
-                full_name: null,
-                email: session.user.email || null,
-              });
-              localStorage.setItem('userRole', defaultRole);
-              localStorage.setItem('accountType', defaultAccountType);
-              redirectUserBasedOnRole(defaultRole, defaultAccountType);
             }
-          }, 0);
+          } catch (error) {
+            console.error('Auth state profile error:', error);
+          }
         } else {
           setUser(null);
           setProfile(null);
           localStorage.removeItem('userRole');
           localStorage.removeItem('accountType');
         }
-        setLoading(false);
+        
+        if (mounted) {
+          setLoading(false);
+        }
       }
     );
 
-    // Initial session check
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        setUser(session.user);
-      }
-      setLoading(false);
-    });
+    // Get initial session
+    getInitialSession();
 
     return () => {
+      mounted = false;
       subscription.unsubscribe();
     };
-  }, [navigate]);
+  }, []);
 
   const signOut = async () => {
     try {
