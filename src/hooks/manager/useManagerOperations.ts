@@ -20,6 +20,11 @@ export interface Department {
   description: string | null;
   manager_id: string | null;
   employee_count?: number;
+  created_at: string;
+  updated_at: string;
+  manager?: {
+    full_name: string;
+  };
 }
 
 export interface ProjectWithMembers {
@@ -29,6 +34,7 @@ export interface ProjectWithMembers {
   department_id: string;
   manager_id: string | null;
   status: string;
+  priority?: string;
   start_date: string | null;
   end_date: string | null;
   budget: number;

@@ -29,7 +29,6 @@ export const ProjectManagement = () => {
     description: "",
     department_id: "",
     status: "planning",
-    priority: "medium",
     start_date: "",
     end_date: "",
     budget: "",
@@ -48,7 +47,6 @@ export const ProjectManagement = () => {
       description: "",
       department_id: "",
       status: "planning",
-      priority: "medium",
       start_date: "",
       end_date: "",
       budget: "",
@@ -67,15 +65,6 @@ export const ProjectManagement = () => {
       case "on_hold": return "bg-yellow-100 text-yellow-800";
       case "completed": return "bg-purple-100 text-purple-800";
       case "cancelled": return "bg-red-100 text-red-800";
-      default: return "bg-gray-100 text-gray-800";
-    }
-  };
-
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case "high": return "bg-red-100 text-red-800";
-      case "medium": return "bg-yellow-100 text-yellow-800";
-      case "low": return "bg-green-100 text-green-800";
       default: return "bg-gray-100 text-gray-800";
     }
   };
@@ -162,23 +151,6 @@ export const ProjectManagement = () => {
                     </SelectContent>
                   </Select>
                 </div>
-                
-                <div>
-                  <Label htmlFor="priority">Priority</Label>
-                  <Select
-                    value={formData.priority}
-                    onValueChange={(value) => setFormData({ ...formData, priority: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="low">Low</SelectItem>
-                      <SelectItem value="medium">Medium</SelectItem>
-                      <SelectItem value="high">High</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
 
                 <div>
                   <Label htmlFor="budget">Budget</Label>
@@ -238,9 +210,6 @@ export const ProjectManagement = () => {
                 <div className="flex gap-2">
                   <Badge className={getStatusColor(project.status || "planning")}>
                     {project.status}
-                  </Badge>
-                  <Badge className={getPriorityColor(project.priority || "medium")}>
-                    {project.priority}
                   </Badge>
                 </div>
               </div>
