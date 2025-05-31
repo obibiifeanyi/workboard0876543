@@ -86,6 +86,27 @@ export const AIDocumentAnalyzer = () => {
         throw new Error("User not authenticated");
       }
 
+      const mockResult: AnalysisResult = {
+        summary: `Analysis of ${selectedFile ? selectedFile.name : 'provided text'}: This document appears to contain business-related content relevant to CT Communication Towers operations.`,
+        keyPoints: [
+          "Document contains structured information",
+          "Professional language and terminology detected",
+          "Relevant to telecommunications industry",
+          "Contains actionable items or requirements"
+        ],
+        recommendations: [
+          "Review and categorize document appropriately",
+          "Share with relevant team members",
+          "Follow up on any action items mentioned",
+          "Archive in appropriate document management system"
+        ],
+        sentiment: "Professional",
+        confidence: 0.87
+      };
+
+      // Convert to JSON-compatible format for database storage
+      const jsonResult = JSON.parse(JSON.stringify(mockResult));
+
       const { data, error } = await supabase
         .from('document_analysis')
         .insert({
@@ -100,30 +121,12 @@ export const AIDocumentAnalyzer = () => {
 
       // Simulate AI analysis (replace with actual AI service)
       setTimeout(async () => {
-        const mockResult: AnalysisResult = {
-          summary: `Analysis of ${selectedFile ? selectedFile.name : 'provided text'}: This document appears to contain business-related content relevant to CT Communication Towers operations.`,
-          keyPoints: [
-            "Document contains structured information",
-            "Professional language and terminology detected",
-            "Relevant to telecommunications industry",
-            "Contains actionable items or requirements"
-          ],
-          recommendations: [
-            "Review and categorize document appropriately",
-            "Share with relevant team members",
-            "Follow up on any action items mentioned",
-            "Archive in appropriate document management system"
-          ],
-          sentiment: "Professional",
-          confidence: 0.87
-        };
-
         // Update database with results
         await supabase
           .from('document_analysis')
           .update({
             status: 'completed',
-            analysis_result: mockResult,
+            analysis_result: jsonResult,
           })
           .eq('id', data.id);
 
@@ -176,6 +179,7 @@ export const AIDocumentAnalyzer = () => {
                     accept=".pdf,.doc,.docx,.txt"
                     className="rounded-[30px]"
                     disabled={isAnalyzing}
+                    placeholder="Select a document to analyze..."
                   />
                   {selectedFile && (
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">

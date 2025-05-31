@@ -26,10 +26,13 @@ export const useNotifications = () => {
 
     const fetchNotifications = async () => {
       try {
+        const { data: user } = await supabase.auth.getUser();
+        if (!user.user) return;
+
         const { data, error } = await supabase
           .from('notifications')
           .select('*')
-          .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
+          .eq('user_id', user.user.id)
           .order('created_at', { ascending: false })
           .limit(50);
 
@@ -39,8 +42,21 @@ export const useNotifications = () => {
         }
 
         if (mounted && data) {
-          setNotifications(data);
-          setUnreadCount(data.filter(n => !n.is_read).length);
+          // Map database notifications to our interface, ensuring type safety
+          const mappedNotifications: Notification[] = data.map(notification => ({
+            id: notification.id,
+            title: notification.title,
+            message: notification.message,
+            type: mapNotificationType(notification.type),
+            category: mapNotificationCategory(notification.category),
+            priority: mapNotificationPriority(notification.priority),
+            is_read: notification.is_read,
+            action_url: notification.action_url,
+            created_at: notification.created_at,
+          }));
+
+          setNotifications(mappedNotifications);
+          setUnreadCount(mappedNotifications.filter(n => !n.is_read).length);
         }
       } catch (error) {
         console.error('Notification fetch error:', error);
@@ -48,6 +64,45 @@ export const useNotifications = () => {
         if (mounted) {
           setLoading(false);
         }
+      }
+    };
+
+    // Helper functions to ensure type safety
+    const mapNotificationType = (type: string): "info" | "success" | "warning" | "error" => {
+      switch (type) {
+        case 'success':
+        case 'warning':
+        case 'error':
+        case 'info':
+          return type;
+        default:
+          return 'info';
+      }
+    };
+
+    const mapNotificationCategory = (category: string): "general" | "memo" | "task" | "leave" | "document" | "system" => {
+      switch (category) {
+        case 'memo':
+        case 'task':
+        case 'leave':
+        case 'document':
+        case 'system':
+        case 'general':
+          return category;
+        default:
+          return 'general';
+      }
+    };
+
+    const mapNotificationPriority = (priority: string): "low" | "normal" | "high" | "urgent" => {
+      switch (priority) {
+        case 'low':
+        case 'high':
+        case 'urgent':
+        case 'normal':
+          return priority;
+        default:
+          return 'normal';
       }
     };
 
@@ -62,25 +117,49 @@ export const useNotifications = () => {
           event: '*',
           schema: 'public',
           table: 'notifications',
-          filter: `user_id=eq.${supabase.auth.getUser().then(u => u.data.user?.id)}`,
         },
         (payload) => {
           console.log('Real-time notification update:', payload);
           
           if (payload.eventType === 'INSERT') {
-            const newNotification = payload.new as Notification;
-            setNotifications(prev => [newNotification, ...prev]);
+            const newNotification = payload.new as any;
+            const mappedNotification: Notification = {
+              id: newNotification.id,
+              title: newNotification.title,
+              message: newNotification.message,
+              type: mapNotificationType(newNotification.type),
+              category: mapNotificationCategory(newNotification.category),
+              priority: mapNotificationPriority(newNotification.priority),
+              is_read: newNotification.is_read,
+              action_url: newNotification.action_url,
+              created_at: newNotification.created_at,
+            };
+
+            setNotifications(prev => [mappedNotification, ...prev]);
             setUnreadCount(prev => prev + 1);
             
             // Show toast for new notification
             toast({
-              title: newNotification.title,
-              description: newNotification.message,
-              variant: newNotification.type === 'error' ? 'destructive' : 'default',
+              title: mappedNotification.title,
+              description: mappedNotification.message,
+              variant: mappedNotification.type === 'error' ? 'destructive' : 'default',
             });
           } else if (payload.eventType === 'UPDATE') {
+            const updatedNotification = payload.new as any;
+            const mappedNotification: Notification = {
+              id: updatedNotification.id,
+              title: updatedNotification.title,
+              message: updatedNotification.message,
+              type: mapNotificationType(updatedNotification.type),
+              category: mapNotificationCategory(updatedNotification.category),
+              priority: mapNotificationPriority(updatedNotification.priority),
+              is_read: updatedNotification.is_read,
+              action_url: updatedNotification.action_url,
+              created_at: updatedNotification.created_at,
+            };
+
             setNotifications(prev => 
-              prev.map(n => n.id === payload.new.id ? payload.new as Notification : n)
+              prev.map(n => n.id === mappedNotification.id ? mappedNotification : n)
             );
             // Update unread count
             fetchNotifications();
@@ -118,10 +197,13 @@ export const useNotifications = () => {
 
   const markAllAsRead = async () => {
     try {
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) return;
+
       const { error } = await supabase
         .from('notifications')
         .update({ is_read: true })
-        .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
+        .eq('user_id', user.user.id)
         .eq('is_read', false);
 
       if (!error) {
