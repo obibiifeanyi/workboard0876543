@@ -16,29 +16,29 @@ import {
 
 export const AdminNavigation = () => {
   const navItems = [
-    { to: "/admin", icon: LayoutDashboard, label: "Dashboard", end: true, color: "from-blue-500 to-cyan-500" },
-    { to: "/admin/users", icon: Users, label: "Users & Teams", color: "from-purple-500 to-pink-500" },
-    { to: "/admin/departments", icon: Building2, label: "Departments", color: "from-green-500 to-emerald-500" },
-    { to: "/admin/projects", icon: FileText, label: "Projects & Tasks", color: "from-orange-500 to-red-500" },
-    { to: "/admin/time", icon: Clock, label: "Time & Attendance", color: "from-yellow-500 to-orange-500" },
-    { to: "/admin/telecom-sites", icon: Network, label: "Sites & Reports", color: "from-teal-500 to-blue-500" },
-    { to: "/admin/activity", icon: Activity, label: "Activity & Analytics", color: "from-indigo-500 to-purple-500" },
-    { to: "/admin/ai", icon: Brain, label: "AI & Knowledge", color: "from-violet-500 to-purple-500" },
-    { to: "/admin/communication", icon: Mail, label: "Communication", color: "from-pink-500 to-rose-500" },
+    { to: "/admin", icon: LayoutDashboard, label: "Dashboard", end: true, color: "from-red-500 to-red-600" },
+    { to: "/admin/users", icon: Users, label: "Users & Teams", color: "from-red-500 to-red-700" },
+    { to: "/admin/departments", icon: Building2, label: "Departments", color: "from-red-600 to-red-700" },
+    { to: "/admin/projects", icon: FileText, label: "Projects & Tasks", color: "from-red-500 to-orange-500" },
+    { to: "/admin/time", icon: Clock, label: "Time & Attendance", color: "from-red-600 to-pink-500" },
+    { to: "/admin/telecom-sites", icon: Network, label: "Sites & Reports", color: "from-red-500 to-red-600" },
+    { to: "/admin/activity", icon: Activity, label: "Activity & Analytics", color: "from-red-700 to-red-800" },
+    { to: "/admin/ai", icon: Brain, label: "AI & Knowledge", color: "from-red-600 to-purple-600" },
+    { to: "/admin/communication", icon: Mail, label: "Communication", color: "from-red-500 to-pink-500" },
   ];
 
   return (
     <div className="space-y-2 p-4">
       {/* Header Section */}
-      <div className="mb-6 p-4 rounded-2xl bg-gradient-to-r from-admin-primary/10 to-admin-secondary/10 
-                     border border-admin-primary/20 backdrop-blur-sm">
+      <div className="mb-6 p-4 rounded-2xl bg-gradient-to-r from-red-600/10 to-red-500/10 
+                     border border-red-600/20 backdrop-blur-sm">
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-xl bg-gradient-to-r from-admin-primary to-admin-secondary">
+          <div className="p-2 rounded-xl bg-gradient-to-r from-red-600 to-red-700 shadow-lg">
             <Shield className="h-5 w-5 text-white" />
           </div>
           <div>
-            <h3 className="font-semibold text-admin-primary">Admin Control</h3>
-            <p className="text-xs text-muted-foreground">System Management</p>
+            <h3 className="font-semibold text-red-700">Admin Control</h3>
+            <p className="text-xs text-red-600/70">System Management</p>
           </div>
         </div>
       </div>
@@ -54,8 +54,8 @@ export const AdminNavigation = () => {
               `group relative flex items-center gap-3 rounded-2xl px-4 py-3 transition-all duration-300
                ${
                  isActive
-                   ? "bg-gradient-to-r from-admin-primary to-admin-secondary text-white shadow-lg shadow-admin-primary/25 scale-[1.02]"
-                   : "text-foreground hover:bg-gradient-to-r hover:from-admin-primary/10 hover:to-admin-secondary/10 hover:text-admin-primary hover:scale-[1.01]"
+                   ? "bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg shadow-red-600/25 scale-[1.02]"
+                   : "text-foreground hover:bg-gradient-to-r hover:from-red-600/10 hover:to-red-500/10 hover:text-red-700 hover:scale-[1.01]"
                }`
             }
           >
@@ -65,7 +65,7 @@ export const AdminNavigation = () => {
             
             {/* Icon with Glow Effect */}
             <div className="relative p-2 rounded-xl bg-transparent transition-all duration-300
-                         group-hover:bg-admin-primary/10 group-hover:shadow-md">
+                         group-hover:bg-red-600/10 group-hover:shadow-md">
               <item.icon className="h-4 w-4 transition-transform duration-300 group-hover:scale-110" />
             </div>
 
@@ -86,8 +86,8 @@ export const AdminNavigation = () => {
       </nav>
 
       {/* Footer Section */}
-      <div className="mt-8 p-4 rounded-2xl bg-gradient-to-r from-admin-primary/5 to-admin-secondary/5 
-                     border border-admin-primary/10">
+      <div className="mt-8 p-4 rounded-2xl bg-gradient-to-r from-red-600/5 to-red-500/5 
+                     border border-red-600/10">
         <div className="text-center">
           <div className="text-xs text-muted-foreground mb-2">System Status</div>
           <div className="flex items-center justify-center gap-2">

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -26,7 +25,7 @@ interface Department {
   created_at: string;
   manager?: {
     full_name: string;
-  };
+  } | null;
 }
 
 interface User {
@@ -62,7 +61,16 @@ export const DepartmentManagement = () => {
         .order('name', { ascending: true });
 
       if (error) throw error;
-      setDepartments(data || []);
+      
+      // Transform the data to handle the manager relationship correctly
+      const transformedData = data?.map(dept => ({
+        ...dept,
+        manager: Array.isArray(dept.manager) && dept.manager.length > 0 
+          ? dept.manager[0] 
+          : dept.manager || null
+      })) || [];
+      
+      setDepartments(transformedData);
     } catch (error) {
       console.error('Error fetching departments:', error);
       toast({
@@ -95,7 +103,6 @@ export const DepartmentManagement = () => {
     
     try {
       if (editingDept) {
-        // Update existing department
         const { error } = await supabase
           .from('departments')
           .update({
@@ -112,7 +119,6 @@ export const DepartmentManagement = () => {
           description: "Department updated successfully",
         });
       } else {
-        // Create new department
         const { error } = await supabase
           .from('departments')
           .insert({
@@ -185,16 +191,16 @@ export const DepartmentManagement = () => {
   if (loading) {
     return (
       <div className="flex justify-center p-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-admin-primary"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      <Card className="rounded-3xl border border-admin-primary/20 shadow-lg">
-        <CardHeader className="bg-gradient-to-r from-admin-primary/5 to-admin-secondary/5 rounded-t-3xl">
-          <CardTitle className="flex items-center gap-2 text-admin-primary">
+      <Card className="rounded-3xl border border-red-600/20 shadow-lg bg-gradient-to-br from-white/95 to-red-50/30">
+        <CardHeader className="bg-gradient-to-r from-red-600/10 to-red-500/10 rounded-t-3xl border-b border-red-600/20">
+          <CardTitle className="flex items-center gap-2 text-red-700">
             <Building className="h-5 w-5" />
             {editingDept ? "Edit Department" : "Add New Department"}
           </CardTitle>
@@ -203,22 +209,22 @@ export const DepartmentManagement = () => {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid gap-4 md:grid-cols-2">
               <div>
-                <label className="text-sm font-medium mb-1 block">Department Name</label>
+                <label className="text-sm font-medium mb-1 block text-red-700">Department Name</label>
                 <Input
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   placeholder="Enter department name"
-                  className="rounded-[30px]"
+                  className="rounded-[30px] border-red-300 focus:border-red-500 focus:ring-red-500"
                   required
                 />
               </div>
               <div>
-                <label className="text-sm font-medium mb-1 block">Department Manager</label>
+                <label className="text-sm font-medium mb-1 block text-red-700">Department Manager</label>
                 <Select 
                   value={formData.manager_id} 
                   onValueChange={(value) => setFormData({ ...formData, manager_id: value })}
                 >
-                  <SelectTrigger className="rounded-[30px]">
+                  <SelectTrigger className="rounded-[30px] border-red-300 focus:border-red-500">
                     <SelectValue placeholder="Select manager (optional)" />
                   </SelectTrigger>
                   <SelectContent>
@@ -233,19 +239,19 @@ export const DepartmentManagement = () => {
               </div>
             </div>
             <div>
-              <label className="text-sm font-medium mb-1 block">Description</label>
+              <label className="text-sm font-medium mb-1 block text-red-700">Description</label>
               <Textarea
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 placeholder="Enter department description"
-                className="rounded-[20px]"
+                className="rounded-[20px] border-red-300 focus:border-red-500 focus:ring-red-500"
                 rows={3}
               />
             </div>
             <div className="flex gap-2 justify-end">
               <Button 
                 type="submit" 
-                className="bg-gradient-to-r from-admin-primary to-admin-secondary text-white rounded-[30px]"
+                className="bg-gradient-to-r from-red-600 to-red-700 text-white rounded-[30px] hover:from-red-700 hover:to-red-800 shadow-lg hover:shadow-red-600/25"
               >
                 {editingDept ? (
                   <>
@@ -263,7 +269,7 @@ export const DepartmentManagement = () => {
                 <Button 
                   type="button" 
                   variant="outline" 
-                  className="rounded-[30px]"
+                  className="rounded-[30px] border-red-300 text-red-700 hover:bg-red-50"
                   onClick={resetForm}
                 >
                   Cancel
@@ -274,22 +280,22 @@ export const DepartmentManagement = () => {
         </CardContent>
       </Card>
 
-      <Card className="rounded-3xl border border-admin-primary/20 shadow-lg">
-        <CardHeader className="bg-gradient-to-r from-admin-primary/5 to-admin-secondary/5 rounded-t-3xl">
-          <CardTitle className="flex items-center gap-2 text-admin-primary">
+      <Card className="rounded-3xl border border-red-600/20 shadow-lg bg-gradient-to-br from-white/95 to-red-50/30">
+        <CardHeader className="bg-gradient-to-r from-red-600/10 to-red-500/10 rounded-t-3xl border-b border-red-600/20">
+          <CardTitle className="flex items-center gap-2 text-red-700">
             <Building className="h-5 w-5" />
             Departments
           </CardTitle>
         </CardHeader>
         <CardContent className="pt-6">
           <Table>
-            <TableHeader className="bg-muted/50">
+            <TableHeader className="bg-red-50/50">
               <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Description</TableHead>
-                <TableHead>Manager</TableHead>
-                <TableHead>Employees</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead className="text-red-700 font-semibold">Name</TableHead>
+                <TableHead className="text-red-700 font-semibold">Description</TableHead>
+                <TableHead className="text-red-700 font-semibold">Manager</TableHead>
+                <TableHead className="text-red-700 font-semibold">Employees</TableHead>
+                <TableHead className="text-right text-red-700 font-semibold">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -301,14 +307,14 @@ export const DepartmentManagement = () => {
                 </TableRow>
               ) : (
                 departments.map((dept) => (
-                  <TableRow key={dept.id} className="hover:bg-muted/30">
+                  <TableRow key={dept.id} className="hover:bg-red-50/30">
                     <TableCell className="font-medium">{dept.name}</TableCell>
                     <TableCell className="max-w-xs truncate">{dept.description || "No description"}</TableCell>
                     <TableCell>
                       {dept.manager?.full_name || "Unassigned"}
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline" className="flex items-center gap-1 w-fit">
+                      <Badge variant="outline" className="flex items-center gap-1 w-fit border-red-300 text-red-700">
                         <Users className="h-3 w-3" />
                         {dept.employee_count || 0}
                       </Badge>
@@ -318,7 +324,7 @@ export const DepartmentManagement = () => {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="rounded-full hover:bg-admin-primary/10"
+                          className="rounded-full hover:bg-red-100 text-red-600"
                           onClick={() => handleEdit(dept)}
                         >
                           <Edit className="h-4 w-4" />
@@ -326,7 +332,7 @@ export const DepartmentManagement = () => {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="rounded-full hover:bg-destructive/10 text-destructive"
+                          className="rounded-full hover:bg-red-100 text-red-600"
                           onClick={() => handleDelete(dept.id)}
                         >
                           <Trash2 className="h-4 w-4" />

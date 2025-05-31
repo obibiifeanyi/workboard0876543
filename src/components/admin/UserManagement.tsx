@@ -39,7 +39,6 @@ export const UserManagement = () => {
 
       if (error) throw error;
       
-      // Transform the data to match the User interface
       const transformedUsers: User[] = (data || []).map(profile => ({
         id: profile.id,
         name: profile.full_name || 'No Name',
@@ -85,7 +84,6 @@ export const UserManagement = () => {
 
     try {
       if (selectedUser) {
-        // Update existing user
         const { error } = await supabase
           .from('profiles')
           .update(userData)
@@ -98,10 +96,9 @@ export const UserManagement = () => {
           description: "User updated successfully",
         });
       } else {
-        // For new users, create auth account and profile
         const { data, error } = await supabase.auth.signUp({
           email: userData.email,
-          password: "TemporaryPassword123!",  // This should be changed by the user
+          password: "TemporaryPassword123!",
           options: {
             data: {
               full_name: userData.full_name,
@@ -118,7 +115,6 @@ export const UserManagement = () => {
         });
       }
 
-      // Reset form and selected user
       setSelectedUser(null);
       e.currentTarget.reset();
       setActiveTab("users");
@@ -136,7 +132,7 @@ export const UserManagement = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center p-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-admin-primary"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
       </div>
     );
   }
@@ -144,15 +140,15 @@ export const UserManagement = () => {
   return (
     <div className="space-y-6">
       {/* Enhanced Header */}
-      <div className="p-6 rounded-3xl bg-gradient-to-r from-admin-primary/10 to-admin-secondary/10 
-                     border border-admin-primary/20 backdrop-blur-sm">
+      <div className="p-6 rounded-3xl bg-gradient-to-r from-red-600/10 to-red-500/10 
+                     border border-red-600/20 backdrop-blur-sm">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-3 rounded-2xl bg-gradient-to-r from-admin-primary to-admin-secondary">
+            <div className="p-3 rounded-2xl bg-gradient-to-r from-red-600 to-red-700 shadow-lg">
               <Users className="h-6 w-6 text-white" />
             </div>
             <div>
-              <h2 className="text-2xl font-bold bg-gradient-to-r from-admin-primary to-admin-secondary bg-clip-text text-transparent">
+              <h2 className="text-2xl font-bold bg-gradient-to-r from-red-600 to-red-700 bg-clip-text text-transparent">
                 User Management
               </h2>
               <p className="text-muted-foreground">Manage users, departments, and projects</p>
@@ -160,7 +156,7 @@ export const UserManagement = () => {
           </div>
           <Button 
             onClick={handleCreateUser}
-            className="bg-gradient-to-r from-admin-primary to-admin-secondary text-white"
+            className="bg-gradient-to-r from-red-600 to-red-700 text-white hover:from-red-700 hover:to-red-800 shadow-lg hover:shadow-red-600/25 rounded-[30px]"
           >
             <UserPlus className="mr-2 h-4 w-4" />
             Add New User
@@ -169,45 +165,45 @@ export const UserManagement = () => {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <div className="p-2 rounded-3xl bg-gradient-to-r from-admin-primary/5 to-admin-secondary/5 
-                       border border-admin-primary/20 backdrop-blur-sm">
+        <div className="p-2 rounded-3xl bg-gradient-to-r from-red-600/5 to-red-500/5 
+                       border border-red-600/20 backdrop-blur-sm">
           <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 gap-2 bg-transparent p-1">
             <TabsTrigger 
               value="users"
-              className="rounded-2xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-admin-primary 
-                       data-[state=active]:to-admin-secondary data-[state=active]:text-white
-                       hover:bg-admin-primary/10 transition-all duration-300 font-medium
-                       data-[state=active]:shadow-lg data-[state=active]:shadow-admin-primary/25"
+              className="rounded-2xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-red-600 
+                       data-[state=active]:to-red-700 data-[state=active]:text-white
+                       hover:bg-red-600/10 transition-all duration-300 font-medium
+                       data-[state=active]:shadow-lg data-[state=active]:shadow-red-600/25"
             >
               <Users className="h-4 w-4 mr-2" />
               Users
             </TabsTrigger>
             <TabsTrigger 
               value="new"
-              className="rounded-2xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-admin-primary 
-                       data-[state=active]:to-admin-secondary data-[state=active]:text-white
-                       hover:bg-admin-primary/10 transition-all duration-300 font-medium
-                       data-[state=active]:shadow-lg data-[state=active]:shadow-admin-primary/25"
+              className="rounded-2xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-red-600 
+                       data-[state=active]:to-red-700 data-[state=active]:text-white
+                       hover:bg-red-600/10 transition-all duration-300 font-medium
+                       data-[state=active]:shadow-lg data-[state=active]:shadow-red-600/25"
             >
               <UserPlus className="h-4 w-4 mr-2" />
               {selectedUser ? "Edit User" : "Add User"}
             </TabsTrigger>
             <TabsTrigger 
               value="departments"
-              className="rounded-2xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-admin-primary 
-                       data-[state=active]:to-admin-secondary data-[state=active]:text-white
-                       hover:bg-admin-primary/10 transition-all duration-300 font-medium
-                       data-[state=active]:shadow-lg data-[state=active]:shadow-admin-primary/25"
+              className="rounded-2xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-red-600 
+                       data-[state=active]:to-red-700 data-[state=active]:text-white
+                       hover:bg-red-600/10 transition-all duration-300 font-medium
+                       data-[state=active]:shadow-lg data-[state=active]:shadow-red-600/25"
             >
               <Building2 className="h-4 w-4 mr-2" />
               Departments
             </TabsTrigger>
             <TabsTrigger 
               value="projects"
-              className="rounded-2xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-admin-primary 
-                       data-[state=active]:to-admin-secondary data-[state=active]:text-white
-                       hover:bg-admin-primary/10 transition-all duration-300 font-medium
-                       data-[state=active]:shadow-lg data-[state=active]:shadow-admin-primary/25"
+              className="rounded-2xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-red-600 
+                       data-[state=active]:to-red-700 data-[state=active]:text-white
+                       hover:bg-red-600/10 transition-all duration-300 font-medium
+                       data-[state=active]:shadow-lg data-[state=active]:shadow-red-600/25"
             >
               <FolderOpen className="h-4 w-4 mr-2" />
               Projects
@@ -216,7 +212,7 @@ export const UserManagement = () => {
         </div>
 
         <div className="rounded-3xl bg-gradient-to-br from-white/90 to-white/60 dark:from-black/30 dark:to-black/20 
-                       backdrop-blur-xl border border-admin-primary/20 shadow-2xl shadow-admin-primary/10 p-6">
+                       backdrop-blur-xl border border-red-600/20 shadow-2xl shadow-red-600/10 p-6">
           <TabsContent value="users" className="space-y-4 mt-0">
             <UserList 
               users={users} 
