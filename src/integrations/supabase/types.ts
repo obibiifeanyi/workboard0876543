@@ -1378,6 +1378,7 @@ export type Database = {
           completion_notes: string | null
           created_at: string | null
           created_by_id: string | null
+          department_id: string | null
           description: string | null
           due_date: string | null
           estimated_hours: number | null
@@ -1398,6 +1399,7 @@ export type Database = {
           completion_notes?: string | null
           created_at?: string | null
           created_by_id?: string | null
+          department_id?: string | null
           description?: string | null
           due_date?: string | null
           estimated_hours?: number | null
@@ -1418,6 +1420,7 @@ export type Database = {
           completion_notes?: string | null
           created_at?: string | null
           created_by_id?: string | null
+          department_id?: string | null
           description?: string | null
           due_date?: string | null
           estimated_hours?: number | null
@@ -1445,6 +1448,13 @@ export type Database = {
             columns: ["created_by_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
             referencedColumns: ["id"]
           },
           {

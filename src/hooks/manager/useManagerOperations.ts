@@ -1,150 +1,212 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { TeamMember, ProjectWithAssignments } from "@/types/supabase/manager";
+import { TeamMember, ProjectWithMembers, Department } from "@/types/supabase/manager";
 import { useToast } from "@/hooks/use-toast";
 
-export const useManagerOperations = (departmentId: string) => {
+export const useManagerOperations = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  const { data: teamMembers, isLoading: isLoadingTeam } = useQuery({
-    queryKey: ["team", departmentId],
+  // Get current user's managed department
+  const { data: currentUser } = useQuery({
+    queryKey: ["currentUser"],
     queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  // Get managed departments
+  const { data: managedDepartments, isLoading: isLoadingDepartments } = useQuery({
+    queryKey: ["managedDepartments"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("departments")
+        .select(`
+          *,
+          profiles!manager_id(full_name)
+        `)
+        .eq("manager_id", currentUser?.id);
+
+      if (error) throw error;
+      return data as Department[];
+    },
+    enabled: !!currentUser,
+  });
+
+  // Get team members from managed departments
+  const { data: teamMembers, isLoading: isLoadingTeam } = useQuery({
+    queryKey: ["teamMembers"],
+    queryFn: async () => {
+      if (!managedDepartments?.length) return [];
+
+      const departmentIds = managedDepartments.map(d => d.id);
       const { data, error } = await supabase
         .from("profiles")
         .select(`
           id,
           full_name,
-          avatar_url,
+          email,
           role,
+          department_id,
+          status,
           created_at,
-          updated_at,
-          department_id
+          updated_at
         `)
-        .eq("department_id", departmentId);
+        .in("department_id", departmentIds);
 
       if (error) throw error;
-      return (data || []).map((profile) => ({
-        ...profile,
-        department: null,
-      })) as TeamMember[];
+      return data as TeamMember[];
     },
+    enabled: !!managedDepartments?.length,
   });
 
+  // Get projects from managed departments
   const { data: projects, isLoading: isLoadingProjects } = useQuery({
-    queryKey: ["projects", departmentId],
+    queryKey: ["managerProjects"],
     queryFn: async () => {
+      if (!managedDepartments?.length) return [];
+
+      const departmentIds = managedDepartments.map(d => d.id);
       const { data, error } = await supabase
         .from("projects")
         .select(`
-          id,
-          name,
-          description,
-          status,
-          start_date,
-          end_date,
-          department_id,
-          budget
+          *,
+          project_members(
+            id,
+            user_id,
+            role,
+            profiles(full_name, email)
+          )
         `)
-        .eq("department_id", departmentId);
+        .in("department_id", departmentIds);
 
       if (error) throw error;
-      
-      // Get project assignments for these projects
-      const projectIds = data?.map(p => p.id) || [];
-      let assignments = [];
-      
-      if (projectIds.length > 0) {
-        const { data: assignmentData } = await supabase
-          .from("project_assignments")
-          .select("*")
-          .in("project_id", projectIds);
-        
-        assignments = assignmentData || [];
-      }
-      
-      return (data || []).map(project => ({
-        id: project.id,
-        title: project.name,
-        description: project.description,
-        status: project.status,
-        start_date: project.start_date,
-        end_date: project.end_date,
-        department_id: project.department_id,
-        project_assignments: assignments.filter(a => a.project_id === project.id)
-      })) as ProjectWithAssignments[];
+      return data as ProjectWithMembers[];
     },
+    enabled: !!managedDepartments?.length,
   });
 
+  // Create project mutation
   const createProject = useMutation({
     mutationFn: async (projectData: {
-      title: string;
+      name: string;
       description?: string;
       department_id: string;
+      status?: string;
+      priority?: string;
       start_date?: string;
       end_date?: string;
-      status?: string;
+      budget?: number;
     }) => {
-      const insertData = {
-        name: projectData.title,
-        description: projectData.description || '',
-        department_id: projectData.department_id,
-        start_date: projectData.start_date,
-        end_date: projectData.end_date,
-        status: projectData.status || 'planning',
-      };
-
-      const { error } = await supabase.from("projects").insert(insertData);
+      const { error } = await supabase.from("projects").insert({
+        ...projectData,
+        manager_id: currentUser?.id,
+      });
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["projects"] });
+      queryClient.invalidateQueries({ queryKey: ["managerProjects"] });
       toast({
         title: "Success",
         description: "Project created successfully",
       });
     },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to create project",
+        variant: "destructive",
+      });
+    },
   });
 
-  const updateProject = useMutation({
-    mutationFn: async ({
-      id,
-      data,
-    }: {
-      id: string;
-      data: Partial<ProjectWithAssignments>;
-    }) => {
-      const updateData = {
-        name: data.title,
-        description: data.description,
-        status: data.status,
-        start_date: data.start_date,
-        end_date: data.end_date,
-      };
-
-      const { error } = await supabase
-        .from("projects")
-        .update(updateData)
-        .eq("id", id);
-
+  // Add team member to project
+  const addProjectMember = useMutation({
+    mutationFn: async ({ projectId, userId, role }: { projectId: string; userId: string; role: string }) => {
+      const { error } = await supabase.from("project_members").insert({
+        project_id: projectId,
+        user_id: userId,
+        role,
+      });
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["projects"] });
+      queryClient.invalidateQueries({ queryKey: ["managerProjects"] });
       toast({
         title: "Success",
-        description: "Project updated successfully",
+        description: "Team member added to project",
+      });
+    },
+  });
+
+  // Remove team member from project
+  const removeProjectMember = useMutation({
+    mutationFn: async ({ projectId, userId }: { projectId: string; userId: string }) => {
+      const { error } = await supabase
+        .from("project_members")
+        .delete()
+        .eq("project_id", projectId)
+        .eq("user_id", userId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["managerProjects"] });
+      toast({
+        title: "Success",
+        description: "Team member removed from project",
+      });
+    },
+  });
+
+  // Create task mutation
+  const createTask = useMutation({
+    mutationFn: async (taskData: {
+      title: string;
+      description?: string;
+      assigned_to_id: string;
+      project_id?: string;
+      department_id?: string;
+      due_date?: string;
+      priority: string;
+    }) => {
+      const { error } = await supabase.from("tasks").insert({
+        ...taskData,
+        created_by_id: currentUser?.id,
+        status: "pending",
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+      toast({
+        title: "Success",
+        description: "Task assigned successfully",
       });
     },
   });
 
   return {
+    currentUser,
+    managedDepartments,
     teamMembers,
     projects,
+    isLoadingDepartments,
     isLoadingTeam,
     isLoadingProjects,
     createProject,
-    updateProject,
+    addProjectMember,
+    removeProjectMember,
+    createTask,
   };
 };

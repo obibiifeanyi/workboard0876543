@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -32,6 +33,7 @@ interface Department {
 interface User {
   id: string;
   full_name: string;
+  role: string;
 }
 
 export const DepartmentManagement = () => {
@@ -96,8 +98,8 @@ export const DepartmentManagement = () => {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, full_name')
-        .in('account_type', ['manager', 'admin'])
+        .select('id, full_name, role')
+        .in('role', ['manager', 'admin'])
         .order('full_name');
 
       if (error) throw error;
@@ -240,7 +242,7 @@ export const DepartmentManagement = () => {
                     <SelectItem value="">No Manager</SelectItem>
                     {managers.map((manager) => (
                       <SelectItem key={manager.id} value={manager.id}>
-                        {manager.full_name}
+                        {manager.full_name} ({manager.role})
                       </SelectItem>
                     ))}
                   </SelectContent>

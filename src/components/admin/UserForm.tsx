@@ -99,15 +99,10 @@ export const UserForm = ({ defaultValues, onSubmit }: UserFormProps) => {
                 <SelectItem value="" disabled>Loading departments...</SelectItem>
               ) : departments.length > 0 ? (
                 departments.map(dept => (
-                  <SelectItem key={dept.id} value={dept.name}>{dept.name}</SelectItem>
+                  <SelectItem key={dept.id} value={dept.id}>{dept.name}</SelectItem>
                 ))
               ) : (
-                <>
-                  <SelectItem value="Operations">Operations</SelectItem>
-                  <SelectItem value="HR">HR</SelectItem>
-                  <SelectItem value="IT">IT</SelectItem>
-                  <SelectItem value="Finance">Finance</SelectItem>
-                </>
+                <SelectItem value="" disabled>No departments available</SelectItem>
               )}
             </SelectContent>
           </Select>

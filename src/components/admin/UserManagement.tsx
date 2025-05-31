@@ -34,7 +34,15 @@ export const UserManagement = () => {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('*')
+        .select(`
+          id,
+          full_name,
+          email,
+          role,
+          department_id,
+          avatar_url,
+          departments(name)
+        `)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -43,8 +51,8 @@ export const UserManagement = () => {
         id: profile.id,
         name: profile.full_name || 'No Name',
         email: profile.email || '',
-        role: profile.account_type || 'staff',
-        department: profile.department || 'Not Assigned',
+        role: profile.role || 'staff',
+        department: profile.departments?.name || 'Not Assigned',
         avatar: profile.avatar_url || undefined
       }));
       
@@ -78,8 +86,8 @@ export const UserManagement = () => {
     const userData = {
       full_name: formData.get('name') as string,
       email: formData.get('email') as string,
-      account_type: formData.get('role') as string,
-      department: formData.get('department') as string,
+      role: formData.get('role') as string,
+      department_id: formData.get('department') as string,
     };
 
     try {
@@ -102,7 +110,7 @@ export const UserManagement = () => {
           options: {
             data: {
               full_name: userData.full_name,
-              account_type: userData.account_type,
+              role: userData.role,
             }
           }
         });
