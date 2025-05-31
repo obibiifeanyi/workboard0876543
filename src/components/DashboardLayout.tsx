@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 import { NeuralNetwork } from "@/components/NeuralNetwork";
+import { ClockInButton } from "@/components/ClockInButton";
 import { useLocation } from "react-router-dom";
 
 interface DashboardLayoutProps {
