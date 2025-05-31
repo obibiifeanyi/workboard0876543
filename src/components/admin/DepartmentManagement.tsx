@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -73,9 +72,11 @@ export const DepartmentManagement = () => {
         employee_count: dept.employee_count,
         created_at: dept.created_at,
         updated_at: dept.updated_at,
-        manager: Array.isArray(dept.profiles) && dept.profiles.length > 0 
-          ? dept.profiles[0] 
-          : dept.profiles || null
+        manager: dept.profiles && !Array.isArray(dept.profiles) 
+          ? dept.profiles 
+          : Array.isArray(dept.profiles) && dept.profiles.length > 0 
+            ? dept.profiles[0] 
+            : null
       })) || [];
       
       setDepartments(transformedData);
