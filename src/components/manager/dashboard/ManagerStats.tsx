@@ -1,8 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { useManagerOperations } from "@/hooks/manager/useManagerOperations";
-import { Users, FolderOpen, ClipboardList, Building2, Calendar, TrendingUp } from "lucide-react";
+import { Users, FolderOpen, Building2, TrendingUp } from "lucide-react";
 
 export const ManagerStats = () => {
   const { 
@@ -33,7 +32,6 @@ export const ManagerStats = () => {
 
   const activeProjects = projects?.filter(p => p.status === 'active').length || 0;
   const completedProjects = projects?.filter(p => p.status === 'completed').length || 0;
-  const pendingTasks = projects?.reduce((acc, p) => acc + (p.project_members?.length || 0), 0) || 0;
   const totalDepartments = managedDepartments?.length || 0;
 
   const stats = [

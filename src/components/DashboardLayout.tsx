@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 import { ClockInButton } from "@/components/ClockInButton";
 import { NeuralNetwork } from "@/components/NeuralNetwork";
+import { useLocation } from "react-router-dom";
 
 interface DashboardLayoutProps {
   title: string;
@@ -15,6 +16,10 @@ interface DashboardLayoutProps {
 export const DashboardLayout = ({ title, children, navigation }: DashboardLayoutProps) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [user, setUser] = useState<any>(null);
+  const location = useLocation();
+
+  // Don't show ClockInButton on manager or admin dashboards
+  const showClockInButton = !location.pathname.includes('/manager') && !location.pathname.includes('/admin');
 
   useEffect(() => {
     const getUser = async () => {
@@ -61,7 +66,7 @@ export const DashboardLayout = ({ title, children, navigation }: DashboardLayout
             <h1 className="text-xl font-semibold font-unica">{title}</h1>
           </div>
           <div className="flex items-center space-x-4">
-            <ClockInButton />
+            {showClockInButton && <ClockInButton />}
             <ThemeSwitcher />
           </div>
         </div>
