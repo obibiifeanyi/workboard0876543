@@ -49,7 +49,7 @@ const Index = () => {
             .from('profiles')
             .select('role, account_type')
             .eq('id', session.user.id)
-            .single();
+            .maybeSingle();
 
           if (!error && profile) {
             const role = profile.role || 'staff';

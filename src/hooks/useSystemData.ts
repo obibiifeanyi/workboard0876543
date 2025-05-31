@@ -12,8 +12,11 @@ export const useSystemData = () => {
           .from('profiles')
           .select('*');
         
-        if (error) throw error;
-        return data;
+        if (error) {
+          console.error('Error fetching profiles:', error);
+          return [];
+        }
+        return data || [];
       },
     });
   };
@@ -27,8 +30,11 @@ export const useSystemData = () => {
           .from('projects')
           .select('*');
         
-        if (error) throw error;
-        return data;
+        if (error) {
+          console.error('Error fetching projects:', error);
+          return [];
+        }
+        return data || [];
       },
     });
   };
@@ -42,8 +48,11 @@ export const useSystemData = () => {
           .from('tasks')
           .select('*');
         
-        if (error) throw error;
-        return data;
+        if (error) {
+          console.error('Error fetching tasks:', error);
+          return [];
+        }
+        return data || [];
       },
     });
   };
@@ -57,8 +66,11 @@ export const useSystemData = () => {
           .from('memos')
           .select('*');
         
-        if (error) throw error;
-        return data;
+        if (error) {
+          console.error('Error fetching memos:', error);
+          return [];
+        }
+        return data || [];
       },
     });
   };
@@ -72,8 +84,11 @@ export const useSystemData = () => {
           .from('departments')
           .select('*');
         
-        if (error) throw error;
-        return data;
+        if (error) {
+          console.error('Error fetching departments:', error);
+          return [];
+        }
+        return data || [];
       },
     });
   };
@@ -87,8 +102,11 @@ export const useSystemData = () => {
           .from('time_logs')
           .select('*');
         
-        if (error) throw error;
-        return data;
+        if (error) {
+          console.error('Error fetching time_logs:', error);
+          return [];
+        }
+        return data || [];
       },
     });
   };

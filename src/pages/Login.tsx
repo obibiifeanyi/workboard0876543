@@ -37,7 +37,7 @@ const Login = () => {
             .from('profiles')
             .select('role, account_type')
             .eq('id', session.user.id)
-            .single();
+            .maybeSingle();
 
           if (error) {
             console.error('Error fetching profile:', error);
@@ -80,7 +80,7 @@ const Login = () => {
             .from('profiles')
             .select('role, account_type')
             .eq('id', session.user.id)
-            .single()
+            .maybeSingle()
             .then(({ data: profile, error }) => {
               if (error) {
                 console.error('Error fetching profile:', error);

@@ -29,8 +29,8 @@ export const useAuth = () => {
     } else if (accountType === 'manager' || role === 'manager') {
       navigate('/manager');
     } else {
-      // Default to documents for any other account type or role
-      navigate('/documents');
+      // Default to staff for any other account type or role
+      navigate('/staff');
     }
   };
 
@@ -49,7 +49,7 @@ export const useAuth = () => {
                 .from('profiles')
                 .select('id, role, account_type, full_name, email')
                 .eq('id', session.user.id)
-                .single();
+                .maybeSingle();
 
               if (error) {
                 console.error('Error fetching profile:', error);
@@ -82,7 +82,7 @@ export const useAuth = () => {
                 const currentPath = window.location.pathname;
                 const targetPath = accountType === 'accountant' ? '/accountant' : 
                                   userRole === 'admin' ? '/admin' :
-                                  userRole === 'manager' ? '/manager' : '/documents';
+                                  userRole === 'manager' ? '/manager' : '/staff';
                 
                 if (!currentPath.startsWith(targetPath)) {
                   redirectUserBasedOnRole(userRole, accountType);

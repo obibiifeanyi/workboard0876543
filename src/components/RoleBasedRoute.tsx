@@ -55,7 +55,7 @@ export const RoleBasedRoute = ({ children, allowedRoles, userRole: propUserRole 
             .from('profiles')
             .select('role, account_type')
             .eq('id', session.user.id)
-            .single();
+            .maybeSingle();
 
           if (error) {
             console.error('Error fetching profile:', error);
