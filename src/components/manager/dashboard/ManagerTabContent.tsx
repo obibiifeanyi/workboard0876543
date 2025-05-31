@@ -1,4 +1,3 @@
-
 import { WorkBoard } from "@/components/manager/WorkBoard";
 import { LeaveManagement } from "@/components/manager/LeaveManagement";
 import { TeamOverview } from "@/components/manager/TeamOverview";
@@ -12,6 +11,7 @@ import { InvoiceTable } from "@/components/invoices/InvoiceTable";
 import { ConstructionSiteManagement } from "@/components/construction/ConstructionSiteManagement";
 import { ProjectReportManagement } from "@/components/reports/ProjectReportManagement";
 import { TabsContent } from "@/components/ui/tabs";
+import { StaffMemoManagement } from "@/components/manager/StaffMemoManagement";
 
 export const ManagerTabContent = () => {
   return (
@@ -45,7 +45,7 @@ export const ManagerTabContent = () => {
       </TabsContent>
 
       <TabsContent value="memos" className="space-y-6 mt-0">
-        <MemoManagement />
+        <StaffMemoManagement />
       </TabsContent>
 
       <TabsContent value="invoices" className="space-y-6 mt-0">

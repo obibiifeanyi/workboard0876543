@@ -1,75 +1,104 @@
-
-import { ReactNode } from "react";
+import { useState, useEffect } from "react";
+import { useSession, signOut } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { MainNavBar } from "@/components/navigation/MainNavBar";
-import { SidebarProvider } from "@/components/ui/sidebar";
+import { ModeToggle } from "@/components/ModeToggle";
+import { Sidebar } from "@/components/Sidebar";
+import { ClockInButton } from "@/components/ClockInButton";
+import { ThemeSwitcher } from "@/components/ThemeSwitcher";
+import { NeuralNetwork } from "@/components/NeuralNetwork";
 
-export interface DashboardLayoutProps {
-  children: ReactNode;
+interface DashboardLayoutProps {
   title: string;
-  navigation?: ReactNode;
-  className?: string;
+  children: React.ReactNode;
+  navigation?: React.ReactNode;
 }
 
-export const DashboardLayout = ({
-  children,
-  title,
-  navigation,
-  className,
-}: DashboardLayoutProps) => {
+export const DashboardLayout = ({ title, children, navigation }: DashboardLayoutProps) => {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const router = useRouter();
+  const { data: session, status } = useSession();
+
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/");
+    }
+  }, [status, router]);
+
   return (
-    <SidebarProvider>
-      <div className={cn("min-h-screen w-full bg-gradient-to-br from-background to-muted/20 flex flex-col", className)}>
-        <MainNavBar />
-        <div className="flex flex-1">
-          {navigation && (
-            <aside className="fixed left-0 top-16 z-30 h-[calc(100vh-4rem)] w-64 
-                             bg-gradient-to-b from-white/95 to-white/80 dark:from-black/95 dark:to-black/80 
-                             backdrop-blur-xl border-r border-red-600/20 
-                             transition-all duration-300 ease-in-out lg:translate-x-0 translate-x-[-100%] 
-                             peer-data-[state=expanded]:translate-x-0
-                             shadow-xl shadow-red-600/10">
-              <div className="flex h-full flex-col overflow-y-auto scrollbar-thin scrollbar-thumb-red-600/20">
-                {navigation}
-              </div>
-            </aside>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900">
+      <NeuralNetwork />
+      
+      {/* Top Bar */}
+      <header className="fixed w-full top-0 z-40 bg-white/90 dark:bg-black/80 backdrop-blur-sm border-b">
+        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <button
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+              className="lg:hidden text-gray-500 hover:text-gray-700 focus:outline-none"
+            >
+              <svg
+                className="h-6 w-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M4 6h16M4 12h16M4 18h16"
+                ></path>
+              </svg>
+            </button>
+            <h1 className="text-xl font-semibold font-unica">{title}</h1>
+          </div>
+          <div className="flex items-center space-x-4">
+            <ClockInButton />
+            <ThemeSwitcher />
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <div className="flex">
+        {/* Sidebar */}
+        <aside
+          className={cn(
+            "fixed left-0 top-0 z-30 h-full w-64 bg-white border-r transition-transform duration-300 dark:bg-gray-900 dark:border-gray-800",
+            isSidebarOpen ? "translate-x-0" : "-translate-x-full",
+            "lg:translate-x-0 lg:border-r"
           )}
-          <main className={cn(
-            "flex-1 transition-all duration-300 ease-in-out mt-16 flex flex-col",
-            navigation && "lg:ml-64",
-            "min-h-[calc(100vh-4rem)]"
-          )}>
-            <div className="flex-1 p-4 sm:p-6 md:p-8">
-              <div className="mx-auto max-w-7xl space-y-6">
-                {/* Enhanced Title Section */}
-                <div className="p-6 rounded-3xl bg-gradient-to-r from-white/80 to-white/60 dark:from-black/40 dark:to-black/20 
-                               backdrop-blur-xl border border-red-600/20 shadow-lg">
-                  <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-red-600 to-red-700 
-                               bg-clip-text text-transparent">
-                    {title}
-                  </h1>
-                </div>
-                
-                {/* Content */}
-                <div className="space-y-6">
-                  {children}
-                </div>
+        >
+          <Sidebar />
+        </aside>
+
+        {/* Main Content Area */}
+        <main className={`flex-1 transition-all duration-300 ${
+          isSidebarOpen ? "ml-64" : "ml-0"
+        } pt-16`}>
+          <div className="p-6">
+            <div className="max-w-7xl mx-auto">
+              {children}
+            </div>
+          </div>
+          
+          {/* Footer */}
+          <footer className="mt-12 border-t bg-white/50 dark:bg-black/20 backdrop-blur-sm">
+            <div className="max-w-7xl mx-auto px-6 py-4">
+              <div className="text-center text-sm text-muted-foreground">
+                Licensed By <span className="font-semibold text-primary">BMD Tech Hub</span> • 
+                Usage Rights by <span className="font-semibold text-primary">CT NIGERIA LTD</span> • 
+                © 2025 All Rights Reserved
               </div>
             </div>
-            
-            {/* Footer */}
-            <footer className="mt-auto p-4 border-t border-red-600/20 bg-gradient-to-r from-white/80 to-white/60 dark:from-black/40 dark:to-black/20 backdrop-blur-xl">
-              <div className="mx-auto max-w-7xl">
-                <div className="text-center">
-                  <p className="text-xs text-muted-foreground">
-                    Built by <span className="font-medium text-red-600">Obibi Ifeanyi</span> - BMD Tech Hub
-                  </p>
-                </div>
-              </div>
-            </footer>
-          </main>
-        </div>
+          </footer>
+        </main>
       </div>
-    </SidebarProvider>
+
+      <ClockInButton />
+      <ThemeSwitcher />
+    </div>
   );
 };
