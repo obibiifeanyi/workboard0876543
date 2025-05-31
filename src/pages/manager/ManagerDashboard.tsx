@@ -19,8 +19,8 @@ const ManagerDashboard = () => {
       <div className="space-y-6 animate-fade-in p-6 bg-manager-muted/5">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-manager-primary">My Dashboard</h1>
-            <p className="text-muted-foreground mt-1">Welcome back to your dashboard</p>
+          
+            <p className="text-muted-foreground mt-1">Welcome back</p>
           </div>
           <div className="flex items-center gap-4">
             <div className="relative w-64">
