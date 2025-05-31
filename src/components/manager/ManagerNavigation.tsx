@@ -6,30 +6,35 @@ const navigationItems = [
   {
     title: "Team Overview",
     icon: Users,
-    href: "#team",
+    value: "team",
     description: "View and manage your team members"
   },
   {
     title: "Projects",
     icon: FolderOpen,
-    href: "#projects", 
+    value: "sites", 
     description: "Create and manage department projects"
   },
   {
     title: "Task Assignment",
     icon: ClipboardList,
-    href: "#tasks",
+    value: "workboard",
     description: "Assign tasks to team members"
   },
   {
     title: "Departments",
     icon: Building2,
-    href: "#departments",
+    value: "construction",
     description: "Manage department information"
   }
 ];
 
-export const ManagerNavigation = () => {
+interface ManagerNavigationProps {
+  activeTab?: string;
+  onTabChange?: (value: string) => void;
+}
+
+export const ManagerNavigation = ({ activeTab, onTabChange }: ManagerNavigationProps) => {
   return (
     <nav className="flex flex-col p-4 space-y-2">
       <div className="px-3 py-2 mb-4">
@@ -39,14 +44,18 @@ export const ManagerNavigation = () => {
       
       {navigationItems.map((item) => {
         const Icon = item.icon;
+        const isActive = activeTab === item.value;
+        
         return (
-          <a
-            key={item.href}
-            href={item.href}
+          <button
+            key={item.value}
+            onClick={() => onTabChange?.(item.value)}
             className={cn(
-              "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+              "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-left",
               "hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-900/20",
-              "text-muted-foreground hover:text-foreground"
+              isActive 
+                ? "bg-red-100 text-red-700 dark:bg-red-900/30" 
+                : "text-muted-foreground hover:text-foreground"
             )}
           >
             <Icon className="h-4 w-4" />
@@ -54,7 +63,7 @@ export const ManagerNavigation = () => {
               <span>{item.title}</span>
               <span className="text-xs text-muted-foreground">{item.description}</span>
             </div>
-          </a>
+          </button>
         );
       })}
     </nav>

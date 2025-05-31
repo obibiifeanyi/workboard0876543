@@ -1,11 +1,9 @@
+
 import { useState, useEffect } from "react";
-import { useSession, signOut } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
-import { ModeToggle } from "@/components/ModeToggle";
-import { Sidebar } from "@/components/Sidebar";
-import { ClockInButton } from "@/components/ClockInButton";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
+import { ClockInButton } from "@/components/ClockInButton";
 import { NeuralNetwork } from "@/components/NeuralNetwork";
 
 interface DashboardLayoutProps {
@@ -16,14 +14,22 @@ interface DashboardLayoutProps {
 
 export const DashboardLayout = ({ title, children, navigation }: DashboardLayoutProps) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const router = useRouter();
-  const { data: session, status } = useSession();
+  const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
-    if (status === "unauthenticated") {
-      router.push("/");
-    }
-  }, [status, router]);
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+    };
+    
+    getUser();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900">
@@ -71,7 +77,7 @@ export const DashboardLayout = ({ title, children, navigation }: DashboardLayout
             "lg:translate-x-0 lg:border-r"
           )}
         >
-          <Sidebar />
+          {navigation}
         </aside>
 
         {/* Main Content Area */}
@@ -96,9 +102,6 @@ export const DashboardLayout = ({ title, children, navigation }: DashboardLayout
           </footer>
         </main>
       </div>
-
-      <ClockInButton />
-      <ThemeSwitcher />
     </div>
   );
 };

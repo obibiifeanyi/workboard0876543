@@ -1,8 +1,47 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { TeamMember, ProjectWithMembers, Department } from "@/types/supabase/manager";
 import { useToast } from "@/hooks/use-toast";
+
+export interface TeamMember {
+  id: string;
+  full_name: string | null;
+  email: string;
+  role: string;
+  department_id: string | null;
+  status: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Department {
+  id: string;
+  name: string;
+  description: string | null;
+  manager_id: string | null;
+  employee_count?: number;
+}
+
+export interface ProjectWithMembers {
+  id: string;
+  name: string;
+  description: string | null;
+  department_id: string;
+  manager_id: string | null;
+  status: string;
+  start_date: string | null;
+  end_date: string | null;
+  budget: number;
+  project_members: Array<{
+    id: string;
+    user_id: string;
+    role: string;
+    profiles: {
+      full_name: string;
+      email: string;
+    };
+  }>;
+}
 
 export const useManagerOperations = () => {
   const queryClient = useQueryClient();
@@ -30,13 +69,15 @@ export const useManagerOperations = () => {
   const { data: managedDepartments, isLoading: isLoadingDepartments } = useQuery({
     queryKey: ["managedDepartments"],
     queryFn: async () => {
+      if (!currentUser?.id) return [];
+
       const { data, error } = await supabase
         .from("departments")
         .select(`
           *,
           profiles!manager_id(full_name)
         `)
-        .eq("manager_id", currentUser?.id);
+        .eq("manager_id", currentUser.id);
 
       if (error) throw error;
       return data as Department[];

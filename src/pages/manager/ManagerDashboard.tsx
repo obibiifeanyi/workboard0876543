@@ -1,16 +1,24 @@
 
+import { useState } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { ManagerNavigation } from "@/components/manager/ManagerNavigation";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { AIDocumentButton } from "@/components/shared/AIDocumentButton";
 import { BackToAdminButton } from "@/components/shared/BackToAdminButton";
 import { ManagerTabContent } from "@/components/manager/dashboard/ManagerTabContent";
 
 const ManagerDashboard = () => {
+  const [activeTab, setActiveTab] = useState("team");
+
   return (
     <DashboardLayout
       title="Manager Dashboard"
-      navigation={<ManagerNavigation />}
+      navigation={
+        <ManagerNavigation 
+          activeTab={activeTab} 
+          onTabChange={setActiveTab} 
+        />
+      }
     >
       <div className="flex justify-between items-center mb-6">
         <div />
@@ -20,67 +28,7 @@ const ManagerDashboard = () => {
         </div>
       </div>
 
-      <Tabs defaultValue="team" className="space-y-6">
-        <div className="p-2 rounded-3xl bg-gradient-to-r from-red-600/5 to-red-500/5 
-                       border border-red-600/20 backdrop-blur-sm">
-          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-6 gap-2 bg-transparent p-1">
-            <TabsTrigger 
-              value="team"
-              className="rounded-2xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-red-600 
-                       data-[state=active]:to-red-700 data-[state=active]:text-white
-                       hover:bg-red-600/10 transition-all duration-300 font-medium text-xs sm:text-sm
-                       data-[state=active]:shadow-lg data-[state=active]:shadow-red-600/25"
-            >
-              Team Overview
-            </TabsTrigger>
-            <TabsTrigger 
-              value="sites"
-              className="rounded-2xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-red-600 
-                       data-[state=active]:to-red-700 data-[state=active]:text-white
-                       hover:bg-red-600/10 transition-all duration-300 font-medium text-xs sm:text-sm
-                       data-[state=active]:shadow-lg data-[state=active]:shadow-red-600/25"
-            >
-              Telecom Sites
-            </TabsTrigger>
-            <TabsTrigger 
-              value="construction"
-              className="rounded-2xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-red-600 
-                       data-[state=active]:to-red-700 data-[state=active]:text-white
-                       hover:bg-red-600/10 transition-all duration-300 font-medium text-xs sm:text-sm
-                       data-[state=active]:shadow-lg data-[state=active]:shadow-red-600/25"
-            >
-              Construction
-            </TabsTrigger>
-            <TabsTrigger 
-              value="reports"
-              className="rounded-2xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-red-600 
-                       data-[state=active]:to-red-700 data-[state=active]:text-white
-                       hover:bg-red-600/10 transition-all duration-300 font-medium text-xs sm:text-sm
-                       data-[state=active]:shadow-lg data-[state=active]:shadow-red-600/25"
-            >
-              Reports
-            </TabsTrigger>
-            <TabsTrigger 
-              value="memos"
-              className="rounded-2xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-red-600 
-                       data-[state=active]:to-red-700 data-[state=active]:text-white
-                       hover:bg-red-600/10 transition-all duration-300 font-medium text-xs sm:text-sm
-                       data-[state=active]:shadow-lg data-[state=active]:shadow-red-600/25"
-            >
-              Staff Memos
-            </TabsTrigger>
-            <TabsTrigger 
-              value="invoices"
-              className="rounded-2xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-red-600 
-                       data-[state=active]:to-red-700 data-[state=active]:text-white
-                       hover:bg-red-600/10 transition-all duration-300 font-medium text-xs sm:text-sm
-                       data-[state=active]:shadow-lg data-[state=active]:shadow-red-600/25"
-            >
-              Invoices
-            </TabsTrigger>
-          </TabsList>
-        </div>
-
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <div className="rounded-3xl bg-gradient-to-br from-white/90 to-white/60 dark:from-black/30 dark:to-black/20 
                        backdrop-blur-xl border border-red-600/20 shadow-2xl shadow-red-600/10 p-6">
           <ManagerTabContent />
