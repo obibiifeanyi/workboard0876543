@@ -13,6 +13,7 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import ManagerDashboard from "./pages/manager/ManagerDashboard";
 import AccountantDashboard from "./pages/accountant/AccountantDashboard";
 import StaffDashboard from "./pages/staff/StaffDashboard";
+import HRDashboard from "./pages/hr/HRDashboard";
 import { RoleBasedRoute } from "./components/RoleBasedRoute";
 
 const queryClient = new QueryClient();
@@ -49,6 +50,12 @@ function App() {
                 </RoleBasedRoute>
               } />
               
+              <Route path="/hr/*" element={
+                <RoleBasedRoute allowedRoles={['hr']}>
+                  <HRDashboard />
+                </RoleBasedRoute>
+              } />
+              
               <Route path="/staff/*" element={
                 <RoleBasedRoute allowedRoles={['staff']}>
                   <StaffDashboard />
@@ -57,7 +64,7 @@ function App() {
               
               {/* AI Document Analysis Routes - accessible by all authenticated users */}
               <Route path="/documents" element={
-                <RoleBasedRoute allowedRoles={['staff', 'manager', 'admin', 'accountant']}>
+                <RoleBasedRoute allowedRoles={['staff', 'manager', 'admin', 'accountant', 'hr']}>
                   <DocumentsPage />
                 </RoleBasedRoute>
               } />

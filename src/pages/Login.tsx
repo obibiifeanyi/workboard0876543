@@ -18,6 +18,8 @@ const Login = () => {
     // Redirect based on account type first, then role
     if (accountType === 'accountant') {
       navigate('/accountant');
+    } else if (accountType === 'hr' || role === 'hr') {
+      navigate('/hr');
     } else if (accountType === 'admin' || role === 'admin') {
       navigate('/admin');
     } else if (accountType === 'manager' || role === 'manager') {
