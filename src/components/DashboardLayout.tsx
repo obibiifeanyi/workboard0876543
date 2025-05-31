@@ -3,7 +3,6 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
-import { ClockInButton } from "@/components/ClockInButton";
 import { NeuralNetwork } from "@/components/NeuralNetwork";
 import { useLocation } from "react-router-dom";
 
