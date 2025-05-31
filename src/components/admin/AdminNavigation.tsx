@@ -45,7 +45,7 @@ export const AdminNavigation = () => {
 
       {/* Navigation Items */}
       <nav className="space-y-1">
-        {navItems.map((item, index) => (
+        {navItems.map((item) => (
           <NavLink
             key={item.to}
             to={item.to}
@@ -64,12 +64,8 @@ export const AdminNavigation = () => {
                            group-hover:opacity-10 transition-opacity duration-300`} />
             
             {/* Icon with Glow Effect */}
-            <div className={`relative p-2 rounded-xl transition-all duration-300
-                           ${({ isActive }: { isActive: boolean }) =>
-                             isActive 
-                               ? "bg-white/20 shadow-lg" 
-                               : "group-hover:bg-admin-primary/10 group-hover:shadow-md"
-                           }`}>
+            <div className="relative p-2 rounded-xl bg-transparent transition-all duration-300
+                         group-hover:bg-admin-primary/10 group-hover:shadow-md">
               <item.icon className="h-4 w-4 transition-transform duration-300 group-hover:scale-110" />
             </div>
 

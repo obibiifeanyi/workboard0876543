@@ -8,6 +8,7 @@ import { ProjectManagement } from "@/components/admin/ProjectManagement";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Users, UserPlus, Building2, FolderOpen } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface User {
   id: string;
@@ -23,6 +24,7 @@ export const UserManagement = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("users");
 
   useEffect(() => {
     fetchUsers();
@@ -62,12 +64,12 @@ export const UserManagement = () => {
 
   const handleEditUser = (user: User) => {
     setSelectedUser(user);
-    // Switch to the edit form tab
-    const tabsElement = document.querySelector('[role="tablist"]');
-    const newTab = tabsElement?.querySelector('[value="new"]') as HTMLButtonElement;
-    if (newTab) {
-      newTab.click();
-    }
+    setActiveTab("new");
+  };
+
+  const handleCreateUser = () => {
+    setSelectedUser(null);
+    setActiveTab("new");
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -96,22 +98,36 @@ export const UserManagement = () => {
           description: "User updated successfully",
         });
       } else {
-        // For new users, you'd typically handle this through auth signup
+        // For new users, create auth account and profile
+        const { data, error } = await supabase.auth.signUp({
+          email: userData.email,
+          password: "TemporaryPassword123!",  // This should be changed by the user
+          options: {
+            data: {
+              full_name: userData.full_name,
+              account_type: userData.account_type,
+            }
+          }
+        });
+
+        if (error) throw error;
+        
         toast({
-          title: "Info",
-          description: "New user creation requires invitation system",
+          title: "Success",
+          description: "User created successfully. A verification email has been sent.",
         });
       }
 
       // Reset form and selected user
       setSelectedUser(null);
       e.currentTarget.reset();
+      setActiveTab("users");
       fetchUsers();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving user:', error);
       toast({
         title: "Error",
-        description: "Failed to save user",
+        description: error.message || "Failed to save user",
         variant: "destructive",
       });
     }
@@ -130,20 +146,29 @@ export const UserManagement = () => {
       {/* Enhanced Header */}
       <div className="p-6 rounded-3xl bg-gradient-to-r from-admin-primary/10 to-admin-secondary/10 
                      border border-admin-primary/20 backdrop-blur-sm">
-        <div className="flex items-center gap-3">
-          <div className="p-3 rounded-2xl bg-gradient-to-r from-admin-primary to-admin-secondary">
-            <Users className="h-6 w-6 text-white" />
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-3 rounded-2xl bg-gradient-to-r from-admin-primary to-admin-secondary">
+              <Users className="h-6 w-6 text-white" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold bg-gradient-to-r from-admin-primary to-admin-secondary bg-clip-text text-transparent">
+                User Management
+              </h2>
+              <p className="text-muted-foreground">Manage users, departments, and projects</p>
+            </div>
           </div>
-          <div>
-            <h2 className="text-2xl font-bold bg-gradient-to-r from-admin-primary to-admin-secondary bg-clip-text text-transparent">
-              User Management
-            </h2>
-            <p className="text-muted-foreground">Manage users, departments, and projects</p>
-          </div>
+          <Button 
+            onClick={handleCreateUser}
+            className="bg-gradient-to-r from-admin-primary to-admin-secondary text-white"
+          >
+            <UserPlus className="mr-2 h-4 w-4" />
+            Add New User
+          </Button>
         </div>
       </div>
 
-      <Tabs defaultValue="users" className="space-y-6">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <div className="p-2 rounded-3xl bg-gradient-to-r from-admin-primary/5 to-admin-secondary/5 
                        border border-admin-primary/20 backdrop-blur-sm">
           <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 gap-2 bg-transparent p-1">
@@ -165,7 +190,7 @@ export const UserManagement = () => {
                        data-[state=active]:shadow-lg data-[state=active]:shadow-admin-primary/25"
             >
               <UserPlus className="h-4 w-4 mr-2" />
-              Add User
+              {selectedUser ? "Edit User" : "Add User"}
             </TabsTrigger>
             <TabsTrigger 
               value="departments"
