@@ -42,9 +42,9 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
         localStorage.removeItem("rememberedEmail");
       }
 
-      console.log('Attempting login with:', { email });
+      console.log('Attempting login with email:', email);
 
-      const { data: { user }, error: authError } = await supabase.auth.signInWithPassword({
+      const { data, error: authError } = await supabase.auth.signInWithPassword({
         email: email.trim(),
         password: password.trim()
       });
@@ -52,54 +52,38 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
       if (authError) {
         console.error('Login error:', authError);
         
-        if (authError.message === "Invalid login credentials") {
-          setError("Invalid email or password. Please try again.");
+        let errorMessage = "Login failed. Please try again.";
+        
+        if (authError.message.includes("Invalid login credentials")) {
+          errorMessage = "Invalid email or password. Please check your credentials and try again.";
         } else if (authError.message.includes("Email not confirmed")) {
-          setError("Please check your email and confirm your account before signing in.");
+          errorMessage = "Please check your email and confirm your account before signing in.";
+        } else if (authError.message.includes("Too many requests")) {
+          errorMessage = "Too many login attempts. Please wait a moment and try again.";
         } else {
-          setError(authError.message);
+          errorMessage = authError.message;
         }
-        throw authError;
+        
+        setError(errorMessage);
+        toast({
+          title: "Login Failed",
+          description: errorMessage,
+          variant: "destructive",
+        });
+        return;
       }
 
-      if (user) {
-        console.log('User logged in successfully:', user.id);
-        
-        // Fetch user profile to get role and account_type
-        try {
-          const { data: profile, error: profileError } = await supabase
-            .from('profiles')
-            .select('role, account_type, full_name')
-            .eq('id', user.id)
-            .single();
-
-          if (profileError) {
-            console.error('Error fetching user profile:', profileError);
-            // Set default values if profile fetch fails
-            localStorage.setItem('userRole', 'staff');
-            localStorage.setItem('accountType', 'staff');
-          } else if (profile) {
-            console.log('Profile fetched:', profile);
-            // Store role and account type from database
-            localStorage.setItem('userRole', profile.role || 'staff');
-            localStorage.setItem('accountType', profile.account_type || 'staff');
-          }
-        } catch (profileError) {
-          console.error('Profile fetch error:', profileError);
-          localStorage.setItem('userRole', 'staff');
-          localStorage.setItem('accountType', 'staff');
-        }
-
+      if (data.user) {
+        console.log('Login successful for user:', data.user.id);
         toast({
           title: "Welcome Back!",
           description: "You have successfully logged in.",
         });
-
-        // Navigation will be handled by the auth state change in Login.tsx
+        // Navigation will be handled by the auth state change listener
       }
     } catch (error) {
-      console.error('Login error:', error);
-      const errorMessage = error instanceof AuthError ? error.message : 'Failed to login';
+      console.error('Unexpected login error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
       setError(errorMessage);
       toast({
         title: "Login Failed",

@@ -10,6 +10,7 @@ import { LoginHeader } from "@/components/login/LoginHeader";
 const Login = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [isChecking, setIsChecking] = useState(true);
 
   const redirectUserBasedOnRole = (role: string, accountType: string) => {
     console.log('Redirecting user based on role:', role, 'accountType:', accountType);
@@ -28,11 +29,70 @@ const Login = () => {
   };
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_IN') {
+    // Check if user is already logged in
+    const checkSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('Session check error:', error);
+          setIsChecking(false);
+          return;
+        }
+        
         if (session?.user) {
-          console.log('User signed in, fetching profile...');
+          console.log('Existing session found, checking stored role...');
+          const storedRole = localStorage.getItem('userRole') || 'staff';
+          const storedAccountType = localStorage.getItem('accountType') || 'staff';
           
+          // If we have stored role info, redirect immediately
+          if (storedRole && storedAccountType) {
+            redirectUserBasedOnRole(storedRole, storedAccountType);
+          } else {
+            // Otherwise fetch from database
+            try {
+              const { data: profile, error: profileError } = await supabase
+                .from('profiles')
+                .select('role, account_type')
+                .eq('id', session.user.id)
+                .maybeSingle();
+
+              if (profileError) {
+                console.error('Error fetching profile:', profileError);
+                navigate('/staff');
+                return;
+              }
+              
+              const role = profile?.role || 'staff';
+              const accountType = profile?.account_type || 'staff';
+              
+              localStorage.setItem('userRole', role);
+              localStorage.setItem('accountType', accountType);
+              
+              redirectUserBasedOnRole(role, accountType);
+            } catch (profileError) {
+              console.error('Profile fetch error:', profileError);
+              navigate('/staff');
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Session check error:', error);
+      } finally {
+        setIsChecking(false);
+      }
+    };
+
+    checkSession();
+
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('Auth state change:', event, session?.user?.id);
+      
+      if (event === 'SIGNED_IN' && session?.user) {
+        console.log('User signed in, fetching profile...');
+        
+        try {
           const { data: profile, error } = await supabase
             .from('profiles')
             .select('role, account_type')
@@ -60,42 +120,11 @@ const Login = () => {
             title: "Welcome back!",
             description: "You have successfully logged in.",
           });
-        }
-      }
-    });
-
-    // Check if user is already logged in
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        console.log('Existing session found, checking stored role...');
-        const storedRole = localStorage.getItem('userRole') || 'staff';
-        const storedAccountType = localStorage.getItem('accountType') || 'staff';
-        
-        // If we have stored role info, redirect immediately
-        if (storedRole && storedAccountType) {
-          redirectUserBasedOnRole(storedRole, storedAccountType);
-        } else {
-          // Otherwise fetch from database
-          supabase
-            .from('profiles')
-            .select('role, account_type')
-            .eq('id', session.user.id)
-            .maybeSingle()
-            .then(({ data: profile, error }) => {
-              if (error) {
-                console.error('Error fetching profile:', error);
-                navigate('/staff');
-                return;
-              }
-              
-              const role = profile?.role || 'staff';
-              const accountType = profile?.account_type || 'staff';
-              
-              localStorage.setItem('userRole', role);
-              localStorage.setItem('accountType', accountType);
-              
-              redirectUserBasedOnRole(role, accountType);
-            });
+        } catch (error) {
+          console.error('Profile fetch error:', error);
+          localStorage.setItem('userRole', 'staff');
+          localStorage.setItem('accountType', 'staff');
+          navigate('/staff');
         }
       }
     });
@@ -106,18 +135,20 @@ const Login = () => {
   }, [navigate, toast]);
 
   const handleLogin = async (email: string, password: string) => {
-    try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) throw error;
-    } catch (error) {
-      console.error('Login error:', error);
-      // Error handling is done in LoginForm component
-    }
+    // Login handling is done in LoginForm component
+    console.log('Login attempt for:', email);
   };
+
+  if (isChecking) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <p className="text-muted-foreground mt-2">Checking authentication...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <ErrorBoundary>
