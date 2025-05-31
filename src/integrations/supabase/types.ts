@@ -514,38 +514,83 @@ export type Database = {
           },
         ]
       }
+      notification_preferences: {
+        Row: {
+          created_at: string | null
+          document_notifications: boolean | null
+          email_enabled: boolean | null
+          id: string
+          leave_notifications: boolean | null
+          memo_notifications: boolean | null
+          push_enabled: boolean | null
+          task_notifications: boolean | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          document_notifications?: boolean | null
+          email_enabled?: boolean | null
+          id?: string
+          leave_notifications?: boolean | null
+          memo_notifications?: boolean | null
+          push_enabled?: boolean | null
+          task_notifications?: boolean | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          document_notifications?: boolean | null
+          email_enabled?: boolean | null
+          id?: string
+          leave_notifications?: boolean | null
+          memo_notifications?: boolean | null
+          push_enabled?: boolean | null
+          task_notifications?: boolean | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
+          action_url: string | null
+          category: string | null
           created_at: string
           id: string
           is_read: boolean | null
-          link: string | null
           message: string
           metadata: Json | null
+          priority: string | null
           title: string
           type: string
           updated_at: string
           user_id: string | null
         }
         Insert: {
+          action_url?: string | null
+          category?: string | null
           created_at?: string
           id?: string
           is_read?: boolean | null
-          link?: string | null
           message: string
           metadata?: Json | null
+          priority?: string | null
           title: string
           type: string
           updated_at?: string
           user_id?: string | null
         }
         Update: {
+          action_url?: string | null
+          category?: string | null
           created_at?: string
           id?: string
           is_read?: boolean | null
-          link?: string | null
           message?: string
           metadata?: Json | null
+          priority?: string | null
           title?: string
           type?: string
           updated_at?: string
