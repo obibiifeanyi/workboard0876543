@@ -104,14 +104,19 @@ export const useManagerOperations = () => {
       description?: string;
       department_id: string;
       status?: string;
-      priority?: string;
       start_date?: string;
       end_date?: string;
       budget?: number;
     }) => {
       const { error } = await supabase.from("projects").insert({
-        ...projectData,
+        name: projectData.name,
+        description: projectData.description || "",
+        department_id: projectData.department_id,
         manager_id: currentUser?.id,
+        status: projectData.status || "planning",
+        start_date: projectData.start_date,
+        end_date: projectData.end_date,
+        budget: projectData.budget || 0,
       });
       if (error) throw error;
     },

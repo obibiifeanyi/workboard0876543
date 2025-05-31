@@ -12,6 +12,7 @@ interface ProjectMember {
   project_id: string;
   user_id: string;
   role: string;
+  joined_at?: string;
   projects: {
     id: string;
     name: string;
@@ -33,13 +34,16 @@ export const ProjectTracking = () => {
       const { data, error } = await supabase
         .from("project_members")
         .select(`
-          *,
+          id,
+          project_id,
+          user_id,
+          role,
+          joined_at,
           projects (
             id,
             name,
             description,
             status,
-            priority,
             start_date,
             end_date
           )
@@ -47,7 +51,10 @@ export const ProjectTracking = () => {
         .eq("user_id", user.id);
 
       if (error) throw error;
-      return data as ProjectMember[];
+      
+      // Filter out any records where projects is null
+      const validProjects = (data || []).filter(item => item.projects) as ProjectMember[];
+      return validProjects;
     },
   });
 
@@ -117,12 +124,9 @@ export const ProjectTracking = () => {
                   <div className="flex items-center justify-between mb-2">
                     <h3 className="font-medium">{projectMember.projects.name}</h3>
                     <div className="flex items-center gap-2">
-                      <Badge className={getPriorityColor(projectMember.projects.priority || "medium")}>
-                        {projectMember.projects.priority}
-                      </Badge>
                       <span className={`flex items-center gap-1 ${getStatusColor(projectMember.projects.status || "planning")}`}>
                         <AlertCircle className="h-4 w-4" />
-                        {projectMember.projects.status}
+                        {projectMember.projects.status || "planning"}
                       </span>
                     </div>
                   </div>
