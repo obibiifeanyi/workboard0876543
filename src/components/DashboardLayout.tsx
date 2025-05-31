@@ -6,6 +6,7 @@ import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 import { NeuralNetwork } from "@/components/NeuralNetwork";
 import { ClockInButton } from "@/components/ClockInButton";
 import { useLocation } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 
 interface DashboardLayoutProps {
   title: string;
@@ -15,26 +16,15 @@ interface DashboardLayoutProps {
 
 export const DashboardLayout = ({ title, children, navigation }: DashboardLayoutProps) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [user, setUser] = useState<any>(null);
   const location = useLocation();
+  const { user, profile } = useAuth();
 
-  // Don't show ClockInButton on manager or admin dashboards
-  const showClockInButton = !location.pathname.includes('/manager') && !location.pathname.includes('/admin');
-
-  useEffect(() => {
-    const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
-    };
-    
-    getUser();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      setUser(session?.user ?? null);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
+  // Only show ClockInButton for staff users and not on manager/admin dashboards
+  const showClockInButton = profile?.role === 'staff' && 
+    !location.pathname.includes('/manager') && 
+    !location.pathname.includes('/admin') &&
+    !location.pathname.includes('/accountant') &&
+    !location.pathname.includes('/hr');
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900">

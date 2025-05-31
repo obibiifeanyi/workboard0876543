@@ -1,36 +1,109 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/use-toast";
-import { useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 import { Timer } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 export const ClockInButton = () => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
-  const navigate = useNavigate();
+  const { user } = useAuth();
 
   const handleClockIn = async () => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to clock in.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
     try {
       if ("geolocation" in navigator) {
         navigator.geolocation.getCurrentPosition(
-          (position) => {
+          async (position) => {
             const { latitude, longitude } = position.coords;
-            console.log("Location:", { latitude, longitude });
-            toast({
-              title: "Clock In Successful",
-              description: "Your location has been recorded.",
-            });
-            navigate("/login");
+            const clockInTime = new Date().toISOString();
+            
+            try {
+              // Check if user already has an active clock-in today
+              const today = new Date();
+              today.setHours(0, 0, 0, 0);
+              const tomorrow = new Date(today);
+              tomorrow.setDate(tomorrow.getDate() + 1);
+
+              const { data: existingLog } = await supabase
+                .from('time_logs')
+                .select('*')
+                .eq('user_id', user.id)
+                .gte('clock_in', today.toISOString())
+                .lt('clock_in', tomorrow.toISOString())
+                .is('clock_out', null)
+                .single();
+
+              if (existingLog) {
+                // Clock out existing session
+                const clockOutTime = new Date().toISOString();
+                const clockInDate = new Date(existingLog.clock_in);
+                const clockOutDate = new Date(clockOutTime);
+                const totalHours = (clockOutDate.getTime() - clockInDate.getTime()) / (1000 * 60 * 60);
+
+                const { error: updateError } = await supabase
+                  .from('time_logs')
+                  .update({
+                    clock_out: clockOutTime,
+                    total_hours: totalHours
+                  })
+                  .eq('id', existingLog.id);
+
+                if (updateError) throw updateError;
+
+                toast({
+                  title: "Clock Out Successful",
+                  description: `You worked ${totalHours.toFixed(2)} hours today.`,
+                });
+              } else {
+                // Create new clock-in entry
+                const { error: insertError } = await supabase
+                  .from('time_logs')
+                  .insert({
+                    user_id: user.id,
+                    clock_in: clockInTime,
+                    notes: `Location: ${latitude}, ${longitude}`
+                  });
+
+                if (insertError) throw insertError;
+
+                toast({
+                  title: "Clock In Successful",
+                  description: "Your location and time have been recorded.",
+                });
+              }
+            } catch (dbError) {
+              console.error("Database error:", dbError);
+              toast({
+                title: "Error",
+                description: "Failed to record time log. Please try again.",
+                variant: "destructive",
+              });
+            }
           },
           (error) => {
-            console.error("Error getting location:", error);
+            console.error("Geolocation error:", error);
             toast({
               title: "Location Error",
               description: "Please enable location services to clock in.",
               variant: "destructive",
             });
+          },
+          {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 60000
           }
         );
       } else {
@@ -51,6 +124,9 @@ export const ClockInButton = () => {
       setLoading(false);
     }
   };
+
+  // Don't render if user is not authenticated
+  if (!user) return null;
 
   return (
     <div className="relative">
@@ -103,7 +179,7 @@ export const ClockInButton = () => {
             >
               <Timer className="h-8 w-8 group-hover:scale-110 transition-transform duration-300" />
               <span className="font-semibold tracking-wide text-sm">
-                {loading ? "Processing..." : "Clock In"}
+                {loading ? "Processing..." : "Clock In/Out"}
               </span>
             </Button>
           </div>
