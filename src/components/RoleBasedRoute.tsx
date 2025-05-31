@@ -15,124 +15,99 @@ export const RoleBasedRoute = ({ children, allowedRoles, userRole: propUserRole 
   const { toast } = useToast();
   const [shouldRedirect, setShouldRedirect] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const storedRole = localStorage.getItem("userRole");
-  const accountType = localStorage.getItem("accountType");
-  const userRole = propUserRole || storedRole || "staff";
+  const [userRole, setUserRole] = useState<string | null>(null);
+  const [accountType, setAccountType] = useState<string | null>(null);
 
   useEffect(() => {
+    let mounted = true;
+
     const checkAccess = async () => {
       try {
         // Check if user is authenticated
         const { data: { session } } = await supabase.auth.getSession();
         
         if (!session?.user) {
+          console.log('No session found, redirecting to login');
           setShouldRedirect(true);
           setIsLoading(false);
           return;
         }
 
-        // For accountant routes, check account type first
-        if (allowedRoles.includes("accountant") && (accountType === "accountant")) {
-          setIsLoading(false);
-          return;
-        }
-        
-        // For admin routes, check both account type and role
-        if (allowedRoles.includes("admin") && (accountType === "admin" || userRole === "admin")) {
-          setIsLoading(false);
-          return;
-        }
-        
-        // For manager routes, check both account type and role
-        if (allowedRoles.includes("manager") && (accountType === "manager" || userRole === "manager")) {
-          setIsLoading(false);
-          return;
-        }
-        
-        // If no stored role/accountType, fetch from database
-        if (!storedRole || !accountType) {
-          const { data: profile, error } = await supabase
-            .from('profiles')
-            .select('role, account_type')
-            .eq('id', session.user.id)
-            .maybeSingle();
+        // Fetch user profile to get role and account type
+        const { data: profile, error } = await supabase
+          .from('profiles')
+          .select('role, account_type')
+          .eq('id', session.user.id)
+          .single();
 
-          if (error) {
-            console.error('Error fetching profile:', error);
-            // Profile should exist due to trigger, but handle gracefully
-            localStorage.setItem('userRole', 'staff');
-            localStorage.setItem('accountType', 'staff');
-            
-            if (!allowedRoles.includes('staff')) {
-              setShouldRedirect(true);
-            }
-            setIsLoading(false);
-            return;
-          }
-
-          if (profile) {
-            localStorage.setItem('userRole', profile.role || 'staff');
-            localStorage.setItem('accountType', profile.account_type || 'staff');
-            
-            // Check access with fetched role and account type
-            const finalRole = profile.role || 'staff';
-            const finalAccountType = profile.account_type || 'staff';
-            
-            // Check accountant access
-            if (allowedRoles.includes("accountant") && finalAccountType === "accountant") {
-              setIsLoading(false);
-              return;
-            }
-            
-            // Check admin access
-            if (allowedRoles.includes("admin") && (finalAccountType === "admin" || finalRole === "admin")) {
-              setIsLoading(false);
-              return;
-            }
-            
-            // Check manager access
-            if (allowedRoles.includes("manager") && (finalAccountType === "manager" || finalRole === "manager")) {
-              setIsLoading(false);
-              return;
-            }
-            
-            // Check role-based access for staff and other roles
-            if (allowedRoles.includes(finalRole) || allowedRoles.includes(finalAccountType)) {
-              setIsLoading(false);
-              return;
-            }
-            
-            setShouldRedirect(true);
-          } else {
-            setShouldRedirect(true);
-          }
+        if (error) {
+          console.error('Error fetching profile:', error);
+          // Set default values if profile doesn't exist
+          setUserRole('staff');
+          setAccountType('staff');
+          localStorage.setItem('userRole', 'staff');
+          localStorage.setItem('accountType', 'staff');
         } else {
-          // Check with stored role and account type
-          const hasAccess = allowedRoles.includes(userRole) || 
-                           allowedRoles.includes(accountType) ||
-                           (allowedRoles.includes("admin") && (accountType === "admin" || userRole === "admin")) ||
-                           (allowedRoles.includes("manager") && (accountType === "manager" || userRole === "manager")) ||
-                           (allowedRoles.includes("accountant") && accountType === "accountant");
+          const finalRole = profile.role || 'staff';
+          const finalAccountType = profile.account_type || 'staff';
           
-          if (!hasAccess) {
-            setShouldRedirect(true);
-          }
+          setUserRole(finalRole);
+          setAccountType(finalAccountType);
+          localStorage.setItem('userRole', finalRole);
+          localStorage.setItem('accountType', finalAccountType);
+        }
+
+        if (mounted) {
+          setIsLoading(false);
         }
       } catch (error) {
         console.error('Access check error:', error);
-        setShouldRedirect(true);
-      } finally {
-        setIsLoading(false);
+        if (mounted) {
+          setShouldRedirect(true);
+          setIsLoading(false);
+        }
       }
     };
 
     checkAccess();
-  }, [userRole, accountType, allowedRoles, toast]);
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isLoading && userRole && accountType) {
+      // Check if user has access to the route
+      const hasRoleAccess = allowedRoles.includes(userRole);
+      const hasAccountTypeAccess = allowedRoles.includes(accountType);
+      const hasSpecialAccess = 
+        (allowedRoles.includes("admin") && (accountType === "admin" || userRole === "admin")) ||
+        (allowedRoles.includes("manager") && (accountType === "manager" || userRole === "manager")) ||
+        (allowedRoles.includes("accountant") && accountType === "accountant") ||
+        (allowedRoles.includes("hr") && (accountType === "hr" || userRole === "hr"));
+
+      const hasAccess = hasRoleAccess || hasAccountTypeAccess || hasSpecialAccess;
+
+      if (!hasAccess) {
+        console.log(`Access denied. User role: ${userRole}, Account type: ${accountType}, Required roles: ${allowedRoles.join(', ')}`);
+        toast({
+          title: "Access Denied",
+          description: "You don't have permission to access this page.",
+          variant: "destructive",
+        });
+        setShouldRedirect(true);
+      }
+    }
+  }, [userRole, accountType, allowedRoles, isLoading, toast]);
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader className="h-8 w-8 animate-spin text-primary" />
+      <div className="flex items-center justify-center min-h-screen bg-background">
+        <div className="text-center space-y-4">
+          <Loader className="h-8 w-8 animate-spin text-primary mx-auto" />
+          <p className="text-muted-foreground">Checking permissions...</p>
+        </div>
       </div>
     );
   }

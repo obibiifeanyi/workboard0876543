@@ -4,7 +4,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { AuthError } from "@supabase/supabase-js";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { RememberMeCheckbox } from "./RememberMeCheckbox";
 import { ForgotPasswordButton } from "./ForgotPasswordButton";
@@ -120,33 +119,33 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {error && (
-        <Alert variant="destructive" className="mb-4">
+        <Alert variant="destructive" className="mb-4 rounded-[30px] border-red-200">
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
       <div className="space-y-2 text-left">
-        <Label htmlFor="email">Email</Label>
+        <Label htmlFor="email" className="text-foreground font-medium">Email Address</Label>
         <Input
           id="email"
           type="email"
-          placeholder="Enter your email"
+          placeholder="Enter your work email address"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          className="bg-black/5 dark:bg-white/5 border-none placeholder:text-muted-foreground/50"
+          className="bg-white/10 dark:bg-black/10 border-primary/20 rounded-[30px] placeholder:text-muted-foreground/60 focus:border-primary/50 focus:ring-primary/20"
           disabled={loading}
         />
       </div>
       <div className="space-y-2 text-left">
-        <Label htmlFor="password">Password</Label>
+        <Label htmlFor="password" className="text-foreground font-medium">Password</Label>
         <Input
           id="password"
           type="password"
-          placeholder="Enter your password"
+          placeholder="Enter your secure password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
-          className="bg-black/5 dark:bg-white/5 border-none placeholder:text-muted-foreground/50"
+          className="bg-white/10 dark:bg-black/10 border-primary/20 rounded-[30px] placeholder:text-muted-foreground/60 focus:border-primary/50 focus:ring-primary/20"
           disabled={loading}
         />
       </div>

@@ -48,22 +48,13 @@ const Login = () => {
         if (session?.user && mounted) {
           console.log('Existing session found');
           
-          // Check stored credentials first for faster redirect
-          const storedRole = localStorage.getItem('userRole');
-          const storedAccountType = localStorage.getItem('accountType');
-          
-          if (storedRole && storedAccountType) {
-            redirectUserBasedOnRole(storedRole, storedAccountType);
-            return;
-          }
-
-          // Fetch from database if not stored
+          // Fetch user profile for role-based routing
           try {
             const { data: profile, error: profileError } = await supabase
               .from('profiles')
               .select('role, account_type')
               .eq('id', session.user.id)
-              .maybeSingle();
+              .single();
 
             if (!profileError && profile && mounted) {
               const role = profile.role || 'staff';
@@ -74,11 +65,16 @@ const Login = () => {
               
               redirectUserBasedOnRole(role, accountType);
             } else if (mounted) {
+              // Default to staff if no profile found
+              localStorage.setItem('userRole', 'staff');
+              localStorage.setItem('accountType', 'staff');
               navigate('/staff');
             }
           } catch (profileError) {
             console.error('Profile fetch error:', profileError);
             if (mounted) {
+              localStorage.setItem('userRole', 'staff');
+              localStorage.setItem('accountType', 'staff');
               navigate('/staff');
             }
           }
@@ -98,7 +94,7 @@ const Login = () => {
         console.log('Auth check timeout reached');
         setIsChecking(false);
       }
-    }, 2000);
+    }, 3000);
 
     checkSession();
 
@@ -116,7 +112,7 @@ const Login = () => {
             .from('profiles')
             .select('role, account_type')
             .eq('id', session.user.id)
-            .maybeSingle();
+            .single();
 
           if (!error && profile && mounted) {
             const role = profile.role || 'staff';
@@ -163,9 +159,9 @@ const Login = () => {
   if (isChecking) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center">
+        <div className="text-center space-y-4">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-          <p className="text-muted-foreground mt-2">Checking authentication...</p>
+          <p className="text-muted-foreground">Checking authentication...</p>
         </div>
       </div>
     );
@@ -182,9 +178,9 @@ const Login = () => {
         </div>
         
         <div className="w-full max-w-[400px] glass-card relative z-10 
-          border border-white/10 dark:border-white/5 
-          shadow-2xl hover:shadow-primary/5 transition-all duration-300
-          bg-white/10 dark:bg-black/20 backdrop-blur-xl rounded-xl p-6">
+          border border-primary/20 dark:border-primary/10 
+          shadow-2xl hover:shadow-primary/10 transition-all duration-300
+          bg-white/10 dark:bg-black/20 backdrop-blur-xl rounded-[30px] p-8">
           <img 
             src="/lovable-uploads/491c7e61-a4fb-46a3-a002-904b84354e48.png" 
             alt="CT Communication Towers Logo" 
@@ -195,7 +191,7 @@ const Login = () => {
           
           <div className="mt-6 text-center text-sm">
             <span className="text-muted-foreground">Don't have an account? </span>
-            <Link to="/signup" className="text-primary hover:underline font-medium">
+            <Link to="/signup" className="text-primary hover:underline font-medium transition-colors">
               Sign up here
             </Link>
           </div>

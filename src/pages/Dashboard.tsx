@@ -10,6 +10,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     if (!loading && !user) {
+      console.log('No user found, redirecting to login');
       navigate("/login");
       return;
     }
@@ -20,6 +21,10 @@ const Dashboard = () => {
       
       console.log('Dashboard redirect - User:', user.id, 'Account Type:', accountType, 'Role:', profile.role);
       
+      // Store in localStorage for consistency
+      localStorage.setItem('userRole', profile.role || 'staff');
+      localStorage.setItem('accountType', profile.account_type || 'staff');
+      
       switch (accountType) {
         case 'admin':
           navigate("/admin", { replace: true });
@@ -29,6 +34,9 @@ const Dashboard = () => {
           break;
         case 'accountant':
           navigate("/accountant", { replace: true });
+          break;
+        case 'hr':
+          navigate("/hr", { replace: true });
           break;
         case 'staff':
         default:
@@ -41,8 +49,8 @@ const Dashboard = () => {
   // Show loading while determining redirect
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center">
-        <Loader className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
+      <div className="text-center space-y-4">
+        <Loader className="h-8 w-8 animate-spin text-primary mx-auto" />
         <p className="text-muted-foreground">Loading your dashboard...</p>
       </div>
     </div>
