@@ -2,15 +2,16 @@
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { LoginForm } from "@/components/login/LoginForm";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { LoginHeader } from "@/components/login/LoginHeader";
+import { useAuth } from "@/hooks/useAuth";
 
 const Login = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user, profile, loading } = useAuth();
   const [isChecking, setIsChecking] = useState(true);
 
   const redirectUserBasedOnRole = (role: string, accountType: string) => {
@@ -30,121 +31,24 @@ const Login = () => {
   };
 
   useEffect(() => {
-    let mounted = true;
-
-    const checkSession = async () => {
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        
-        if (error) {
-          console.error('Session check error:', error);
-          if (mounted) {
-            setIsChecking(false);
-          }
-          return;
-        }
-        
-        if (session?.user && mounted) {
-          console.log('Existing session found');
-          
-          // Fetch user profile for role-based routing
-          try {
-            const { data: profile, error: profileError } = await supabase
-              .from('profiles')
-              .select('role, account_type')
-              .eq('id', session.user.id)
-              .single();
-
-            if (!profileError && profile && mounted) {
-              const role = profile.role || 'staff';
-              const accountType = profile.account_type || 'staff';
-              
-              localStorage.setItem('userRole', role);
-              localStorage.setItem('accountType', accountType);
-              
-              redirectUserBasedOnRole(role, accountType);
-            } else if (mounted) {
-              // Default to staff if no profile found
-              localStorage.setItem('userRole', 'staff');
-              localStorage.setItem('accountType', 'staff');
-              navigate('/staff');
-            }
-          } catch (profileError) {
-            console.error('Profile fetch error:', profileError);
-            if (mounted) {
-              localStorage.setItem('userRole', 'staff');
-              localStorage.setItem('accountType', 'staff');
-              navigate('/staff');
-            }
-          }
-        }
-      } catch (error) {
-        console.error('Session check error:', error);
-      } finally {
-        if (mounted) {
-          setIsChecking(false);
-        }
+    if (!loading) {
+      if (user && profile) {
+        console.log('Existing session found, redirecting...');
+        const role = profile.role || 'staff';
+        const accountType = profile.account_type || 'staff';
+        redirectUserBasedOnRole(role, accountType);
+      } else {
+        setIsChecking(false);
       }
-    };
-
-    // Set up auth state listener for new sign-ins
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (!mounted) return;
-
-      console.log('Login page auth state change:', event);
-      
-      if (event === 'SIGNED_IN' && session?.user) {
-        console.log('User signed in, fetching profile...');
-        
-        try {
-          const { data: profile, error } = await supabase
-            .from('profiles')
-            .select('role, account_type')
-            .eq('id', session.user.id)
-            .single();
-
-          if (!error && profile && mounted) {
-            const role = profile.role || 'staff';
-            const accountType = profile.account_type || 'staff';
-            
-            localStorage.setItem('userRole', role);
-            localStorage.setItem('accountType', accountType);
-
-            redirectUserBasedOnRole(role, accountType);
-
-            toast({
-              title: "Welcome back!",
-              description: "You have successfully logged in.",
-            });
-          } else if (mounted) {
-            localStorage.setItem('userRole', 'staff');
-            localStorage.setItem('accountType', 'staff');
-            navigate('/staff');
-          }
-        } catch (error) {
-          console.error('Profile fetch error:', error);
-          if (mounted) {
-            localStorage.setItem('userRole', 'staff');
-            localStorage.setItem('accountType', 'staff');
-            navigate('/staff');
-          }
-        }
-      }
-    });
-
-    checkSession();
-
-    return () => {
-      mounted = false;
-      subscription.unsubscribe();
-    };
-  }, [navigate, toast]);
+    }
+  }, [user, profile, loading, navigate]);
 
   const handleLogin = async (email: string, password: string) => {
     console.log('Login attempt for:', email);
+    // Login logic is handled in LoginForm component
   };
 
-  if (isChecking) {
+  if (loading || (user && profile && isChecking)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center space-y-4">

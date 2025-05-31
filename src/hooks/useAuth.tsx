@@ -21,60 +21,78 @@ export const useAuth = () => {
 
   useEffect(() => {
     let mounted = true;
+    let profileCache: Profile | null = null;
+
+    // Check cached profile first
+    const cachedRole = localStorage.getItem('userRole');
+    const cachedAccountType = localStorage.getItem('accountType');
+    
+    const fetchProfile = async (userId: string) => {
+      // Return cached profile if available
+      if (profileCache) return profileCache;
+      
+      try {
+        const { data: profileData, error } = await supabase
+          .from('profiles')
+          .select('id, role, account_type, full_name, email')
+          .eq('id', userId)
+          .single();
+
+        if (!error && profileData) {
+          profileCache = profileData;
+          localStorage.setItem('userRole', profileData.role || 'staff');
+          localStorage.setItem('accountType', profileData.account_type || 'staff');
+          return profileData;
+        }
+      } catch (error) {
+        console.error('Profile fetch error:', error);
+      }
+      
+      // Return default profile
+      const defaultProfile = {
+        id: userId,
+        role: 'staff',
+        account_type: 'staff',
+        full_name: null,
+        email: null,
+      };
+      profileCache = defaultProfile;
+      localStorage.setItem('userRole', 'staff');
+      localStorage.setItem('accountType', 'staff');
+      return defaultProfile;
+    };
 
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!mounted) return;
 
-      console.log('Auth state change:', event, session?.user?.id);
+      console.log('Auth state change:', event);
       
       setSession(session);
       setUser(session?.user ?? null);
 
       if (session?.user) {
-        // Fetch user profile
-        try {
-          const { data: profileData, error: profileError } = await supabase
-            .from('profiles')
-            .select('id, role, account_type, full_name, email')
-            .eq('id', session.user.id)
-            .single();
-
-          if (!profileError && profileData && mounted) {
-            setProfile(profileData);
-            localStorage.setItem('userRole', profileData.role || 'staff');
-            localStorage.setItem('accountType', profileData.account_type || 'staff');
-          } else {
-            console.error('Profile fetch error:', profileError);
-            // Create default profile if none exists
-            const defaultProfile = {
-              id: session.user.id,
-              role: 'staff',
-              account_type: 'staff',
-              full_name: session.user.user_metadata?.full_name || null,
-              email: session.user.email || null,
-            };
-            setProfile(defaultProfile);
-            localStorage.setItem('userRole', 'staff');
-            localStorage.setItem('accountType', 'staff');
-          }
-        } catch (error) {
-          console.error('Profile fetch error:', error);
+        // Use cached data if available
+        if (cachedRole && cachedAccountType && !profile) {
+          const cachedProfile = {
+            id: session.user.id,
+            role: cachedRole,
+            account_type: cachedAccountType,
+            full_name: session.user.user_metadata?.full_name || null,
+            email: session.user.email || null,
+          };
+          setProfile(cachedProfile);
+          profileCache = cachedProfile;
+        } else if (!profileCache) {
+          // Only fetch if not cached
+          const userProfile = await fetchProfile(session.user.id);
           if (mounted) {
-            const defaultProfile = {
-              id: session.user.id,
-              role: 'staff',
-              account_type: 'staff',
-              full_name: session.user.user_metadata?.full_name || null,
-              email: session.user.email || null,
-            };
-            setProfile(defaultProfile);
-            localStorage.setItem('userRole', 'staff');
-            localStorage.setItem('accountType', 'staff');
+            setProfile(userProfile);
           }
         }
       } else {
         setProfile(null);
+        profileCache = null;
         localStorage.removeItem('userRole');
         localStorage.removeItem('accountType');
       }
@@ -84,68 +102,50 @@ export const useAuth = () => {
       }
     });
 
-    // Check for existing session
+    // Check for existing session - simplified
     const getInitialSession = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
         
-        if (error) {
-          console.error('Session error:', error);
+        if (error || !session?.user) {
+          if (mounted) setLoading(false);
+          return;
+        }
+
+        // Use cached profile if available
+        if (cachedRole && cachedAccountType) {
+          const cachedProfile = {
+            id: session.user.id,
+            role: cachedRole,
+            account_type: cachedAccountType,
+            full_name: session.user.user_metadata?.full_name || null,
+            email: session.user.email || null,
+          };
+          
           if (mounted) {
+            setSession(session);
+            setUser(session.user);
+            setProfile(cachedProfile);
+            profileCache = cachedProfile;
             setLoading(false);
           }
           return;
         }
 
-        if (session?.user && mounted) {
+        // Fetch profile only if not cached
+        if (mounted) {
           setSession(session);
           setUser(session.user);
           
-          try {
-            const { data: profileData, error: profileError } = await supabase
-              .from('profiles')
-              .select('id, role, account_type, full_name, email')
-              .eq('id', session.user.id)
-              .single();
-
-            if (!profileError && profileData && mounted) {
-              setProfile(profileData);
-              localStorage.setItem('userRole', profileData.role || 'staff');
-              localStorage.setItem('accountType', profileData.account_type || 'staff');
-            } else {
-              const defaultProfile = {
-                id: session.user.id,
-                role: 'staff',
-                account_type: 'staff',
-                full_name: session.user.user_metadata?.full_name || null,
-                email: session.user.email || null,
-              };
-              setProfile(defaultProfile);
-              localStorage.setItem('userRole', 'staff');
-              localStorage.setItem('accountType', 'staff');
-            }
-          } catch (error) {
-            console.error('Profile fetch error:', error);
-            if (mounted) {
-              const defaultProfile = {
-                id: session.user.id,
-                role: 'staff',
-                account_type: 'staff',
-                full_name: session.user.user_metadata?.full_name || null,
-                email: session.user.email || null,
-              };
-              setProfile(defaultProfile);
-              localStorage.setItem('userRole', 'staff');
-              localStorage.setItem('accountType', 'staff');
-            }
+          const userProfile = await fetchProfile(session.user.id);
+          if (mounted) {
+            setProfile(userProfile);
+            setLoading(false);
           }
         }
       } catch (error) {
         console.error('Session fetch error:', error);
-      } finally {
-        if (mounted) {
-          setLoading(false);
-        }
+        if (mounted) setLoading(false);
       }
     };
 
@@ -162,7 +162,7 @@ export const useAuth = () => {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
       
-      // Clear local storage
+      // Clear all cached data
       localStorage.removeItem('userRole');
       localStorage.removeItem('accountType');
       localStorage.removeItem('rememberedEmail');

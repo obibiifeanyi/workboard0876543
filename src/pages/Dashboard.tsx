@@ -9,39 +9,37 @@ const Dashboard = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!loading && !user) {
-      console.log('No user found, redirecting to login');
-      navigate("/login");
-      return;
-    }
+    if (!loading) {
+      if (!user) {
+        console.log('No user found, redirecting to login');
+        navigate("/login");
+        return;
+      }
 
-    if (!loading && user && profile) {
-      // Redirect based on account_type, with role as fallback
-      const accountType = profile.account_type || profile.role;
-      
-      console.log('Dashboard redirect - User:', user.id, 'Account Type:', accountType, 'Role:', profile.role);
-      
-      // Store in localStorage for consistency
-      localStorage.setItem('userRole', profile.role || 'staff');
-      localStorage.setItem('accountType', profile.account_type || 'staff');
-      
-      switch (accountType) {
-        case 'admin':
-          navigate("/admin", { replace: true });
-          break;
-        case 'manager':
-          navigate("/manager", { replace: true });
-          break;
-        case 'accountant':
-          navigate("/accountant", { replace: true });
-          break;
-        case 'hr':
-          navigate("/hr", { replace: true });
-          break;
-        case 'staff':
-        default:
-          navigate("/staff", { replace: true });
-          break;
+      if (profile) {
+        // Redirect based on account_type, with role as fallback
+        const accountType = profile.account_type || profile.role;
+        
+        console.log('Dashboard redirect - User:', user.id, 'Account Type:', accountType, 'Role:', profile.role);
+        
+        switch (accountType) {
+          case 'admin':
+            navigate("/admin", { replace: true });
+            break;
+          case 'manager':
+            navigate("/manager", { replace: true });
+            break;
+          case 'accountant':
+            navigate("/accountant", { replace: true });
+            break;
+          case 'hr':
+            navigate("/hr", { replace: true });
+            break;
+          case 'staff':
+          default:
+            navigate("/staff", { replace: true });
+            break;
+        }
       }
     }
   }, [user, profile, loading, navigate]);

@@ -6,11 +6,12 @@ import { NeuralNetwork } from "@/components/NeuralNetwork";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Loader } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 const Index = () => {
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
+  const { user, profile, loading } = useAuth();
 
   const redirectUserBasedOnRole = (role: string, accountType: string) => {
     console.log('Index: Redirecting user based on role:', role, 'accountType:', accountType);
@@ -29,75 +30,19 @@ const Index = () => {
   };
 
   useEffect(() => {
-    let mounted = true;
-
-    const checkAuthAndRedirect = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (session?.user && mounted) {
-          console.log('Index: User is logged in, checking role...');
-          
-          // Check stored credentials first
-          const storedRole = localStorage.getItem('userRole');
-          const storedAccountType = localStorage.getItem('accountType');
-          
-          if (storedRole && storedAccountType) {
-            redirectUserBasedOnRole(storedRole, storedAccountType);
-            return;
-          }
-          
-          // Fetch from database if not stored
-          try {
-            const { data: profile, error } = await supabase
-              .from('profiles')
-              .select('role, account_type')
-              .eq('id', session.user.id)
-              .maybeSingle();
-
-            if (!error && profile && mounted) {
-              const role = profile.role || 'staff';
-              const accountType = profile.account_type || 'staff';
-              
-              localStorage.setItem('userRole', role);
-              localStorage.setItem('accountType', accountType);
-              
-              redirectUserBasedOnRole(role, accountType);
-            } else if (mounted) {
-              navigate('/staff');
-            }
-          } catch (error) {
-            console.error('Index: Profile fetch error:', error);
-            if (mounted) {
-              navigate('/staff');
-            }
-          }
-        }
-      } catch (error) {
-        console.error('Index: Error checking auth:', error);
-      } finally {
-        if (mounted) {
-          setIsLoading(false);
-        }
-      }
-    };
-
-    // Add a timeout to prevent infinite loading
-    const loadingTimeout = setTimeout(() => {
-      if (mounted) {
+    if (!loading) {
+      if (user && profile) {
+        console.log('Index: User is logged in, redirecting...');
+        const role = profile.role || 'staff';
+        const accountType = profile.account_type || 'staff';
+        redirectUserBasedOnRole(role, accountType);
+      } else {
         setIsLoading(false);
       }
-    }, 2000);
+    }
+  }, [user, profile, loading, navigate]);
 
-    checkAuthAndRedirect();
-
-    return () => {
-      mounted = false;
-      clearTimeout(loadingTimeout);
-    };
-  }, [navigate]);
-
-  if (isLoading) {
+  if (loading || isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center space-y-4">
