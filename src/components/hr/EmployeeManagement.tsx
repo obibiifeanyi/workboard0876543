@@ -4,11 +4,22 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Users, UserPlus, Edit, Trash2, Eye, Loader } from "lucide-react";
-import { useSystemData } from "@/hooks/useSystemData";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 export const EmployeeManagement = () => {
-  const { useProfiles } = useSystemData();
-  const { data: employees, isLoading } = useProfiles();
+  const { data: employees, isLoading } = useQuery({
+    queryKey: ['profiles'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data;
+    }
+  });
 
   const getStatusBadge = (role: string) => {
     switch (role) {

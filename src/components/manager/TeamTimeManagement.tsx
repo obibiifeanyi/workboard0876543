@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Clock, Calendar, MapPin } from "lucide-react";
+import { Clock, Calendar } from "lucide-react";
 import { useManagerData } from "@/hooks/manager/useManagerData";
 import {
   Table,

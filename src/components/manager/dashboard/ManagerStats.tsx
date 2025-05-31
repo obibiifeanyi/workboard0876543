@@ -62,7 +62,7 @@ export const ManagerStats = () => {
     {
       title: "Completed Projects",
       value: completedProjects,
-      description: "This quarter",
+      description: "Successfully completed",
       icon: TrendingUp,
       color: "text-orange-600",
       bgColor: "bg-orange-50",

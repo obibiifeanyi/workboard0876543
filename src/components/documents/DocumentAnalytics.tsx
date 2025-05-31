@@ -9,37 +9,42 @@ export const DocumentAnalytics = () => {
     queryKey: ['document-analytics'],
     queryFn: async () => {
       try {
-        // Try to get data from document_analysis table
+        // Get document analysis data
         const { data: analysisData, error: analysisError } = await supabase
           .from('document_analysis')
           .select('*');
 
-        if (!analysisError && analysisData) {
-          const totalDocuments = analysisData.length;
-          const completedAnalyses = analysisData.filter(doc => doc.status === 'completed').length;
-          const pendingAnalyses = analysisData.filter(doc => doc.status === 'pending').length;
-          
-          return {
-            totalDocuments,
-            completedAnalyses,
-            pendingAnalyses,
-            successRate: totalDocuments > 0 ? Math.round((completedAnalyses / totalDocuments) * 100) : 0
-          };
+        if (analysisError) {
+          console.error('Error fetching document analysis:', analysisError);
         }
 
-        // Fallback to existing data sources
-        const [memosResult, invoicesResult] = await Promise.all([
-          supabase.from('memos').select('*', { count: 'exact', head: true }),
-          supabase.from('accounts_invoices').select('*', { count: 'exact', head: true })
-        ]);
+        // Get documents data
+        const { data: documentsData, error: documentsError } = await supabase
+          .from('documents')
+          .select('*');
 
-        const totalDocuments = (memosResult.count || 0) + (invoicesResult.count || 0);
+        if (documentsError) {
+          console.error('Error fetching documents:', documentsError);
+        }
+
+        // Get memos data
+        const { data: memosData, error: memosError } = await supabase
+          .from('memos')
+          .select('*');
+
+        if (memosError) {
+          console.error('Error fetching memos:', memosError);
+        }
+
+        const totalDocuments = (documentsData?.length || 0) + (memosData?.length || 0);
+        const completedAnalyses = analysisData?.filter(doc => doc.status === 'completed').length || 0;
+        const pendingAnalyses = analysisData?.filter(doc => doc.status === 'pending').length || 0;
         
         return {
           totalDocuments,
-          completedAnalyses: Math.floor(totalDocuments * 0.8),
-          pendingAnalyses: Math.floor(totalDocuments * 0.2),
-          successRate: 85
+          completedAnalyses,
+          pendingAnalyses,
+          successRate: totalDocuments > 0 ? Math.round((completedAnalyses / totalDocuments) * 100) : 0
         };
       } catch (error) {
         console.error('Error fetching analytics:', error);
