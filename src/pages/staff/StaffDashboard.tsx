@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { 
   Clock, CalendarIcon, CheckCircle, Bell, User, ListTodo, 
   ClipboardList, FileText, Signal, Battery,
-  Users, Settings, StickyNote
+  Users, Settings, StickyNote, Activity, Building2
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -23,6 +23,7 @@ import { TelecomSiteReport } from "@/components/staff/reports/TelecomSiteReport"
 import { ProjectReport } from "@/components/staff/reports/ProjectReport";
 import { MeetingCenter } from "@/components/staff/MeetingCenter";
 import { AIChatBox } from "@/components/ai/AIChatBox";
+import { StaffActivityLogs } from "@/components/staff/StaffActivityLogs";
 
 const StaffDashboard = () => {
   const navigate = useNavigate();
@@ -119,7 +120,7 @@ const StaffDashboard = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           <Button
             variant="outline"
-            className="glass-card border-primary/20 h-24 text-lg font-semibold hover:border-primary/40 transition-all duration-300"
+            className="glass-card border-primary/20 h-24 text-lg font-semibold hover:border-primary/40 transition-all duration-300 interactive-card"
             onClick={() => navigate("/staff/current-tasks")}
           >
             <ClipboardList className="mr-2 h-5 w-5" />
@@ -128,7 +129,7 @@ const StaffDashboard = () => {
 
           <Button
             variant="outline"
-            className="glass-card border-primary/20 h-24 text-lg font-semibold hover:border-primary/40 transition-all duration-300"
+            className="glass-card border-primary/20 h-24 text-lg font-semibold hover:border-primary/40 transition-all duration-300 interactive-card"
             onClick={() => navigate("/staff/my-tasks")}
           >
             <ListTodo className="mr-2 h-5 w-5" />
@@ -137,7 +138,7 @@ const StaffDashboard = () => {
 
           <Button
             variant="outline"
-            className="glass-card border-primary/20 h-24 text-lg font-semibold hover:border-primary/40 transition-all duration-300"
+            className="glass-card border-primary/20 h-24 text-lg font-semibold hover:border-primary/40 transition-all duration-300 interactive-card"
             onClick={() => navigate("/staff/memos")}
           >
             <StickyNote className="mr-2 h-5 w-5" />
@@ -146,7 +147,7 @@ const StaffDashboard = () => {
 
           <Button
             variant="outline"
-            className="glass-card border-primary/20 h-24 text-lg font-semibold hover:border-primary/40 transition-all duration-300"
+            className="glass-card border-primary/20 h-24 text-lg font-semibold hover:border-primary/40 transition-all duration-300 interactive-card"
             onClick={() => navigate("/staff/reports")}
           >
             <FileText className="mr-2 h-5 w-5" />
@@ -155,7 +156,7 @@ const StaffDashboard = () => {
 
           <Button
             variant="outline"
-            className="glass-card border-primary/20 h-24 text-lg font-semibold hover:border-primary/40 transition-all duration-300"
+            className="glass-card border-primary/20 h-24 text-lg font-semibold hover:border-primary/40 transition-all duration-300 interactive-card"
             onClick={() => navigate("/staff/telecom-reports")}
           >
             <Signal className="mr-2 h-5 w-5" />
@@ -164,7 +165,7 @@ const StaffDashboard = () => {
 
           <Button
             variant="outline"
-            className="glass-card border-primary/20 h-24 text-lg font-semibold hover:border-primary/40 transition-all duration-300"
+            className="glass-card border-primary/20 h-24 text-lg font-semibold hover:border-primary/40 transition-all duration-300 interactive-card"
             onClick={() => navigate("/staff/battery-reports")}
           >
             <Battery className="mr-2 h-5 w-5" />
@@ -173,7 +174,7 @@ const StaffDashboard = () => {
 
           <Button
             variant="outline"
-            className="glass-card border-primary/20 h-24 text-lg font-semibold hover:border-primary/40 transition-all duration-300"
+            className="glass-card border-primary/20 h-24 text-lg font-semibold hover:border-primary/40 transition-all duration-300 interactive-card"
             onClick={() => navigate("/staff/meetings")}
           >
             <Users className="mr-2 h-5 w-5" />
@@ -182,7 +183,7 @@ const StaffDashboard = () => {
 
           <Button
             variant="outline"
-            className="glass-card border-primary/20 h-24 text-lg font-semibold hover:border-primary/40 transition-all duration-300"
+            className="glass-card border-primary/20 h-24 text-lg font-semibold hover:border-primary/40 transition-all duration-300 interactive-card"
             onClick={() => navigate("/staff/profile")}
           >
             <User className="mr-2 h-5 w-5" />
@@ -191,16 +192,17 @@ const StaffDashboard = () => {
         </div>
 
         <Tabs defaultValue="overview" className="space-y-4">
-          <TabsList className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-2">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="tasks">Tasks</TabsTrigger>
-            <TabsTrigger value="reports">Reports</TabsTrigger>
-            <TabsTrigger value="memos">Memos</TabsTrigger>
-            <TabsTrigger value="meetings">Meetings</TabsTrigger>
-            <TabsTrigger value="profile">Profile</TabsTrigger>
+          <TabsList className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-2 bg-gradient-to-r from-primary/5 to-secondary/5 p-2 rounded-3xl">
+            <TabsTrigger value="overview" className="rounded-2xl">Overview</TabsTrigger>
+            <TabsTrigger value="tasks" className="rounded-2xl">Tasks</TabsTrigger>
+            <TabsTrigger value="reports" className="rounded-2xl">Reports</TabsTrigger>
+            <TabsTrigger value="memos" className="rounded-2xl">Memos</TabsTrigger>
+            <TabsTrigger value="meetings" className="rounded-2xl">Meetings</TabsTrigger>
+            <TabsTrigger value="activity" className="rounded-2xl">Activity</TabsTrigger>
+            <TabsTrigger value="profile" className="rounded-2xl">Profile</TabsTrigger>
           </TabsList>
 
-          <div className="mt-6 bg-black/5 dark:bg-black/20 rounded-3xl p-4 md:p-6">
+          <div className="mt-6 enhanced-card p-4 md:p-6">
             <TabsContent value="overview" className="space-y-4">
               <ProjectTracking />
             </TabsContent>
@@ -223,6 +225,10 @@ const StaffDashboard = () => {
 
             <TabsContent value="meetings" className="space-y-4">
               <MeetingCenter />
+            </TabsContent>
+
+            <TabsContent value="activity" className="space-y-4">
+              <StaffActivityLogs />
             </TabsContent>
 
             <TabsContent value="profile" className="space-y-4">

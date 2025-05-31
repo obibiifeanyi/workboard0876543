@@ -396,6 +396,186 @@ export type Database = {
           },
         ]
       }
+      construction_reports: {
+        Row: {
+          created_at: string
+          created_by: string
+          equipment_used: Json | null
+          id: string
+          issues_encountered: string | null
+          materials_used: Json | null
+          photos: string[] | null
+          progress_percentage: number | null
+          quality_rating: string | null
+          report_date: string | null
+          report_title: string
+          report_type: string
+          safety_incidents: number | null
+          safety_notes: string | null
+          site_id: string
+          supervisor_signature: string | null
+          updated_at: string
+          weather_conditions: string | null
+          work_performed: string | null
+          workforce_count: number | null
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          equipment_used?: Json | null
+          id?: string
+          issues_encountered?: string | null
+          materials_used?: Json | null
+          photos?: string[] | null
+          progress_percentage?: number | null
+          quality_rating?: string | null
+          report_date?: string | null
+          report_title: string
+          report_type: string
+          safety_incidents?: number | null
+          safety_notes?: string | null
+          site_id: string
+          supervisor_signature?: string | null
+          updated_at?: string
+          weather_conditions?: string | null
+          work_performed?: string | null
+          workforce_count?: number | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          equipment_used?: Json | null
+          id?: string
+          issues_encountered?: string | null
+          materials_used?: Json | null
+          photos?: string[] | null
+          progress_percentage?: number | null
+          quality_rating?: string | null
+          report_date?: string | null
+          report_title?: string
+          report_type?: string
+          safety_incidents?: number | null
+          safety_notes?: string | null
+          site_id?: string
+          supervisor_signature?: string | null
+          updated_at?: string
+          weather_conditions?: string | null
+          work_performed?: string | null
+          workforce_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "construction_reports_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "construction_reports_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "construction_sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      construction_sites: {
+        Row: {
+          actual_completion: string | null
+          address: string | null
+          budget_allocated: number | null
+          budget_spent: number | null
+          contractor_contact: string | null
+          contractor_name: string | null
+          coordinates: unknown | null
+          created_at: string
+          expected_completion: string | null
+          id: string
+          last_inspection: string | null
+          location: string
+          next_inspection: string | null
+          notes: string | null
+          project_id: string | null
+          safety_rating: string | null
+          site_code: string | null
+          site_manager_id: string | null
+          site_name: string
+          site_type: string
+          start_date: string | null
+          status: string | null
+          updated_at: string
+          weather_dependent: boolean | null
+        }
+        Insert: {
+          actual_completion?: string | null
+          address?: string | null
+          budget_allocated?: number | null
+          budget_spent?: number | null
+          contractor_contact?: string | null
+          contractor_name?: string | null
+          coordinates?: unknown | null
+          created_at?: string
+          expected_completion?: string | null
+          id?: string
+          last_inspection?: string | null
+          location: string
+          next_inspection?: string | null
+          notes?: string | null
+          project_id?: string | null
+          safety_rating?: string | null
+          site_code?: string | null
+          site_manager_id?: string | null
+          site_name: string
+          site_type: string
+          start_date?: string | null
+          status?: string | null
+          updated_at?: string
+          weather_dependent?: boolean | null
+        }
+        Update: {
+          actual_completion?: string | null
+          address?: string | null
+          budget_allocated?: number | null
+          budget_spent?: number | null
+          contractor_contact?: string | null
+          contractor_name?: string | null
+          coordinates?: unknown | null
+          created_at?: string
+          expected_completion?: string | null
+          id?: string
+          last_inspection?: string | null
+          location?: string
+          next_inspection?: string | null
+          notes?: string | null
+          project_id?: string | null
+          safety_rating?: string | null
+          site_code?: string | null
+          site_manager_id?: string | null
+          site_name?: string
+          site_type?: string
+          start_date?: string | null
+          status?: string | null
+          updated_at?: string
+          weather_dependent?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "construction_sites_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "construction_sites_site_manager_id_fkey"
+            columns: ["site_manager_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ct_power_reports: {
         Row: {
           comments: string | null
@@ -736,6 +916,65 @@ export type Database = {
           id?: number
         }
         Relationships: []
+      }
+      invoices: {
+        Row: {
+          amount: number
+          client_address: string | null
+          client_email: string | null
+          client_name: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          due_date: string | null
+          id: string
+          invoice_number: string
+          status: string | null
+          tax_amount: number | null
+          total_amount: number
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          client_address?: string | null
+          client_email?: string | null
+          client_name: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          invoice_number: string
+          status?: string | null
+          tax_amount?: number | null
+          total_amount: number
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          client_address?: string | null
+          client_email?: string | null
+          client_name?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          invoice_number?: string
+          status?: string | null
+          tax_amount?: number | null
+          total_amount?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       leave_requests: {
         Row: {
@@ -1214,6 +1453,91 @@ export type Database = {
           },
         ]
       }
+      project_reports: {
+        Row: {
+          attachments: string[] | null
+          budget_remaining: number | null
+          budget_used: number | null
+          created_at: string
+          created_by: string
+          id: string
+          issues_encountered: string | null
+          next_steps: string | null
+          progress_percentage: number | null
+          project_id: string
+          report_content: string
+          report_date: string | null
+          report_title: string
+          report_type: string
+          review_comments: string | null
+          review_status: string | null
+          reviewed_by: string | null
+          updated_at: string
+        }
+        Insert: {
+          attachments?: string[] | null
+          budget_remaining?: number | null
+          budget_used?: number | null
+          created_at?: string
+          created_by: string
+          id?: string
+          issues_encountered?: string | null
+          next_steps?: string | null
+          progress_percentage?: number | null
+          project_id: string
+          report_content: string
+          report_date?: string | null
+          report_title: string
+          report_type: string
+          review_comments?: string | null
+          review_status?: string | null
+          reviewed_by?: string | null
+          updated_at?: string
+        }
+        Update: {
+          attachments?: string[] | null
+          budget_remaining?: number | null
+          budget_used?: number | null
+          created_at?: string
+          created_by?: string
+          id?: string
+          issues_encountered?: string | null
+          next_steps?: string | null
+          progress_percentage?: number | null
+          project_id?: string
+          report_content?: string
+          report_date?: string | null
+          report_title?: string
+          report_type?: string
+          review_comments?: string | null
+          review_status?: string | null
+          reviewed_by?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_reports_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_reports_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_reports_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       projects: {
         Row: {
           budget: number | null
@@ -1340,6 +1664,127 @@ export type Database = {
             columns: ["site_id"]
             isOneToOne: false
             referencedRelation: "telecom_sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      staff_logs: {
+        Row: {
+          activity_description: string
+          activity_type: string
+          created_at: string
+          duration_hours: number | null
+          id: string
+          location: string | null
+          metadata: Json | null
+          project_id: string | null
+          staff_id: string
+          task_id: string | null
+        }
+        Insert: {
+          activity_description: string
+          activity_type: string
+          created_at?: string
+          duration_hours?: number | null
+          id?: string
+          location?: string | null
+          metadata?: Json | null
+          project_id?: string | null
+          staff_id: string
+          task_id?: string | null
+        }
+        Update: {
+          activity_description?: string
+          activity_type?: string
+          created_at?: string
+          duration_hours?: number | null
+          id?: string
+          location?: string | null
+          metadata?: Json | null
+          project_id?: string | null
+          staff_id?: string
+          task_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_logs_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_logs_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_logs_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      staff_memos: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          is_read: boolean | null
+          memo_type: string | null
+          priority: string | null
+          read_at: string | null
+          recipient_id: string
+          sender_id: string
+          status: string | null
+          subject: string
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          memo_type?: string | null
+          priority?: string | null
+          read_at?: string | null
+          recipient_id: string
+          sender_id: string
+          status?: string | null
+          subject: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          memo_type?: string | null
+          priority?: string | null
+          read_at?: string | null
+          recipient_id?: string
+          sender_id?: string
+          status?: string | null
+          subject?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_memos_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_memos_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
