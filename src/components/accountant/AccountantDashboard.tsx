@@ -1,21 +1,30 @@
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AccountantTabContent } from "./AccountantTabContent";
 import { Search, Bell, Settings, DollarSign, FileText, TrendingUp, Calculator } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+
 export const AccountantDashboard = () => {
-  return <div className="space-y-6 animate-fade-in p-6">
+  return (
+    <div className="space-y-6 animate-fade-in p-6">
       <div className="flex items-center justify-between mb-8">
         <div>
-          
-          <p className="text-muted-foreground mt-1">Manage financial operations</p>
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-red-600 to-red-700 bg-clip-text text-transparent">
+            Accountant Dashboard
+          </h1>
+          <p className="text-muted-foreground mt-1">Manage financial operations and approvals</p>
         </div>
         <div className="flex items-center gap-4">
           <div className="relative w-64">
-            <input type="text" placeholder="Search..." className="w-full px-4 py-2 pl-10 rounded-full bg-white/10 dark:bg-black/5 
-                       border border-primary/20 focus:outline-none focus:ring-2 
-                       focus:ring-primary/50" />
+            <input 
+              type="text" 
+              placeholder="Search..." 
+              className="w-full px-4 py-2 pl-10 rounded-full bg-white/10 dark:bg-black/5 
+                         border border-primary/20 focus:outline-none focus:ring-2 
+                         focus:ring-primary/50" 
+            />
             <Search className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
           </div>
           <DropdownMenu>
@@ -28,8 +37,8 @@ export const AccountantDashboard = () => {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-64">
-              <DropdownMenuItem>New invoice pending</DropdownMenuItem>
-              <DropdownMenuItem>Payment received</DropdownMenuItem>
+              <DropdownMenuItem>New invoice pending approval</DropdownMenuItem>
+              <DropdownMenuItem>Payment received for processing</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
           <Button variant="ghost" size="icon">
@@ -45,7 +54,7 @@ export const AccountantDashboard = () => {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">$45,231.89</div>
+            <div className="text-2xl font-bold">₦45,231,890</div>
             <p className="text-xs text-muted-foreground">+20.1% from last month</p>
           </CardContent>
         </Card>
@@ -65,7 +74,7 @@ export const AccountantDashboard = () => {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">$12,234</div>
+            <div className="text-2xl font-bold">₦12,234,000</div>
             <p className="text-xs text-muted-foreground">+19% from last month</p>
           </CardContent>
         </Card>
@@ -107,5 +116,6 @@ export const AccountantDashboard = () => {
           <AccountantTabContent />
         </div>
       </Tabs>
-    </div>;
+    </div>
+  );
 };

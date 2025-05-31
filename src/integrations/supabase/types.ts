@@ -9,6 +9,50 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      accountant_settings: {
+        Row: {
+          auto_approve_limit: number | null
+          created_at: string | null
+          default_approval_workflow: string | null
+          email_notifications: boolean | null
+          id: string
+          notification_preferences: Json | null
+          require_dual_approval: boolean | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          auto_approve_limit?: number | null
+          created_at?: string | null
+          default_approval_workflow?: string | null
+          email_notifications?: boolean | null
+          id?: string
+          notification_preferences?: Json | null
+          require_dual_approval?: boolean | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          auto_approve_limit?: number | null
+          created_at?: string | null
+          default_approval_workflow?: string | null
+          email_notifications?: boolean | null
+          id?: string
+          notification_preferences?: Json | null
+          require_dual_approval?: boolean | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "accountant_settings_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       accounts_invoices: {
         Row: {
           amount: number
@@ -631,6 +675,53 @@ export type Database = {
         }
         Relationships: []
       }
+      financial_reports: {
+        Row: {
+          created_at: string | null
+          generated_by: string | null
+          id: string
+          period_end: string
+          period_start: string
+          report_data: Json | null
+          report_name: string
+          report_type: string
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          generated_by?: string | null
+          id?: string
+          period_end: string
+          period_start: string
+          report_data?: Json | null
+          report_name: string
+          report_type: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          generated_by?: string | null
+          id?: string
+          period_end?: string
+          period_start?: string
+          report_data?: Json | null
+          report_name?: string
+          report_type?: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financial_reports_generated_by_fkey"
+            columns: ["generated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       health_check: {
         Row: {
           checked_at: string | null
@@ -695,6 +786,54 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      memo_approvals: {
+        Row: {
+          approval_date: string | null
+          approver_id: string | null
+          comments: string | null
+          created_at: string | null
+          id: string
+          memo_id: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          approval_date?: string | null
+          approver_id?: string | null
+          comments?: string | null
+          created_at?: string | null
+          id?: string
+          memo_id?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          approval_date?: string | null
+          approver_id?: string | null
+          comments?: string | null
+          created_at?: string | null
+          id?: string
+          memo_id?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "memo_approvals_approver_id_fkey"
+            columns: ["approver_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "memo_approvals_memo_id_fkey"
+            columns: ["memo_id"]
+            isOneToOne: false
+            referencedRelation: "memos"
             referencedColumns: ["id"]
           },
         ]
@@ -850,6 +989,66 @@ export type Database = {
           {
             foreignKeyName: "password_reset_tokens_user_id_fkey"
             columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payment_transactions: {
+        Row: {
+          amount: number
+          created_at: string | null
+          id: string
+          invoice_id: string | null
+          notes: string | null
+          payment_method: string
+          processed_by: string | null
+          status: string | null
+          transaction_date: string
+          transaction_reference: string | null
+          transaction_type: string
+          updated_at: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          id?: string
+          invoice_id?: string | null
+          notes?: string | null
+          payment_method: string
+          processed_by?: string | null
+          status?: string | null
+          transaction_date: string
+          transaction_reference?: string | null
+          transaction_type: string
+          updated_at?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          id?: string
+          invoice_id?: string | null
+          notes?: string | null
+          payment_method?: string
+          processed_by?: string | null
+          status?: string | null
+          transaction_date?: string
+          transaction_reference?: string | null
+          transaction_type?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_transactions_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "accounts_invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_transactions_processed_by_fkey"
+            columns: ["processed_by"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]

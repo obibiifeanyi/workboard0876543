@@ -14,6 +14,12 @@ import ManagerDashboard from "./pages/manager/ManagerDashboard";
 import AccountantDashboard from "./pages/accountant/AccountantDashboard";
 import StaffDashboard from "./pages/staff/StaffDashboard";
 import HRDashboard from "./pages/hr/HRDashboard";
+import FinancialReports from "./pages/accountant/FinancialReports";
+import InvoiceManagement from "./pages/accountant/InvoiceManagement";
+import MemoApproval from "./pages/accountant/MemoApproval";
+import InventoryManagement from "./pages/accountant/InventoryManagement";
+import PaymentProcessing from "./pages/accountant/PaymentProcessing";
+import AccountantSettings from "./pages/accountant/AccountantSettings";
 import { RoleBasedRoute } from "./components/RoleBasedRoute";
 
 const queryClient = new QueryClient();
