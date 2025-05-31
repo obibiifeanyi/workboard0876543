@@ -11,11 +11,11 @@ import { supabase } from "@/integrations/supabase/client";
 
 interface User {
   id: string;
-  full_name: string;
+  name: string;
   email: string;
-  account_type: string;
+  role: string;
   department: string;
-  status: string;
+  avatar?: string;
 }
 
 export const UserManagement = () => {
@@ -36,7 +36,18 @@ export const UserManagement = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setUsers(data || []);
+      
+      // Transform the data to match the User interface
+      const transformedUsers: User[] = (data || []).map(profile => ({
+        id: profile.id,
+        name: profile.full_name || 'No Name',
+        email: profile.email || '',
+        role: profile.account_type || 'staff',
+        department: profile.department || 'Not Assigned',
+        avatar: profile.avatar_url || undefined
+      }));
+      
+      setUsers(transformedUsers);
     } catch (error) {
       console.error('Error fetching users:', error);
       toast({
@@ -134,7 +145,12 @@ export const UserManagement = () => {
       <TabsContent value="new" className="space-y-4">
         <UserForm 
           onSubmit={handleSubmit}
-          defaultValues={selectedUser || undefined}
+          defaultValues={selectedUser ? {
+            name: selectedUser.name,
+            email: selectedUser.email,
+            role: selectedUser.role,
+            department: selectedUser.department
+          } : undefined}
         />
       </TabsContent>
 
