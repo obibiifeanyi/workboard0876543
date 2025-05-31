@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,6 +6,14 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/
 import { BarChart, Bar, XAxis, YAxis, PieChart, Cell, ResponsiveContainer, LineChart, Line } from "recharts";
 
 const COLORS = ['#ff1c04', '#0FA0CE', '#10B981', '#F59E0B', '#8B5CF6'];
+
+interface AnalysisResult {
+  categories?: string[];
+  sentiment?: string;
+  urgency?: string;
+  confidence?: number;
+  [key: string]: any;
+}
 
 export const DocumentAnalytics = () => {
   const { data: analytics, isLoading, error } = useQuery({
@@ -57,7 +64,7 @@ export const DocumentAnalytics = () => {
 
         analysisData?.forEach(analysis => {
           if (analysis.status === 'completed' && analysis.analysis_result) {
-            const result = analysis.analysis_result;
+            const result = analysis.analysis_result as AnalysisResult;
             
             // Process categories
             if (result.categories && Array.isArray(result.categories)) {
@@ -67,12 +74,12 @@ export const DocumentAnalytics = () => {
             }
 
             // Process sentiment
-            if (result.sentiment) {
+            if (result.sentiment && typeof result.sentiment === 'string') {
               sentimentData[result.sentiment] = (sentimentData[result.sentiment] || 0) + 1;
             }
 
             // Process urgency
-            if (result.urgency) {
+            if (result.urgency && typeof result.urgency === 'string') {
               urgencyData[result.urgency] = (urgencyData[result.urgency] || 0) + 1;
             }
           }

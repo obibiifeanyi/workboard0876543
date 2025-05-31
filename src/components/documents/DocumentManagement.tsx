@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Search, FileText, Download, Eye, Brain, Calendar, User } from "lucide-react";
 import { DocumentAnalytics } from "./DocumentAnalytics";
@@ -12,9 +12,15 @@ import { DocumentUploadForm } from "./DocumentUploadForm";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AIDocumentAnalyzer } from "@/components/ai/AIDocumentAnalyzer";
 
+interface AnalysisResult {
+  confidence?: number;
+  [key: string]: any;
+}
+
 export const DocumentManagement = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const queryClient = useQueryClient();
 
   const { data: documents, isLoading: documentsLoading } = useQuery({
     queryKey: ['documents'],
@@ -73,6 +79,10 @@ export const DocumentManagement = () => {
       case 'error': return 'bg-red-100 text-red-800 border-red-200';
       default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
+  };
+
+  const handleUploadSuccess = () => {
+    queryClient.invalidateQueries({ queryKey: ['documents'] });
   };
 
   return (
@@ -149,6 +159,7 @@ export const DocumentManagement = () => {
             ) : (
               filteredDocuments.map((document) => {
                 const analysis = getAnalysisForDocument(document.file_name);
+                const profileData = document.profiles as any;
                 return (
                   <Card key={document.id} className="hover:shadow-md transition-shadow">
                     <CardContent className="p-6">
@@ -162,7 +173,7 @@ export const DocumentManagement = () => {
                               <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
                                 <div className="flex items-center gap-1">
                                   <User className="h-3 w-3" />
-                                  {document.profiles?.full_name || 'Unknown'}
+                                  {profileData?.full_name || 'Unknown'}
                                 </div>
                                 <div className="flex items-center gap-1">
                                   <Calendar className="h-3 w-3" />
@@ -194,9 +205,11 @@ export const DocumentManagement = () => {
                               <Badge className={getStatusColor(analysis.status)}>
                                 {analysis.status.charAt(0).toUpperCase() + analysis.status.slice(1)}
                               </Badge>
-                              {analysis.status === 'completed' && analysis.analysis_result?.confidence && (
+                              {analysis.status === 'completed' && analysis.analysis_result && 
+                               typeof analysis.analysis_result === 'object' && 
+                               (analysis.analysis_result as AnalysisResult).confidence && (
                                 <span className="text-xs text-muted-foreground">
-                                  {(analysis.analysis_result.confidence * 100).toFixed(1)}% confidence
+                                  {((analysis.analysis_result as AnalysisResult).confidence! * 100).toFixed(1)}% confidence
                                 </span>
                               )}
                             </div>
@@ -237,7 +250,7 @@ export const DocumentManagement = () => {
         </TabsContent>
 
         <TabsContent value="upload">
-          <DocumentUploadForm />
+          <DocumentUploadForm onSuccess={handleUploadSuccess} />
         </TabsContent>
       </Tabs>
     </div>
