@@ -90,3 +90,26 @@ export interface StaffMemo {
   sender?: { full_name: string };
   recipient?: { full_name: string };
 }
+
+export interface Meeting {
+  id: string;
+  title: string;
+  description?: string;
+  meeting_type: 'general' | 'project' | 'department' | 'emergency';
+  location?: string;
+  meeting_url?: string;
+  start_time: string;
+  end_time: string;
+  organizer_id: string;
+  department_id?: string;
+  project_id?: string;
+  status: 'scheduled' | 'in_progress' | 'completed' | 'cancelled';
+  agenda?: string;
+  notes?: string;
+  recording_url?: string;
+  created_at: string;
+  updated_at: string;
+  organizer?: {
+    full_name: string;
+  };
+}

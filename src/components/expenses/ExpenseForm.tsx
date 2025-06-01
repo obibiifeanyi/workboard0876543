@@ -17,6 +17,9 @@ export interface ExpenseFormProps {
     description?: string;
   }) => void;
   onCancel?: () => void;
+  onSuccess?: () => void;
+  isOpen?: boolean;
+  onClose?: () => void;
   initialData?: {
     title: string;
     amount: number;
@@ -26,7 +29,7 @@ export interface ExpenseFormProps {
   };
 }
 
-export const ExpenseForm = ({ onSubmit, onCancel, initialData }: ExpenseFormProps) => {
+export const ExpenseForm = ({ onSubmit, onCancel, onSuccess, isOpen, onClose, initialData }: ExpenseFormProps) => {
   const [formData, setFormData] = useState({
     title: initialData?.title || '',
     amount: initialData?.amount || 0,
@@ -38,6 +41,12 @@ export const ExpenseForm = ({ onSubmit, onCancel, initialData }: ExpenseFormProp
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSubmit(formData);
+    onSuccess?.();
+  };
+
+  const handleCancel = () => {
+    onCancel?.();
+    onClose?.();
   };
 
   return (
@@ -121,8 +130,8 @@ export const ExpenseForm = ({ onSubmit, onCancel, initialData }: ExpenseFormProp
           </div>
 
           <div className="flex gap-2 pt-4">
-            {onCancel && (
-              <Button type="button" variant="outline" onClick={onCancel}>
+            {(onCancel || onClose) && (
+              <Button type="button" variant="outline" onClick={handleCancel}>
                 Cancel
               </Button>
             )}

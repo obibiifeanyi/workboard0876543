@@ -2,7 +2,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { WeeklyReport, TelecomReport, BatteryReportDb, StaffMemo, Site } from '@/types/database';
+import { WeeklyReport, TelecomReport, BatteryReportDb, StaffMemo, Site, Meeting } from '@/types/database';
 
 export const useStaffOperations = () => {
   const queryClient = useQueryClient();
@@ -36,7 +36,7 @@ export const useStaffOperations = () => {
           .from('weekly_reports')
           .select(`
             *,
-            reviewer:reviewed_by(full_name)
+            reviewer:profiles!weekly_reports_reviewed_by_fkey(full_name)
           `)
           .eq('user_id', user.id)
           .order('created_at', { ascending: false });
@@ -48,7 +48,7 @@ export const useStaffOperations = () => {
   };
 
   const createWeeklyReport = useMutation({
-    mutationFn: async (report: Partial<WeeklyReport>) => {
+    mutationFn: async (report: Omit<WeeklyReport, 'id' | 'user_id' | 'created_at' | 'updated_at' | 'reviewer'>) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
@@ -110,7 +110,7 @@ export const useStaffOperations = () => {
           .from('battery_reports')
           .select(`
             *,
-            reporter:reporter_id(full_name)
+            reporter:profiles!battery_reports_reporter_id_fkey(full_name)
           `)
           .order('created_at', { ascending: false });
 
@@ -121,7 +121,7 @@ export const useStaffOperations = () => {
   };
 
   const createBatteryReport = useMutation({
-    mutationFn: async (report: Partial<BatteryReportDb>) => {
+    mutationFn: async (report: Omit<BatteryReportDb, 'id' | 'reporter_id' | 'created_at' | 'updated_at' | 'reporter'>) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
@@ -162,8 +162,8 @@ export const useStaffOperations = () => {
           .from('telecom_reports')
           .select(`
             *,
-            site:site_id(name),
-            reporter:reporter_id(full_name)
+            site:sites(name),
+            reporter:profiles!telecom_reports_reporter_id_fkey(full_name)
           `)
           .order('created_at', { ascending: false });
 
@@ -174,7 +174,7 @@ export const useStaffOperations = () => {
   };
 
   const createTelecomReport = useMutation({
-    mutationFn: async (report: Partial<TelecomReport>) => {
+    mutationFn: async (report: Omit<TelecomReport, 'id' | 'reporter_id' | 'created_at' | 'updated_at' | 'site' | 'reporter'>) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
@@ -218,8 +218,8 @@ export const useStaffOperations = () => {
           .from('staff_memos')
           .select(`
             *,
-            sender:sender_id(full_name),
-            recipient:recipient_id(full_name)
+            sender:profiles!staff_memos_sender_id_fkey(full_name),
+            recipient:profiles!staff_memos_recipient_id_fkey(full_name)
           `)
           .or(`sender_id.eq.${user.id},recipient_id.eq.${user.id}`)
           .order('created_at', { ascending: false });
@@ -231,7 +231,7 @@ export const useStaffOperations = () => {
   };
 
   const createStaffMemo = useMutation({
-    mutationFn: async (memo: Partial<StaffMemo>) => {
+    mutationFn: async (memo: Omit<StaffMemo, 'id' | 'sender_id' | 'created_at' | 'updated_at' | 'sender' | 'recipient'>) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
@@ -280,6 +280,58 @@ export const useStaffOperations = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['staff-memos'] });
+    },
+  });
+
+  // Meetings
+  const useMeetings = () => {
+    return useQuery({
+      queryKey: ['meetings'],
+      queryFn: async () => {
+        const { data, error } = await supabase
+          .from('meetings')
+          .select(`
+            *,
+            organizer:profiles!meetings_organizer_id_fkey(full_name)
+          `)
+          .order('start_time', { ascending: true });
+
+        if (error) throw error;
+        return data as Meeting[];
+      },
+    });
+  };
+
+  const createMeeting = useMutation({
+    mutationFn: async (meeting: Omit<Meeting, 'id' | 'organizer_id' | 'created_at' | 'updated_at' | 'organizer'>) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      const { data, error } = await supabase
+        .from('meetings')
+        .insert({
+          ...meeting,
+          organizer_id: user.id,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['meetings'] });
+      toast({
+        title: "Success",
+        description: "Meeting scheduled successfully",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: `Failed to schedule meeting: ${error.message}`,
+        variant: "destructive",
+      });
     },
   });
 
@@ -368,6 +420,8 @@ export const useStaffOperations = () => {
     useStaffMemos,
     createStaffMemo,
     markMemoAsRead,
+    useMeetings,
+    createMeeting,
     createTimeLog,
     createLeaveRequest,
   };

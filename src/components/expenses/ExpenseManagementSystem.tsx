@@ -9,6 +9,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Download, Plus, Database } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { formatCurrency } from "@/utils/currency";
 import * as XLSX from 'xlsx';
 
 export const ExpenseManagementSystem = () => {
@@ -44,6 +46,7 @@ export const ExpenseManagementSystem = () => {
       createExpense.mutate(expenseData);
     }
     setEditingExpense(null);
+    setIsFormOpen(false);
   };
 
   const handleExport = () => {
@@ -97,7 +100,7 @@ export const ExpenseManagementSystem = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              ${totalExpenses.toLocaleString()}
+              {formatCurrency(totalExpenses)}
             </div>
           </CardContent>
         </Card>
@@ -191,15 +194,24 @@ export const ExpenseManagementSystem = () => {
         </TabsContent>
       </Tabs>
 
-      <ExpenseForm
-        isOpen={isFormOpen}
-        onClose={() => {
-          setIsFormOpen(false);
-          setEditingExpense(null);
-        }}
-        onSubmit={handleFormSubmit}
-        initialData={editingExpense}
-      />
+      <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>{editingExpense ? 'Edit Expense' : 'Add New Expense'}</DialogTitle>
+          </DialogHeader>
+          <ExpenseForm
+            onSubmit={handleFormSubmit}
+            onClose={() => setIsFormOpen(false)}
+            initialData={editingExpense ? {
+              title: editingExpense.title,
+              amount: editingExpense.amount,
+              category: editingExpense.category,
+              expense_date: editingExpense.expense_date,
+              description: editingExpense.description,
+            } : undefined}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

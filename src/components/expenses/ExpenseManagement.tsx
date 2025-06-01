@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { ExpenseForm } from "./ExpenseForm";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { formatCurrency } from "@/utils/currency";
 
 interface Expense {
   id: string;
@@ -111,6 +112,37 @@ export const ExpenseManagement = () => {
     }
   };
 
+  const handleSubmitExpense = async (expenseData: any) => {
+    try {
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) return;
+
+      const { error } = await supabase
+        .from('expenses')
+        .insert({
+          ...expenseData,
+          created_by: user.user.id,
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Expense created successfully",
+      });
+
+      fetchExpenses();
+      setIsFormOpen(false);
+    } catch (error) {
+      console.error('Error creating expense:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create expense",
+        variant: "destructive",
+      });
+    }
+  };
+
   const filteredExpenses = expenses.filter(expense =>
     expense.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     expense.category.toLowerCase().includes(searchTerm.toLowerCase())
@@ -149,10 +181,8 @@ export const ExpenseManagement = () => {
               <DialogTitle>Add New Expense</DialogTitle>
             </DialogHeader>
             <ExpenseForm 
-              onSuccess={() => {
-                setIsFormOpen(false);
-                fetchExpenses();
-              }} 
+              onSubmit={handleSubmitExpense}
+              onSuccess={() => setIsFormOpen(false)}
             />
           </DialogContent>
         </Dialog>
@@ -193,7 +223,7 @@ export const ExpenseManagement = () => {
                 <div className="text-sm space-y-1">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Amount:</span>
-                    <span className="font-semibold">${expense.amount.toFixed(2)}</span>
+                    <span className="font-semibold">{formatCurrency(expense.amount)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Category:</span>
