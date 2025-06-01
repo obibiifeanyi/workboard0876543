@@ -49,6 +49,34 @@ export interface ProjectWithMembers {
   }>;
 }
 
+export interface Task {
+  id: string;
+  title: string;
+  description: string | null;
+  status: string;
+  priority: string;
+  assigned_to_id: string | null;
+  created_by_id: string | null;
+  project_id: string | null;
+  department_id: string | null;
+  due_date: string | null;
+  created_at: string;
+  updated_at: string;
+  profiles?: {
+    id: string;
+    full_name: string;
+    email: string;
+  };
+  projects?: {
+    id: string;
+    name: string;
+  };
+  departments?: {
+    id: string;
+    name: string;
+  };
+}
+
 export const useManagerOperations = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -142,6 +170,38 @@ export const useManagerOperations = () => {
       return data as ProjectWithMembers[];
     },
     enabled: !!managedDepartments?.length,
+  });
+
+  // Get tasks
+  const { data: tasks, isLoading: isLoadingTasks } = useQuery({
+    queryKey: ["managerTasks", currentUser?.id],
+    queryFn: async () => {
+      if (!currentUser?.id) return [];
+      
+      const { data, error } = await supabase
+        .from('tasks')
+        .select(`
+          *,
+          profiles!tasks_assigned_to_id_fkey (
+            id,
+            full_name,
+            email
+          ),
+          projects (
+            id,
+            name
+          ),
+          departments (
+            id,
+            name
+          )
+        `)
+        .eq('created_by_id', currentUser.id);
+      
+      if (error) throw error;
+      return data as Task[];
+    },
+    enabled: !!currentUser?.id,
   });
 
   // Create project mutation
@@ -240,7 +300,7 @@ export const useManagerOperations = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["managerTasks"] });
       toast({
         title: "Success",
         description: "Task assigned successfully",
@@ -253,9 +313,11 @@ export const useManagerOperations = () => {
     managedDepartments,
     teamMembers,
     projects,
+    tasks,
     isLoadingDepartments,
-    isLoadingTeam,
+    isLoadingTeamMembers: isLoadingTeam, // Alias for backward compatibility
     isLoadingProjects,
+    isLoadingTasks,
     createProject,
     addProjectMember,
     removeProjectMember,
