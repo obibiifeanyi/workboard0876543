@@ -25,50 +25,84 @@ import { ExpenseRecord } from "@/types/expenses";
 interface ExpenseFormProps {
   expense?: ExpenseRecord;
   onClose?: () => void;
+  onSuccess?: () => void;
+  isOpen?: boolean;
+  onSubmit?: (data: Partial<ExpenseRecord>) => void;
+  initialData?: ExpenseRecord | null;
 }
 
-export const ExpenseForm = ({ expense, onClose }: ExpenseFormProps) => {
+export const ExpenseForm = ({ 
+  expense, 
+  onClose, 
+  onSuccess,
+  isOpen = false,
+  onSubmit,
+  initialData 
+}: ExpenseFormProps) => {
   const { createExpense, updateExpense } = useExpenseManagement();
-  const [isOpen, setIsOpen] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(isOpen);
+  const currentExpense = expense || initialData;
+  
   const [formData, setFormData] = useState({
-    title: expense?.title || '',
-    description: expense?.description || '',
-    amount: expense?.amount || 0,
-    expense_date: expense?.expense_date?.split('T')[0] || new Date().toISOString().split('T')[0],
-    category: expense?.category || '',
-    receipt_url: expense?.receipt_url || '',
-    status: expense?.status || 'pending' as const,
+    title: currentExpense?.title || '',
+    description: currentExpense?.description || '',
+    amount: currentExpense?.amount || 0,
+    expense_date: currentExpense?.expense_date?.split('T')[0] || new Date().toISOString().split('T')[0],
+    category: currentExpense?.category || '',
+    receipt_url: currentExpense?.receipt_url || '',
+    status: currentExpense?.status || 'pending' as const,
+    vendor: currentExpense?.vendor || '',
+    payment_method: currentExpense?.payment_method || '',
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (expense) {
-      updateExpense.mutate({ id: expense.id, ...formData }, {
+    const submitData = {
+      ...formData,
+      date: formData.expense_date, // Add for compatibility
+    };
+
+    if (onSubmit) {
+      onSubmit(submitData);
+      handleClose();
+      return;
+    }
+    
+    if (currentExpense) {
+      updateExpense.mutate({ id: currentExpense.id, ...submitData }, {
         onSuccess: () => {
           handleClose();
+          onSuccess?.();
         }
       });
     } else {
-      createExpense.mutate(formData, {
+      createExpense.mutate(submitData, {
         onSuccess: () => {
           handleClose();
-          setFormData({
-            title: '',
-            description: '',
-            amount: 0,
-            expense_date: new Date().toISOString().split('T')[0],
-            category: '',
-            receipt_url: '',
-            status: 'pending',
-          });
+          onSuccess?.();
+          resetForm();
         }
       });
     }
   };
 
+  const resetForm = () => {
+    setFormData({
+      title: '',
+      description: '',
+      amount: 0,
+      expense_date: new Date().toISOString().split('T')[0],
+      category: '',
+      receipt_url: '',
+      status: 'pending',
+      vendor: '',
+      payment_method: '',
+    });
+  };
+
   const handleClose = () => {
-    setIsOpen(false);
+    setIsDialogOpen(false);
     onClose?.();
   };
 
@@ -143,6 +177,35 @@ export const ExpenseForm = ({ expense, onClose }: ExpenseFormProps) => {
       </div>
 
       <div className="space-y-2">
+        <Label htmlFor="vendor">Vendor</Label>
+        <Input
+          id="vendor"
+          value={formData.vendor}
+          onChange={(e) => setFormData({ ...formData, vendor: e.target.value })}
+          placeholder="Vendor name"
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="payment-method">Payment Method</Label>
+        <Select
+          value={formData.payment_method}
+          onValueChange={(value) => setFormData({ ...formData, payment_method: value })}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select payment method" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="cash">Cash</SelectItem>
+            <SelectItem value="credit-card">Credit Card</SelectItem>
+            <SelectItem value="debit-card">Debit Card</SelectItem>
+            <SelectItem value="bank-transfer">Bank Transfer</SelectItem>
+            <SelectItem value="check">Check</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="space-y-2">
         <Label htmlFor="status">Status</Label>
         <Select
           value={formData.status}
@@ -171,17 +234,17 @@ export const ExpenseForm = ({ expense, onClose }: ExpenseFormProps) => {
       </div>
 
       <Button type="submit" className="w-full">
-        {expense ? 'Update Expense' : 'Create Expense'}
+        {currentExpense ? 'Update Expense' : 'Create Expense'}
       </Button>
     </form>
   );
 
-  if (expense) {
+  if (currentExpense || isOpen) {
     return form;
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
       <DialogTrigger asChild>
         <Button>
           <Plus className="h-4 w-4 mr-2" />

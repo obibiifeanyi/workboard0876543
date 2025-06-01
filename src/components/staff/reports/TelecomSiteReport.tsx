@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -72,12 +71,15 @@ export const TelecomSiteReport = () => {
         .from('site_reports')
         .select(`
           *,
-          site:site_id(name, location)
+          site:telecom_sites!site_id(name, location)
         `)
         .order('report_date', { ascending: false });
       
       if (error) throw error;
-      return data as SiteReport[];
+      return data.map(item => ({
+        ...item,
+        reported_by: { full_name: 'User' }, // Fallback for now
+      })) as SiteReport[];
     },
   });
 

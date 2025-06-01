@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -45,7 +44,7 @@ export const BatteryReport = () => {
     battery_voltage: '',
     current_capacity: '',
     temperature: '',
-    charging_status: '' as 'charging' | 'discharging' | 'float' | 'bulk' | 'absorption' | '',
+    charging_status: '' as '' | 'charging' | 'discharging' | 'float' | 'bulk' | 'absorption',
     health_status: 'good' as const,
     runtime_hours: '',
     load_current: '',

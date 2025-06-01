@@ -19,11 +19,11 @@ export const ProfileSection = () => {
   const [formData, setFormData] = useState({
     full_name: profile?.full_name || '',
     email: profile?.email || '',
-    phone: profile?.phone || '',
-    position: profile?.position || '',
-    department: profile?.department || '',
-    bio: profile?.bio || '',
-    location: profile?.location || '',
+    phone: (profile as any)?.phone || '',
+    position: (profile as any)?.position || '',
+    department: (profile as any)?.department || '',
+    bio: (profile as any)?.bio || '',
+    location: (profile as any)?.location || '',
   });
 
   const updateProfile = useMutation({
@@ -63,11 +63,11 @@ export const ProfileSection = () => {
     setFormData({
       full_name: profile?.full_name || '',
       email: profile?.email || '',
-      phone: profile?.phone || '',
-      position: profile?.position || '',
-      department: profile?.department || '',
-      bio: profile?.bio || '',
-      location: profile?.location || '',
+      phone: (profile as any)?.phone || '',
+      position: (profile as any)?.position || '',
+      department: (profile as any)?.department || '',
+      bio: (profile as any)?.bio || '',
+      location: (profile as any)?.location || '',
     });
     setIsEditing(false);
   };
@@ -152,7 +152,7 @@ export const ProfileSection = () => {
                 placeholder="Enter your phone number"
               />
             ) : (
-              <p className="text-sm bg-white/5 p-2 rounded">{profile?.phone || 'Not provided'}</p>
+              <p className="text-sm bg-white/5 p-2 rounded">{(profile as any)?.phone || 'Not provided'}</p>
             )}
           </div>
 
@@ -166,7 +166,7 @@ export const ProfileSection = () => {
                 placeholder="Enter your position"
               />
             ) : (
-              <p className="text-sm bg-white/5 p-2 rounded">{profile?.position || 'Not provided'}</p>
+              <p className="text-sm bg-white/5 p-2 rounded">{(profile as any)?.position || 'Not provided'}</p>
             )}
           </div>
 
@@ -180,7 +180,7 @@ export const ProfileSection = () => {
                 placeholder="Enter your department"
               />
             ) : (
-              <p className="text-sm bg-white/5 p-2 rounded">{profile?.department || 'Not provided'}</p>
+              <p className="text-sm bg-white/5 p-2 rounded">{(profile as any)?.department || 'Not provided'}</p>
             )}
           </div>
 
@@ -194,7 +194,7 @@ export const ProfileSection = () => {
                 placeholder="Enter your location"
               />
             ) : (
-              <p className="text-sm bg-white/5 p-2 rounded">{profile?.location || 'Not provided'}</p>
+              <p className="text-sm bg-white/5 p-2 rounded">{(profile as any)?.location || 'Not provided'}</p>
             )}
           </div>
         </div>
@@ -211,7 +211,7 @@ export const ProfileSection = () => {
             />
           ) : (
             <p className="text-sm bg-white/5 p-3 rounded min-h-[60px]">
-              {profile?.bio || 'No bio provided'}
+              {(profile as any)?.bio || 'No bio provided'}
             </p>
           )}
         </div>
@@ -223,7 +223,7 @@ export const ProfileSection = () => {
           </div>
           <div>
             <p className="text-sm font-medium">Status</p>
-            <p className="text-sm text-muted-foreground capitalize">{profile?.status || 'active'}</p>
+            <p className="text-sm text-muted-foreground capitalize">{(profile as any)?.status || 'active'}</p>
           </div>
         </div>
       </CardContent>

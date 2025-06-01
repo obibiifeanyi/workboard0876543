@@ -16,7 +16,6 @@ import {
   Trash2, 
   Download, 
   Search,
-  Filter,
   Plus
 } from "lucide-react";
 import { ExpenseRecord } from "@/types/expenses";
@@ -42,7 +41,7 @@ export const ExpenseTable = ({
 
   const filteredExpenses = expenses.filter(expense => {
     const matchesSearch = 
-      expense.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      expense.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       expense.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (expense.vendor || "").toLowerCase().includes(searchTerm.toLowerCase());
     
@@ -135,13 +134,13 @@ export const ExpenseTable = ({
               {filteredExpenses.map((expense) => (
                 <TableRow key={expense.id}>
                   <TableCell>
-                    {new Date(expense.date).toLocaleDateString()}
+                    {new Date(expense.expense_date || expense.date).toLocaleDateString()}
                   </TableCell>
                   <TableCell>
                     <Badge variant="outline">{expense.category}</Badge>
                   </TableCell>
                   <TableCell className="max-w-xs truncate">
-                    {expense.description}
+                    {expense.description || expense.title}
                   </TableCell>
                   <TableCell>{expense.vendor || '-'}</TableCell>
                   <TableCell className="font-semibold">

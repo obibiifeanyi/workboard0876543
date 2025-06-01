@@ -17,8 +17,8 @@ export const useFleetOperations = () => {
           .from('fleet_vehicles')
           .select(`
             *,
-            assigned_driver:assigned_driver_id(full_name, email),
-            department:department_id(name)
+            assigned_driver:profiles!assigned_driver_id(full_name, email),
+            department:departments!department_id(name)
           `)
           .order('vehicle_number');
         
@@ -37,12 +37,15 @@ export const useFleetOperations = () => {
           .from('vehicle_maintenance')
           .select(`
             *,
-            vehicle:vehicle_id(vehicle_number, make, model)
+            vehicle:fleet_vehicles!vehicle_id(vehicle_number, make, model)
           `)
-          .order('scheduled_date', { ascending: false });
+          .order('created_at', { ascending: false });
         
         if (error) throw error;
-        return data as VehicleMaintenance[];
+        return data.map(item => ({
+          ...item,
+          scheduled_date: item.created_at, // Map if needed
+        })) as VehicleMaintenance[];
       },
     });
   };
@@ -56,8 +59,8 @@ export const useFleetOperations = () => {
           .from('fuel_transactions')
           .select(`
             *,
-            vehicle:vehicle_id(vehicle_number, make, model),
-            driver:driver_id(full_name, email)
+            vehicle:fleet_vehicles!vehicle_id(vehicle_number, make, model),
+            driver:profiles!driver_id(full_name, email)
           `)
           .order('transaction_date', { ascending: false });
         
@@ -76,8 +79,8 @@ export const useFleetOperations = () => {
           .from('trip_logs')
           .select(`
             *,
-            vehicle:vehicle_id(vehicle_number, make, model),
-            driver:driver_id(full_name, email)
+            vehicle:fleet_vehicles!vehicle_id(vehicle_number, make, model),
+            driver:profiles!driver_id(full_name, email)
           `)
           .order('start_time', { ascending: false });
         
@@ -89,10 +92,30 @@ export const useFleetOperations = () => {
 
   // Create vehicle
   const createVehicle = useMutation({
-    mutationFn: async (vehicle: Partial<FleetVehicle>) => {
+    mutationFn: async (vehicle: Omit<Partial<FleetVehicle>, 'id'>) => {
       const { data, error } = await supabase
         .from('fleet_vehicles')
-        .insert(vehicle)
+        .insert({
+          vehicle_number: vehicle.vehicle_number!,
+          make: vehicle.make!,
+          model: vehicle.model!,
+          year: vehicle.year!,
+          license_plate: vehicle.license_plate!,
+          vin: vehicle.vin,
+          color: vehicle.color,
+          fuel_type: vehicle.fuel_type,
+          status: vehicle.status || 'active',
+          current_mileage: vehicle.current_mileage,
+          purchase_date: vehicle.purchase_date,
+          purchase_price: vehicle.purchase_price,
+          assigned_driver_id: vehicle.assigned_driver_id,
+          department_id: vehicle.department_id,
+          insurance_provider: vehicle.insurance_provider,
+          insurance_policy_number: vehicle.insurance_policy_number,
+          insurance_expiry: vehicle.insurance_expiry,
+          registration_expiry: vehicle.registration_expiry,
+          notes: vehicle.notes,
+        })
         .select()
         .single();
 
@@ -110,14 +133,23 @@ export const useFleetOperations = () => {
 
   // Create fuel transaction
   const createFuelTransaction = useMutation({
-    mutationFn: async (transaction: Partial<FuelTransaction>) => {
+    mutationFn: async (transaction: Omit<Partial<FuelTransaction>, 'id'>) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
       const { data, error } = await supabase
         .from('fuel_transactions')
         .insert({
-          ...transaction,
+          vehicle_id: transaction.vehicle_id!,
+          driver_id: transaction.driver_id,
+          fuel_amount: transaction.fuel_amount!,
+          cost_per_unit: transaction.cost_per_unit!,
+          total_cost: transaction.total_cost!,
+          fuel_station: transaction.fuel_station,
+          transaction_date: transaction.transaction_date!,
+          mileage: transaction.mileage,
+          receipt_url: transaction.receipt_url,
+          notes: transaction.notes,
           created_by: user.id,
         })
         .select()

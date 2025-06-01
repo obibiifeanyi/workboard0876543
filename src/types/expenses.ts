@@ -5,9 +5,12 @@ export interface ExpenseRecord {
   description?: string;
   amount: number;
   expense_date: string;
+  date: string; // Add for compatibility
   category: string;
   status: 'pending' | 'approved' | 'paid' | 'rejected';
   receipt_url?: string;
+  vendor?: string; // Add missing vendor field
+  payment_method?: string; // Add missing payment_method field
   created_by: string;
   approved_by?: string;
   approved_at?: string;
