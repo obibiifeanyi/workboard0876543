@@ -2,7 +2,6 @@
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { AccountantNavigation } from "@/components/accountant/AccountantNavigation";
 import { InventoryManagement as InventoryManagementComponent } from "@/components/accountant/InventoryManagement";
-import { AIDocumentButton } from "@/components/shared/AIDocumentButton";
 import { BackToAdminButton } from "@/components/shared/BackToAdminButton";
 
 const InventoryManagement = () => {
@@ -10,13 +9,12 @@ const InventoryManagement = () => {
     <DashboardLayout
       title="Inventory Management"
       navigation={<AccountantNavigation />}
+      seoDescription="Manage assets and inventory"
+      seoKeywords="inventory, assets, equipment, tracking"
     >
       <div className="flex justify-between items-center mb-6">
         <div />
-        <div className="flex gap-4">
-          <AIDocumentButton />
-          <BackToAdminButton />
-        </div>
+        <BackToAdminButton />
       </div>
       <InventoryManagementComponent />
     </DashboardLayout>

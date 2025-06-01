@@ -2,7 +2,6 @@
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { AccountantNavigation } from "@/components/accountant/AccountantNavigation";
 import { InvoiceManagement as InvoiceManagementComponent } from "@/components/accountant/InvoiceManagement";
-import { AIDocumentButton } from "@/components/shared/AIDocumentButton";
 import { BackToAdminButton } from "@/components/shared/BackToAdminButton";
 
 const InvoiceManagement = () => {
@@ -10,13 +9,12 @@ const InvoiceManagement = () => {
     <DashboardLayout
       title="Invoice Management"
       navigation={<AccountantNavigation />}
+      seoDescription="Manage and process invoices"
+      seoKeywords="invoices, payments, accounts payable, billing"
     >
       <div className="flex justify-between items-center mb-6">
         <div />
-        <div className="flex gap-4">
-          <AIDocumentButton />
-          <BackToAdminButton />
-        </div>
+        <BackToAdminButton />
       </div>
       <InvoiceManagementComponent />
     </DashboardLayout>
