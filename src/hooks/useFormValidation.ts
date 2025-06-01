@@ -34,9 +34,9 @@ export const useFormValidation = <T>(schema: z.ZodSchema<T>) => {
 
   const validateField = useCallback(async (fieldName: string, value: any) => {
     try {
-      // Create a partial schema for just this field
-      const fieldSchema = schema.pick({ [fieldName]: true } as any);
-      await fieldSchema.parseAsync({ [fieldName]: value });
+      // Create a partial object for validation
+      const partialData = { [fieldName]: value };
+      await schema.partial().parseAsync(partialData);
       
       // Clear error for this field if validation passes
       setErrors(prev => {
