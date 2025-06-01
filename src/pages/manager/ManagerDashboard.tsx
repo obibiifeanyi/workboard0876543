@@ -14,11 +14,12 @@ import {
 import { Loader } from "@/components/ui/Loader";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ManagerTabContent } from "@/components/manager/dashboard/ManagerTabContent";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 const ManagerDashboard = () => {
   const location = useLocation();
   const isRootManagerRoute = location.pathname === '/manager';
+  const [activeTab, setActiveTab] = useState("team");
 
   const renderBreadcrumb = () => {
     const paths = location.pathname.split('/').filter(Boolean);
@@ -70,7 +71,7 @@ const ManagerDashboard = () => {
             </div>
           }>
             {isRootManagerRoute ? (
-              <Tabs defaultValue="team" className="space-y-6">
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
                 <div className="border-b">
                   <TabsList className="grid w-full grid-cols-6 lg:grid-cols-12">
                     <TabsTrigger value="team">Team</TabsTrigger>
@@ -87,7 +88,7 @@ const ManagerDashboard = () => {
                     <TabsTrigger value="analytics">Analytics</TabsTrigger>
                   </TabsList>
                 </div>
-                <ManagerTabContent />
+                <ManagerTabContent activeTab={activeTab} />
               </Tabs>
             ) : (
               <Outlet />
