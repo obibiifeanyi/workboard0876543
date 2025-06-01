@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -365,7 +364,7 @@ export const ProjectManagement = () => {
                       <SelectValue placeholder="Select department" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">No department</SelectItem>
+                      <SelectItem value="none">No department</SelectItem>
                       {departments.map((dept) => (
                         <SelectItem key={dept.id} value={dept.id}>
                           {dept.name}
@@ -386,7 +385,7 @@ export const ProjectManagement = () => {
                     <SelectValue placeholder="Select manager" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">No manager assigned</SelectItem>
+                    <SelectItem value="none">No manager assigned</SelectItem>
                     {managers.map((manager) => (
                       <SelectItem key={manager.id} value={manager.id}>
                         {manager.full_name} ({manager.role})
