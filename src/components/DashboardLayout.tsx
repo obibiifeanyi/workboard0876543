@@ -1,8 +1,7 @@
-
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { NeuralNetwork } from "@/components/NeuralNetwork";
-import { ClockInButton } from "@/components/ClockInButton";
+import { DashboardClockInButton } from "@/components/DashboardClockInButton";
 import { useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { MainNavBar } from "@/components/navigation/MainNavBar";
@@ -30,7 +29,7 @@ export const DashboardLayout = ({
   const location = useLocation();
   const { profile } = useAuth();
 
-  // Only show ClockInButton for staff users and not on manager/admin dashboards
+  // Only show DashboardClockInButton for staff users and not on manager/admin dashboards
   const showClockInButton = profile?.role === 'staff' && 
     !location.pathname.includes('/manager') && 
     !location.pathname.includes('/admin') &&
@@ -39,7 +38,7 @@ export const DashboardLayout = ({
 
   const navbarActions = (
     <div className="flex items-center space-x-2">
-      {showClockInButton && <ClockInButton />}
+      {showClockInButton && <DashboardClockInButton />}
       {actions}
     </div>
   );
