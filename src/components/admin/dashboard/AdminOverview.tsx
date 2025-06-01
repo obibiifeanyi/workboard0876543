@@ -29,11 +29,18 @@ export const AdminOverview = () => {
       color: "text-blue-600",
     },
     {
+      title: "Active Users",
+      value: stats?.activeUsers || 0,
+      description: "Last 30 days",
+      icon: Users,
+      color: "text-green-600",
+    },
+    {
       title: "Departments",
       value: departments?.length || 0,
       description: "Active departments",
       icon: Building2,
-      color: "text-green-600",
+      color: "text-purple-600",
     },
     {
       title: "Pending Tasks",
@@ -45,16 +52,16 @@ export const AdminOverview = () => {
     {
       title: "Completed Tasks",
       value: stats?.completedTasks || 0,
-      description: "This period",
+      description: "All time",
       icon: TrendingUp,
-      color: "text-purple-600",
+      color: "text-green-600",
     },
   ];
 
   return (
     <div className="space-y-6">
       {/* Stats Overview */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
         {statCards.map((stat) => {
           const Icon = stat.icon;
           return (
@@ -84,7 +91,7 @@ export const AdminOverview = () => {
           <CardContent>
             <div className="space-y-4">
               {activities && activities.length > 0 ? (
-                activities.slice(0, 5).map((activity) => (
+                activities.slice(0, 8).map((activity) => (
                   <div key={activity.id} className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
                     <div className="flex-1">
                       <p className="text-sm font-medium">{activity.description}</p>
@@ -117,7 +124,7 @@ export const AdminOverview = () => {
           <CardContent>
             <div className="space-y-4">
               {departments && departments.length > 0 ? (
-                departments.slice(0, 5).map((dept) => (
+                departments.slice(0, 6).map((dept) => (
                   <div key={dept.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
                     <div>
                       <p className="text-sm font-medium">{dept.name}</p>

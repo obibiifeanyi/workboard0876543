@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Loader } from "@/components/ui/Loader";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-import { StaffDashboard as StaffDashboardComponent } from "@/components/staff/StaffDashboard";
+import { StaffOverview } from "@/components/staff/StaffOverview";
 import {
   LayoutDashboard,
   CheckSquare,
@@ -122,7 +122,7 @@ const StaffDashboard = () => {
               <Loader className="h-8 w-8 animate-spin text-primary" />
             </div>
           }>
-            {isRootStaffRoute ? <StaffDashboardComponent /> : <Outlet />}
+            {isRootStaffRoute ? <StaffOverview /> : <Outlet />}
           </Suspense>
         </ErrorBoundary>
       </div>

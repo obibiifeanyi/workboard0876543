@@ -16,15 +16,16 @@ export const useAdminOperations = () => {
           .from('system_activities')
           .select('*')
           .order('created_at', { ascending: false })
-          .limit(20);
+          .limit(50);
 
         if (error) {
           console.error('Error fetching system activities:', error);
           // Fallback to existing data approach
-          const [memosRes, invoicesRes, reportsRes] = await Promise.all([
+          const [memosRes, invoicesRes, reportsRes, tasksRes] = await Promise.all([
             supabase.from('memos').select('id, title, created_at, created_by').order('created_at', { ascending: false }).limit(10),
             supabase.from('accounts_invoices').select('id, invoice_number, vendor_name, created_at, created_by').order('created_at', { ascending: false }).limit(10),
-            supabase.from('ct_power_reports').select('id, site_id, status, created_at, created_by').order('created_at', { ascending: false }).limit(10)
+            supabase.from('ct_power_reports').select('id, site_id, status, created_at, created_by').order('created_at', { ascending: false }).limit(10),
+            supabase.from('tasks').select('id, title, status, created_at, created_by_id').order('created_at', { ascending: false }).limit(10)
           ]);
 
           const activities = [];
@@ -68,6 +69,19 @@ export const useAdminOperations = () => {
             });
           }
 
+          if (tasksRes.data) {
+            tasksRes.data.forEach(task => {
+              activities.push({
+                id: task.id,
+                type: 'task',
+                description: `Task ${task.status}: ${task.title}`,
+                user_id: task.created_by_id,
+                created_at: task.created_at,
+                metadata: null
+              });
+            });
+          }
+
           return activities.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
         }
 
@@ -89,7 +103,8 @@ export const useAdminOperations = () => {
             manager_id,
             employee_count,
             created_at,
-            updated_at
+            updated_at,
+            profiles!manager_id(full_name)
           `);
 
         if (error) throw error;
@@ -99,7 +114,7 @@ export const useAdminOperations = () => {
           description: dept.description || null,
           manager_id: dept.manager_id || null,
           employee_count: dept.employee_count || null,
-          profiles: null
+          profiles: dept.profiles || null
         })) as DepartmentWithManager[];
       },
     });
@@ -121,6 +136,15 @@ export const useAdminOperations = () => {
           .from("profiles")
           .select("*", { count: "exact" });
 
+        // Fetch active users (logged in within last 30 days)
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        
+        const { count: activeUsers } = await supabase
+          .from("profiles")
+          .select("*", { count: "exact" })
+          .gte("updated_at", thirtyDaysAgo.toISOString());
+
         // Fetch pending tasks
         const { count: pendingTasks } = await supabase
           .from("tasks")
@@ -134,6 +158,7 @@ export const useAdminOperations = () => {
           .eq("status", "completed");
 
         stats.totalUsers = totalUsers || 0;
+        stats.activeUsers = activeUsers || 0;
         stats.pendingTasks = pendingTasks || 0;
         stats.completedTasks = completedTasks || 0;
 
@@ -167,10 +192,52 @@ export const useAdminOperations = () => {
     },
   });
 
+  const createDepartment = useMutation({
+    mutationFn: async (data: { name: string; description?: string; manager_id?: string }) => {
+      const { error } = await supabase
+        .from("departments")
+        .insert([{
+          name: data.name,
+          description: data.description || null,
+          manager_id: data.manager_id || null,
+          employee_count: 0
+        }]);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["departments"] });
+      toast({
+        title: "Department Created",
+        description: "The department has been successfully created.",
+      });
+    },
+  });
+
+  const deleteDepartment = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from("departments")
+        .delete()
+        .eq("id", id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["departments"] });
+      toast({
+        title: "Department Deleted",
+        description: "The department has been successfully deleted.",
+      });
+    },
+  });
+
   return {
     useSystemActivities,
     useDepartments,
     useAdminStats,
     updateDepartment,
+    createDepartment,
+    deleteDepartment,
   };
 };
