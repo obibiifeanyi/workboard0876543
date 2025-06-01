@@ -27,7 +27,7 @@ export const ProjectManagement = () => {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    department_id: "",
+    department_id: "none",
     status: "planning",
     start_date: "",
     end_date: "",
@@ -40,12 +40,13 @@ export const ProjectManagement = () => {
     await createProject.mutateAsync({
       ...formData,
       budget: formData.budget ? parseFloat(formData.budget) : 0,
+      department_id: formData.department_id === "none" ? null : formData.department_id,
     });
     
     setFormData({
       name: "",
       description: "",
-      department_id: "",
+      department_id: "none",
       status: "planning",
       start_date: "",
       end_date: "",
@@ -113,6 +114,7 @@ export const ProjectManagement = () => {
                       <SelectValue placeholder="Select department" />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="none">No department assigned</SelectItem>
                       {managedDepartments?.map((dept) => (
                         <SelectItem key={dept.id} value={dept.id}>
                           {dept.name}
@@ -243,7 +245,7 @@ export const ProjectManagement = () => {
                   <h4 className="font-medium">Team Members</h4>
                   <Select
                     onValueChange={(userId) => {
-                      if (userId) {
+                      if (userId && userId !== "none") {
                         handleAddMember(project.id, userId, "member");
                       }
                     }}
@@ -252,6 +254,7 @@ export const ProjectManagement = () => {
                       <SelectValue placeholder="Add team member" />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="none">Select team member</SelectItem>
                       {teamMembers?.filter(member => 
                         !project.project_members?.some(pm => pm.user_id === member.id)
                       ).map((member) => (

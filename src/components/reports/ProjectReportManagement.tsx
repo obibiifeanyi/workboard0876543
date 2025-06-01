@@ -19,9 +19,9 @@ export const ProjectReportManagement = () => {
   const queryClient = useQueryClient();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
-    project_id: "",
+    project_id: "none",
     report_title: "",
-    report_type: "",
+    report_type: "progress",
     report_content: "",
     progress_percentage: "",
     budget_used: "",
@@ -74,7 +74,7 @@ export const ProjectReportManagement = () => {
       const { error } = await supabase
         .from('project_reports')
         .insert([{
-          project_id: data.project_id,
+          project_id: data.project_id === "none" ? null : data.project_id,
           report_title: data.report_title,
           report_type: data.report_type,
           report_content: data.report_content,
@@ -92,9 +92,9 @@ export const ProjectReportManagement = () => {
       queryClient.invalidateQueries({ queryKey: ['project-reports'] });
       setIsDialogOpen(false);
       setFormData({
-        project_id: "",
+        project_id: "none",
         report_title: "",
-        report_type: "",
+        report_type: "progress",
         report_content: "",
         progress_percentage: "",
         budget_used: "",
@@ -162,6 +162,7 @@ export const ProjectReportManagement = () => {
                     <SelectValue placeholder="Select project" />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="none">No project selected</SelectItem>
                     {projects?.map((project) => (
                       <SelectItem key={project.id} value={project.id}>
                         {project.name}
