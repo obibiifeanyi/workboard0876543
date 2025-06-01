@@ -1,43 +1,79 @@
 
-import { TabsContent } from "@/components/ui/tabs";
-import { UserManagement } from "@/components/admin/UserManagement";
-import { ProjectManagement } from "@/components/admin/ProjectManagement";
-import { TimeAttendanceManagement } from "@/components/admin/TimeAttendanceManagement";
-import { LeaveManagement } from "@/components/admin/LeaveManagement";
-import { CommunicationCenter } from "@/components/admin/CommunicationCenter";
-import { APIKeyManagement } from "@/components/admin/APIKeyManagement";
+import { useAdminOperations } from "@/hooks/admin/useAdminOperations";
 import { AdminOverview } from "./AdminOverview";
+import { UserManagement } from "../UserManagement";
+import { DepartmentManagement } from "../DepartmentManagement";
+import { ProjectManagement } from "../ProjectManagement";
+import { TelecomSiteManagement } from "../TelecomSiteManagement";
+import { TimeAttendanceManagement } from "../TimeAttendanceManagement";
+import { LeaveManagement } from "../LeaveManagement";
+import { StaffMemoManagement } from "../StaffMemoManagement";
+import { FleetManagement } from "../FleetManagement";
+import { CommunicationCenter } from "../CommunicationCenter";
+import { AdminDashboardModule } from "./AdminDashboardModule";
+import { Loader } from "lucide-react";
 
-export const AdminTabContent = () => {
+interface AdminTabContentProps {
+  activeTab: string;
+}
+
+export const AdminTabContent = ({ activeTab }: AdminTabContentProps) => {
+  const { 
+    currentUser,
+    users, 
+    departments, 
+    projects,
+    tasks,
+    isLoadingUsers,
+    isLoadingDepartments,
+    isLoadingProjects,
+    isLoadingTasks
+  } = useAdminOperations();
+
+  const isLoading = isLoadingUsers || isLoadingDepartments || isLoadingProjects || isLoadingTasks;
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader className="h-8 w-8 animate-spin text-red-600" />
+      </div>
+    );
+  }
+
+  const renderContent = () => {
+    switch (activeTab) {
+      case "overview":
+        return <AdminOverview />;
+      case "users":
+        return <UserManagement />;
+      case "departments":
+        return <DepartmentManagement />;
+      case "projects":
+        return <ProjectManagement />;
+      case "telecom":
+        return <TelecomSiteManagement />;
+      case "time":
+        return <TimeAttendanceManagement />;
+      case "leave":
+        return <LeaveManagement />;
+      case "memos":
+        return <StaffMemoManagement />;
+      case "fleet":
+        return <FleetManagement />;
+      case "communications":
+        return <CommunicationCenter />;
+      case "analytics":
+        return <AdminDashboardModule />;
+      case "settings":
+        return <div>Settings content coming soon...</div>;
+      default:
+        return <AdminOverview />;
+    }
+  };
+
   return (
-    <>
-      <TabsContent value="overview" className="space-y-6 mt-0">
-        <AdminOverview />
-      </TabsContent>
-
-      <TabsContent value="users" className="space-y-6 mt-0">
-        <UserManagement />
-      </TabsContent>
-
-      <TabsContent value="projects" className="space-y-6 mt-0">
-        <ProjectManagement />
-      </TabsContent>
-
-      <TabsContent value="time" className="space-y-6 mt-0">
-        <TimeAttendanceManagement />
-      </TabsContent>
-
-      <TabsContent value="leave" className="space-y-6 mt-0">
-        <LeaveManagement />
-      </TabsContent>
-
-      <TabsContent value="communication" className="space-y-6 mt-0">
-        <CommunicationCenter />
-      </TabsContent>
-
-      <TabsContent value="settings" className="space-y-6 mt-0">
-        <APIKeyManagement />
-      </TabsContent>
-    </>
+    <div className="flex-1 space-y-6">
+      {renderContent()}
+    </div>
   );
 };

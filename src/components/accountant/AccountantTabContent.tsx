@@ -6,6 +6,7 @@ import { PaymentProcessing } from "./PaymentProcessing";
 import { InventoryManagement } from "./InventoryManagement";
 import { MemoApproval } from "./MemoApproval";
 import { AccountSettings } from "./AccountSettings";
+import { FleetAccountingManagement } from "./FleetAccountingManagement";
 
 export const AccountantTabContent = () => {
   return (
@@ -31,6 +32,10 @@ export const AccountantTabContent = () => {
 
       <TabsContent value="inventory" className="space-y-6 mt-0">
         <InventoryManagement />
+      </TabsContent>
+
+      <TabsContent value="fleet" className="space-y-6 mt-0">
+        <FleetAccountingManagement />
       </TabsContent>
 
       <TabsContent value="settings" className="space-y-6 mt-0">
