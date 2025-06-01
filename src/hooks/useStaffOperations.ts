@@ -36,10 +36,17 @@ export const useStaffOperations = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
+      // Remove properties that don't exist in the database schema
+      const {
+        participants,
+        organizer,
+        ...meetingData
+      } = meeting;
+
       const { data, error } = await supabase
         .from('meetings')
         .insert({
-          ...meeting,
+          ...meetingData,
           organizer_id: user.id,
         })
         .select()
@@ -66,9 +73,16 @@ export const useStaffOperations = () => {
 
   const updateMeeting = useMutation({
     mutationFn: async ({ id, ...updates }: Partial<Meeting> & { id: string }) => {
+      // Remove properties that don't exist in the database schema
+      const {
+        participants,
+        organizer,
+        ...updateData
+      } = updates;
+
       const { data, error } = await supabase
         .from('meetings')
-        .update(updates)
+        .update(updateData)
         .eq('id', id)
         .select()
         .single();
@@ -109,10 +123,16 @@ export const useStaffOperations = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
+      // Remove properties that don't exist in the database schema
+      const {
+        reviewer,
+        ...reportData
+      } = report;
+
       const { data, error } = await supabase
         .from('weekly_reports')
         .insert({
-          ...report,
+          ...reportData,
           user_id: user.id,
         })
         .select()
@@ -139,9 +159,15 @@ export const useStaffOperations = () => {
 
   const updateWeeklyReport = useMutation({
     mutationFn: async ({ id, ...updates }: Partial<WeeklyReport> & { id: string }) => {
+      // Remove properties that don't exist in the database schema
+      const {
+        reviewer,
+        ...updateData
+      } = updates;
+
       const { data, error } = await supabase
         .from('weekly_reports')
-        .update(updates)
+        .update(updateData)
         .eq('id', id)
         .select()
         .single();
@@ -184,10 +210,18 @@ export const useStaffOperations = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
+      // Remove properties that don't exist in the database schema
+      const {
+        site,
+        battery,
+        reporter,
+        ...reportData
+      } = report;
+
       const { data, error } = await supabase
         .from('battery_reports')
         .insert({
-          ...report,
+          ...reportData,
           reporter_id: user.id,
         })
         .select()
@@ -214,9 +248,17 @@ export const useStaffOperations = () => {
 
   const updateBatteryReport = useMutation({
     mutationFn: async ({ id, ...updates }: Partial<BatteryReport> & { id: string }) => {
+      // Remove properties that don't exist in the database schema
+      const {
+        site,
+        battery,
+        reporter,
+        ...updateData
+      } = updates;
+
       const { data, error } = await supabase
         .from('battery_reports')
-        .update(updates)
+        .update(updateData)
         .eq('id', id)
         .select()
         .single();

@@ -45,7 +45,7 @@ export const BatteryReport = () => {
     battery_voltage: '',
     current_capacity: '',
     temperature: '',
-    charging_status: '',
+    charging_status: '' as 'charging' | 'discharging' | 'float' | 'bulk' | 'absorption' | '',
     health_status: 'good' as const,
     runtime_hours: '',
     load_current: '',
@@ -75,6 +75,7 @@ export const BatteryReport = () => {
       runtime_hours: newReport.runtime_hours ? Number(newReport.runtime_hours) : undefined,
       load_current: newReport.load_current ? Number(newReport.load_current) : undefined,
       backup_time_remaining: newReport.backup_time_remaining ? Number(newReport.backup_time_remaining) : undefined,
+      charging_status: newReport.charging_status || undefined,
     };
 
     createBatteryReport.mutate(reportData, {

@@ -165,7 +165,7 @@ export const WeeklyReport = () => {
               onChange={(e) => setReportForm({ ...reportForm, accomplishments: e.target.value })}
               placeholder="Describe what you accomplished this week..."
               className="min-h-[100px]"
-              disabled={existingReport?.status !== 'draft' && existingReport}
+              disabled={!!existingReport && existingReport.status !== 'draft'}
             />
           </div>
 
@@ -177,7 +177,7 @@ export const WeeklyReport = () => {
               onChange={(e) => setReportForm({ ...reportForm, challenges: e.target.value })}
               placeholder="Describe any challenges or blockers..."
               className="min-h-[80px]"
-              disabled={existingReport?.status !== 'draft' && existingReport}
+              disabled={!!existingReport && existingReport.status !== 'draft'}
             />
           </div>
 
@@ -189,7 +189,7 @@ export const WeeklyReport = () => {
               onChange={(e) => setReportForm({ ...reportForm, next_week_goals: e.target.value })}
               placeholder="What do you plan to accomplish next week?"
               className="min-h-[80px]"
-              disabled={existingReport?.status !== 'draft' && existingReport}
+              disabled={!!existingReport && existingReport.status !== 'draft'}
             />
           </div>
 
@@ -200,13 +200,13 @@ export const WeeklyReport = () => {
                 value={reportForm.projectInput}
                 onChange={(e) => setReportForm({ ...reportForm, projectInput: e.target.value })}
                 placeholder="Project name"
-                disabled={existingReport?.status !== 'draft' && existingReport}
+                disabled={!!existingReport && existingReport.status !== 'draft'}
                 onKeyPress={(e) => e.key === 'Enter' && addProject()}
               />
               <Button 
                 type="button" 
                 onClick={addProject}
-                disabled={existingReport?.status !== 'draft' && existingReport}
+                disabled={!!existingReport && existingReport.status !== 'draft'}
               >
                 Add
               </Button>
@@ -218,7 +218,7 @@ export const WeeklyReport = () => {
                     key={index} 
                     variant="secondary"
                     className="cursor-pointer"
-                    onClick={() => !existingReport || existingReport.status === 'draft' ? removeProject(index) : undefined}
+                    onClick={() => (!existingReport || existingReport.status === 'draft') ? removeProject(index) : undefined}
                   >
                     {project} {(!existingReport || existingReport.status === 'draft') && '×'}
                   </Badge>
