@@ -1,13 +1,19 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ProfileSection } from "@/components/staff/ProfileSection";
+import { User } from "lucide-react";
 
 export const StaffProfile = () => {
   return (
-    <Card className="glass-card border border-primary/20">
+    <Card className="bg-black/10 dark:bg-white/5 backdrop-blur-lg border-none">
       <CardHeader>
-        <CardTitle className="text-xl md:text-2xl">Staff Profile</CardTitle>
+        <CardTitle className="flex items-center gap-2 text-xl md:text-2xl">
+          <User className="h-6 w-6 text-primary" />
+          Staff Profile
+        </CardTitle>
       </CardHeader>
       <CardContent>
-        <p>Staff profile content will be implemented here</p>
+        <ProfileSection />
       </CardContent>
     </Card>
   );

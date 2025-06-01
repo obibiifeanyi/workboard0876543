@@ -1,10 +1,11 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Battery, Upload, Plus } from "lucide-react";
+import { Battery, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useStaffOperations } from "@/hooks/useStaffOperations";
 import { BatteryInventory } from "@/components/battery/BatteryInventory";
@@ -32,6 +33,9 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
+type ChargingStatus = 'charging' | 'discharging' | 'float' | 'bulk' | 'absorption';
+type HealthStatus = 'excellent' | 'good' | 'fair' | 'poor' | 'critical';
+
 export const BatteryReport = () => {
   const { useBatteryReports, createBatteryReport } = useStaffOperations();
   const { data: reports = [], isLoading } = useBatteryReports();
@@ -44,8 +48,8 @@ export const BatteryReport = () => {
     battery_voltage: '',
     current_capacity: '',
     temperature: '',
-    charging_status: '' as '' | 'charging' | 'discharging' | 'float' | 'bulk' | 'absorption',
-    health_status: 'good' as const,
+    charging_status: '' as ChargingStatus | '',
+    health_status: 'good' as HealthStatus,
     runtime_hours: '',
     load_current: '',
     backup_time_remaining: '',
@@ -159,7 +163,7 @@ export const BatteryReport = () => {
                         <Label htmlFor="health-status">Health Status *</Label>
                         <Select
                           value={newReport.health_status}
-                          onValueChange={(value: any) => setNewReport({ ...newReport, health_status: value })}
+                          onValueChange={(value: HealthStatus) => setNewReport({ ...newReport, health_status: value })}
                         >
                           <SelectTrigger>
                             <SelectValue />
@@ -216,7 +220,7 @@ export const BatteryReport = () => {
                         <Label htmlFor="charging-status">Charging Status</Label>
                         <Select
                           value={newReport.charging_status}
-                          onValueChange={(value) => setNewReport({ ...newReport, charging_status: value })}
+                          onValueChange={(value: ChargingStatus) => setNewReport({ ...newReport, charging_status: value })}
                         >
                           <SelectTrigger>
                             <SelectValue placeholder="Select status" />
