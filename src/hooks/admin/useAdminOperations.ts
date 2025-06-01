@@ -114,7 +114,7 @@ export const useAdminOperations = () => {
           description: dept.description || null,
           manager_id: dept.manager_id || null,
           employee_count: dept.employee_count || null,
-          profiles: dept.profiles || null
+          profiles: Array.isArray(dept.profiles) ? dept.profiles[0] : dept.profiles || null
         })) as DepartmentWithManager[];
       },
     });
@@ -164,6 +164,27 @@ export const useAdminOperations = () => {
 
         return stats;
       },
+    });
+  };
+
+  // Phase 3: Authentication & Performance Optimization
+  const optimizedAuthHook = () => {
+    return useQuery({
+      queryKey: ["auth-profile"],
+      queryFn: async () => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return null;
+
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", user.id)
+          .single();
+
+        return { user, profile };
+      },
+      staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+      gcTime: 10 * 60 * 1000, // Keep in cache for 10 minutes
     });
   };
 
@@ -236,6 +257,7 @@ export const useAdminOperations = () => {
     useSystemActivities,
     useDepartments,
     useAdminStats,
+    optimizedAuthHook,
     updateDepartment,
     createDepartment,
     deleteDepartment,

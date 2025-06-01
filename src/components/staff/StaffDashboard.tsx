@@ -159,7 +159,7 @@ const StaffDashboard = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <TaskList tasks={[]} />
+                  <TaskList />
                 </CardContent>
               </Card>
             </TabsContent>
