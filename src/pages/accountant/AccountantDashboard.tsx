@@ -1,3 +1,4 @@
+
 import { useState, Suspense } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { AccountantNavigation } from "@/components/accountant/AccountantNavigation";
@@ -72,13 +73,14 @@ const AccountantDashboard = () => {
             {isRootAccountantRoute ? (
               <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
                 <div className="border-b">
-                  <TabsList className="grid w-full grid-cols-6">
+                  <TabsList className="grid w-full grid-cols-7">
                     <TabsTrigger value="overview">Overview</TabsTrigger>
                     <TabsTrigger value="financial-reports">Reports</TabsTrigger>
                     <TabsTrigger value="invoices">Invoices</TabsTrigger>
                     <TabsTrigger value="payments">Payments</TabsTrigger>
                     <TabsTrigger value="inventory">Inventory</TabsTrigger>
                     <TabsTrigger value="fleet">Fleet</TabsTrigger>
+                    <TabsTrigger value="expenses">Expenses</TabsTrigger>
                   </TabsList>
                 </div>
                 <AccountantTabContent />

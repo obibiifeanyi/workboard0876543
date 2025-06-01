@@ -1,117 +1,115 @@
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-import type { FleetVehicle, VehicleMaintenance, FuelTransaction, TripLog, DriverLicense } from "@/types/fleet";
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { FleetVehicle, VehicleMaintenance, FuelTransaction, TripLog, DriverLicense } from '@/types/fleet';
+import { useToast } from '@/hooks/use-toast';
 
 export const useFleetOperations = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  // Get all vehicles
-  const { data: vehicles, isLoading: isLoadingVehicles } = useQuery({
-    queryKey: ["fleet-vehicles"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("fleet_vehicles")
-        .select(`
-          *,
-          departments(name),
-          assigned_driver:profiles!assigned_driver_id(full_name, email)
-        `)
-        .order("created_at", { ascending: false });
+  // Fetch all vehicles
+  const useVehicles = () => {
+    return useQuery({
+      queryKey: ['fleet_vehicles'],
+      queryFn: async () => {
+        const { data, error } = await supabase
+          .from('fleet_vehicles')
+          .select(`
+            *,
+            departments(name),
+            assigned_driver:profiles!assigned_driver_id(full_name, email)
+          `)
+          .order('created_at', { ascending: false });
+        
+        if (error) throw error;
+        return data as FleetVehicle[];
+      },
+    });
+  };
 
-      if (error) throw error;
-      return data as FleetVehicle[];
-    },
-  });
+  // Fetch vehicle maintenance records
+  const useVehicleMaintenance = () => {
+    return useQuery({
+      queryKey: ['vehicle_maintenance'],
+      queryFn: async () => {
+        const { data, error } = await supabase
+          .from('vehicle_maintenance')
+          .select(`
+            *,
+            fleet_vehicles(vehicle_number, make, model)
+          `)
+          .order('service_date', { ascending: false });
+        
+        if (error) throw error;
+        return data as VehicleMaintenance[];
+      },
+    });
+  };
 
-  // Get vehicle maintenance records
-  const { data: maintenanceRecords, isLoading: isLoadingMaintenance } = useQuery({
-    queryKey: ["vehicle-maintenance"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("vehicle_maintenance")
-        .select(`
-          *,
-          fleet_vehicles(vehicle_number, make, model)
-        `)
-        .order("service_date", { ascending: false });
+  // Fetch fuel transactions
+  const useFuelTransactions = () => {
+    return useQuery({
+      queryKey: ['fuel_transactions'],
+      queryFn: async () => {
+        const { data, error } = await supabase
+          .from('fuel_transactions')
+          .select(`
+            *,
+            fleet_vehicles(vehicle_number, make, model),
+            profiles(full_name, email)
+          `)
+          .order('transaction_date', { ascending: false });
+        
+        if (error) throw error;
+        return data as FuelTransaction[];
+      },
+    });
+  };
 
-      if (error) throw error;
-      return data as VehicleMaintenance[];
-    },
-  });
-
-  // Get fuel transactions
-  const { data: fuelTransactions, isLoading: isLoadingFuel } = useQuery({
-    queryKey: ["fuel-transactions"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("fuel_transactions")
-        .select(`
-          *,
-          fleet_vehicles(vehicle_number, make, model),
-          profiles!driver_id(full_name, email)
-        `)
-        .order("transaction_date", { ascending: false });
-
-      if (error) throw error;
-      return data as FuelTransaction[];
-    },
-  });
-
-  // Get trip logs
-  const { data: tripLogs, isLoading: isLoadingTrips } = useQuery({
-    queryKey: ["trip-logs"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("trip_logs")
-        .select(`
-          *,
-          fleet_vehicles(vehicle_number, make, model),
-          profiles!driver_id(full_name, email)
-        `)
-        .order("start_time", { ascending: false });
-
-      if (error) throw error;
-      return data as TripLog[];
-    },
-  });
-
-  // Create vehicle mutation
+  // Create vehicle
   const createVehicle = useMutation({
-    mutationFn: async (vehicleData: Partial<FleetVehicle>) => {
-      const { error } = await supabase.from("fleet_vehicles").insert(vehicleData);
+    mutationFn: async (vehicle: Omit<FleetVehicle, 'id' | 'created_at' | 'updated_at'>) => {
+      const { data, error } = await supabase
+        .from('fleet_vehicles')
+        .insert(vehicle)
+        .select()
+        .single();
+
       if (error) throw error;
+      return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["fleet-vehicles"] });
+      queryClient.invalidateQueries({ queryKey: ['fleet_vehicles'] });
       toast({
         title: "Success",
         description: "Vehicle added successfully",
       });
     },
-    onError: () => {
+    onError: (error) => {
       toast({
         title: "Error",
-        description: "Failed to add vehicle",
+        description: `Failed to add vehicle: ${error.message}`,
         variant: "destructive",
       });
     },
   });
 
-  // Update vehicle mutation
+  // Update vehicle
   const updateVehicle = useMutation({
-    mutationFn: async ({ id, ...vehicleData }: Partial<FleetVehicle> & { id: string }) => {
-      const { error } = await supabase
-        .from("fleet_vehicles")
-        .update(vehicleData)
-        .eq("id", id);
+    mutationFn: async ({ id, ...updates }: { id: string } & Partial<FleetVehicle>) => {
+      const { data, error } = await supabase
+        .from('fleet_vehicles')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+
       if (error) throw error;
+      return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["fleet-vehicles"] });
+      queryClient.invalidateQueries({ queryKey: ['fleet_vehicles'] });
       toast({
         title: "Success",
         description: "Vehicle updated successfully",
@@ -119,37 +117,53 @@ export const useFleetOperations = () => {
     },
   });
 
-  // Create maintenance record mutation
+  // Create maintenance record
   const createMaintenanceRecord = useMutation({
-    mutationFn: async (maintenanceData: Partial<VehicleMaintenance>) => {
+    mutationFn: async (maintenance: Omit<VehicleMaintenance, 'id' | 'created_at' | 'updated_at'>) => {
       const { data: { user } } = await supabase.auth.getUser();
-      const { error } = await supabase.from("vehicle_maintenance").insert({
-        ...maintenanceData,
-        created_by: user?.id,
-      });
+      if (!user) throw new Error('User not authenticated');
+
+      const { data, error } = await supabase
+        .from('vehicle_maintenance')
+        .insert({
+          ...maintenance,
+          created_by: user.id,
+        })
+        .select()
+        .single();
+
       if (error) throw error;
+      return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["vehicle-maintenance"] });
+      queryClient.invalidateQueries({ queryKey: ['vehicle_maintenance'] });
       toast({
         title: "Success",
-        description: "Maintenance record added successfully",
+        description: "Maintenance record created successfully",
       });
     },
   });
 
-  // Create fuel transaction mutation
+  // Create fuel transaction
   const createFuelTransaction = useMutation({
-    mutationFn: async (fuelData: Partial<FuelTransaction>) => {
+    mutationFn: async (transaction: Omit<FuelTransaction, 'id' | 'created_at' | 'updated_at'>) => {
       const { data: { user } } = await supabase.auth.getUser();
-      const { error } = await supabase.from("fuel_transactions").insert({
-        ...fuelData,
-        created_by: user?.id,
-      });
+      if (!user) throw new Error('User not authenticated');
+
+      const { data, error } = await supabase
+        .from('fuel_transactions')
+        .insert({
+          ...transaction,
+          created_by: user.id,
+        })
+        .select()
+        .single();
+
       if (error) throw error;
+      return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["fuel-transactions"] });
+      queryClient.invalidateQueries({ queryKey: ['fuel_transactions'] });
       toast({
         title: "Success",
         description: "Fuel transaction recorded successfully",
@@ -158,14 +172,9 @@ export const useFleetOperations = () => {
   });
 
   return {
-    vehicles,
-    maintenanceRecords,
-    fuelTransactions,
-    tripLogs,
-    isLoadingVehicles,
-    isLoadingMaintenance,
-    isLoadingFuel,
-    isLoadingTrips,
+    useVehicles,
+    useVehicleMaintenance,
+    useFuelTransactions,
     createVehicle,
     updateVehicle,
     createMaintenanceRecord,
