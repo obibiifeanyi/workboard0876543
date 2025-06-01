@@ -14,12 +14,6 @@ import ManagerDashboard from "./pages/manager/ManagerDashboard";
 import AccountantDashboard from "./pages/accountant/AccountantDashboard";
 import StaffDashboard from "./pages/staff/StaffDashboard";
 import HRDashboard from "./pages/hr/HRDashboard";
-import FinancialReports from "./pages/accountant/FinancialReports";
-import InvoiceManagement from "./pages/accountant/InvoiceManagement";
-import MemoApproval from "./pages/accountant/MemoApproval";
-import InventoryManagement from "./pages/accountant/InventoryManagement";
-import PaymentProcessing from "./pages/accountant/PaymentProcessing";
-import AccountantSettings from "./pages/accountant/AccountantSettings";
 import { RoleBasedRoute } from "./components/RoleBasedRoute";
 
 // Admin nested routes
@@ -60,6 +54,14 @@ import { HRLeaveManagement } from "./components/hr/HRLeaveManagement";
 import { PayrollManagement } from "./components/hr/PayrollManagement";
 import { PerformanceReviews } from "./components/hr/PerformanceReviews";
 import { HRReports } from "./components/hr/HRReports";
+
+// Accountant nested routes components
+import { FinancialReports } from "./components/accountant/FinancialReports";
+import { InvoiceManagement } from "./components/accountant/InvoiceManagement";
+import { MemoApproval } from "./components/accountant/MemoApproval";
+import { InventoryManagement } from "./components/accountant/InventoryManagement";
+import { PaymentProcessing } from "./components/accountant/PaymentProcessing";
+import { AccountSettings } from "./components/accountant/AccountSettings";
 
 const queryClient = new QueryClient();
 
@@ -112,42 +114,19 @@ function App() {
                 <Route path="settings" element={<EmailNotificationCenter />} />
               </Route>
               
-              {/* Accountant routes */}
+              {/* Accountant routes with nested routing */}
               <Route path="/accountant" element={
                 <RoleBasedRoute allowedRoles={['accountant']}>
                   <AccountantDashboard />
                 </RoleBasedRoute>
-              } />
-              <Route path="/accountant/financial-reports" element={
-                <RoleBasedRoute allowedRoles={['accountant']}>
-                  <FinancialReports />
-                </RoleBasedRoute>
-              } />
-              <Route path="/accountant/invoices" element={
-                <RoleBasedRoute allowedRoles={['accountant']}>
-                  <InvoiceManagement />
-                </RoleBasedRoute>
-              } />
-              <Route path="/accountant/memo-approval" element={
-                <RoleBasedRoute allowedRoles={['accountant']}>
-                  <MemoApproval />
-                </RoleBasedRoute>
-              } />
-              <Route path="/accountant/inventory" element={
-                <RoleBasedRoute allowedRoles={['accountant']}>
-                  <InventoryManagement />
-                </RoleBasedRoute>
-              } />
-              <Route path="/accountant/payments" element={
-                <RoleBasedRoute allowedRoles={['accountant']}>
-                  <PaymentProcessing />
-                </RoleBasedRoute>
-              } />
-              <Route path="/accountant/settings" element={
-                <RoleBasedRoute allowedRoles={['accountant']}>
-                  <AccountantSettings />
-                </RoleBasedRoute>
-              } />
+              }>
+                <Route path="reports" element={<FinancialReports />} />
+                <Route path="invoices" element={<InvoiceManagement />} />
+                <Route path="memos" element={<MemoApproval />} />
+                <Route path="inventory" element={<InventoryManagement />} />
+                <Route path="payments" element={<PaymentProcessing />} />
+                <Route path="settings" element={<AccountSettings />} />
+              </Route>
               
               {/* HR routes with nested routing */}
               <Route path="/hr" element={

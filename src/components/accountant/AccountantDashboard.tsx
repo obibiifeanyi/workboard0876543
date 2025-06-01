@@ -2,11 +2,37 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AccountantTabContent } from "./AccountantTabContent";
-import { Search, DollarSign, FileText, TrendingUp, Calculator } from "lucide-react";
+import { Search, DollarSign, FileText, TrendingUp, Calculator, TrendingDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { useFinancialData } from "@/hooks/useFinancialData";
 
 export const AccountantDashboard = () => {
+  const { metrics, isLoading } = useFinancialData();
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-NG', {
+      style: 'currency',
+      currency: 'NGN',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount);
+  };
+
+  const formatPercentage = (percentage: number) => {
+    const sign = percentage >= 0 ? '+' : '';
+    return `${sign}${percentage.toFixed(1)}%`;
+  };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6 animate-fade-in p-6">
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6 animate-fade-in p-6">
       <div className="flex items-center justify-between mb-8">
@@ -37,38 +63,69 @@ export const AccountantDashboard = () => {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">₦45,231,890</div>
-            <p className="text-xs text-muted-foreground">+20.1% from last month</p>
+            <div className="text-2xl font-bold">{formatCurrency(metrics.totalRevenue)}</div>
+            <p className="text-xs text-muted-foreground flex items-center gap-1">
+              {metrics.revenueGrowth >= 0 ? (
+                <TrendingUp className="h-3 w-3 text-green-500" />
+              ) : (
+                <TrendingDown className="h-3 w-3 text-red-500" />
+              )}
+              {formatPercentage(metrics.revenueGrowth)} from last month
+            </p>
           </CardContent>
         </Card>
+        
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Pending Invoices</CardTitle>
             <FileText className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">23</div>
-            <p className="text-xs text-muted-foreground">+180.1% from last month</p>
+            <div className="text-2xl font-bold">{metrics.pendingInvoices}</div>
+            <p className="text-xs text-muted-foreground flex items-center gap-1">
+              {metrics.invoiceGrowth >= 0 ? (
+                <TrendingUp className="h-3 w-3 text-green-500" />
+              ) : (
+                <TrendingDown className="h-3 w-3 text-red-500" />
+              )}
+              {formatPercentage(metrics.invoiceGrowth)} from last month
+            </p>
           </CardContent>
         </Card>
+        
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Monthly Expenses</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">₦12,234,000</div>
-            <p className="text-xs text-muted-foreground">+19% from last month</p>
+            <div className="text-2xl font-bold">{formatCurrency(metrics.monthlyExpenses)}</div>
+            <p className="text-xs text-muted-foreground flex items-center gap-1">
+              {metrics.expenseGrowth >= 0 ? (
+                <TrendingUp className="h-3 w-3 text-red-500" />
+              ) : (
+                <TrendingDown className="h-3 w-3 text-green-500" />
+              )}
+              {formatPercentage(metrics.expenseGrowth)} from last month
+            </p>
           </CardContent>
         </Card>
+        
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Profit Margin</CardTitle>
             <Calculator className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">73%</div>
-            <p className="text-xs text-muted-foreground">+2% from last month</p>
+            <div className="text-2xl font-bold">{metrics.profitMargin.toFixed(1)}%</div>
+            <p className="text-xs text-muted-foreground flex items-center gap-1">
+              {metrics.profitGrowth >= 0 ? (
+                <TrendingUp className="h-3 w-3 text-green-500" />
+              ) : (
+                <TrendingDown className="h-3 w-3 text-red-500" />
+              )}
+              {formatPercentage(metrics.profitGrowth)} from last month
+            </p>
           </CardContent>
         </Card>
       </div>

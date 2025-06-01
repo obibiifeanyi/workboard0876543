@@ -1,18 +1,19 @@
+
 import { DashboardNav } from "@/components/navigation/DashboardNav";
 import { FileText, PieChart, FileCheck, Settings, Package, CreditCard } from "lucide-react";
 
 export const AccountantNavigation = () => {
   const items = [
     {
-      title: "Invoice Management",
-      href: "/accountant/invoices",
-      icon: FileText,
-      variant: "default" as const,
-    },
-    {
       title: "Financial Reports",
       href: "/accountant/reports",
       icon: PieChart,
+      variant: "default" as const,
+    },
+    {
+      title: "Invoice Management",
+      href: "/accountant/invoices",
+      icon: FileText,
       variant: "default" as const,
     },
     {

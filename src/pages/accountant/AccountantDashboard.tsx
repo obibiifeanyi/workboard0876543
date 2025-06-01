@@ -14,6 +14,8 @@ const AccountantDashboard = () => {
     <DashboardLayout
       title="Accountant Dashboard"
       navigation={<AccountantNavigation />}
+      seoDescription="Comprehensive financial management and accounting dashboard"
+      seoKeywords="accounting, financial management, invoices, expenses, reports"
     >
       <div className="flex justify-between items-center mb-6">
         <div />
