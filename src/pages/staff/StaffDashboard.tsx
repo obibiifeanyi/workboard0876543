@@ -1,253 +1,130 @@
 
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, Suspense } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
-import { StatsCards } from "@/components/StatsCards";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { 
-  Clock, CalendarIcon, CheckCircle, Bell, User, ListTodo, 
-  ClipboardList, FileText, Signal, Battery,
-  Users, Settings, StickyNote, Activity, Building2
+import { Outlet, useLocation, NavLink } from "react-router-dom";
+import {
+  Breadcrumb,
+  BreadcrumbList,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import { Loader } from "@/components/ui/Loader";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { StaffDashboard as StaffDashboardComponent } from "@/components/staff/StaffDashboard";
+import {
+  LayoutDashboard,
+  CheckSquare,
+  ListTodo,
+  FileText,
+  User,
+  Battery,
+  Radio,
+  Users,
+  MessageSquare,
 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { TaskList } from "@/components/staff/TaskList";
-import { LeaveApplication } from "@/components/staff/LeaveApplication";
-import { ProfileSection } from "@/components/staff/ProfileSection";
-import { ProjectTracking } from "@/components/staff/ProjectTracking";
-import { PerformanceMetrics } from "@/components/staff/PerformanceMetrics";
-import { MemoGeneration } from "@/components/staff/MemoGeneration";
-import { WeeklyReport } from "@/components/staff/reports/WeeklyReport";
-import { TelecomSiteReport } from "@/components/staff/reports/TelecomSiteReport";
-import { ProjectReport } from "@/components/staff/reports/ProjectReport";
-import { MeetingCenter } from "@/components/staff/MeetingCenter";
-import { AIChatBox } from "@/components/ai/AIChatBox";
-import { StaffActivityLogs } from "@/components/staff/StaffActivityLogs";
+import { cn } from "@/lib/utils";
 
 const StaffDashboard = () => {
-  const navigate = useNavigate();
-  const { toast } = useToast();
-  const [date, setDate] = useState<Date | undefined>(new Date());
-  const [tasks, setTasks] = useState([]);
-  const [memos, setMemos] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const location = useLocation();
+  const isRootStaffRoute = location.pathname === '/staff';
 
-  // Fetch dashboard data on load
-  useEffect(() => {
-    const fetchDashboardData = async () => {
-      setIsLoading(true);
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        
-        if (user) {
-          // Fetch user's tasks
-          const { data: tasksData, error: tasksError } = await supabase
-            .from('tasks')
-            .select('*')
-            .eq('assigned_to_id', user.id)
-            .order('created_at', { ascending: false });
-
-          if (tasksError) {
-            console.error('Error fetching tasks:', tasksError);
-          } else {
-            setTasks(tasksData || []);
-          }
-
-          // Fetch user's memos
-          const { data: memosData, error: memosError } = await supabase
-            .from('user_memos')
-            .select('*')
-            .eq('recipient_id', user.id)
-            .order('created_at', { ascending: false });
-
-          if (memosError) {
-            console.error('Error fetching memos:', memosError);
-          } else {
-            setMemos(memosData || []);
-          }
-        }
-      } catch (error) {
-        console.error('Error fetching dashboard data:', error);
-        toast({
-          title: "Error",
-          description: "Failed to load dashboard data",
-          variant: "destructive",
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchDashboardData();
-  }, [toast]);
-
-  const stats = [
-    {
-      title: "Hours Today",
-      value: "6.5",
-      description: "Out of 8 hours",
-      icon: Clock,
-    },
-    {
-      title: "Tasks Completed",
-      value: tasks.filter(task => task.status === 'completed').length.toString(),
-      description: "This week",
-      icon: CheckCircle,
-    },
-    {
-      title: "Leave Balance",
-      value: "12",
-      description: "Days remaining",
-      icon: CalendarIcon,
-    },
-    {
-      title: "Notifications",
-      value: memos.filter(memo => !memo.is_read).length.toString(),
-      description: "Unread messages",
-      icon: Bell,
-    },
+  const navItems = [
+    { to: "/staff", icon: LayoutDashboard, label: "Dashboard", end: true },
+    { to: "/staff/current-tasks", icon: CheckSquare, label: "Current Tasks" },
+    { to: "/staff/my-tasks", icon: ListTodo, label: "My Tasks" },
+    { to: "/staff/memos", icon: MessageSquare, label: "Memos" },
+    { to: "/staff/reports", icon: FileText, label: "Reports" },
+    { to: "/staff/profile", icon: User, label: "Profile" },
+    { to: "/staff/battery-reports", icon: Battery, label: "Battery Reports" },
+    { to: "/staff/telecom-reports", icon: Radio, label: "Telecom Reports" },
+    { to: "/staff/meetings", icon: Users, label: "Meetings" },
   ];
 
+  const navigation = (
+    <div className="p-4">
+      <div className="mb-6">
+        <h2 className="text-lg font-semibold text-blue-700 dark:text-blue-400">Staff Dashboard</h2>
+        <p className="text-sm text-muted-foreground">Manage your tasks and activities</p>
+      </div>
+      
+      <nav className="space-y-2">
+        {navItems.map((item) => (
+          <NavLink
+            key={item.to}
+            to={item.to}
+            end={item.end}
+            className={({ isActive }) =>
+              cn(
+                "flex items-center gap-3 rounded-lg px-3 py-2 transition-colors",
+                "hover:bg-blue-50 hover:text-blue-700 dark:hover:bg-blue-900/20",
+                isActive
+                  ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 border-r-2 border-blue-600"
+                  : "text-muted-foreground hover:text-foreground"
+              )
+            }
+          >
+            <item.icon className="h-4 w-4" />
+            {item.label}
+          </NavLink>
+        ))}
+      </nav>
+    </div>
+  );
+
+  const renderBreadcrumb = () => {
+    const paths = location.pathname.split('/').filter(Boolean);
+    
+    return (
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink href="/">Home</BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          {paths.map((path, index) => {
+            const href = `/${paths.slice(0, index + 1).join('/')}`;
+            const isLast = index === paths.length - 1;
+            const displayName = path.charAt(0).toUpperCase() + path.slice(1).replace('-', ' ');
+            
+            return (
+              <BreadcrumbItem key={path}>
+                {isLast ? (
+                  <BreadcrumbPage>{displayName}</BreadcrumbPage>
+                ) : (
+                  <>
+                    <BreadcrumbLink href={href}>{displayName}</BreadcrumbLink>
+                    <BreadcrumbSeparator />
+                  </>
+                )}
+              </BreadcrumbItem>
+            );
+          })}
+        </BreadcrumbList>
+      </Breadcrumb>
+    );
+  };
+
   return (
-    <DashboardLayout title="Staff Dashboard">
-      <div className="space-y-6 p-4 md:p-6 max-w-7xl mx-auto">
-        <div className="grid gap-4 md:gap-6">
-          <StatsCards stats={stats} />
-          <PerformanceMetrics />
-        </div>
+    <DashboardLayout 
+      title="Staff Dashboard"
+      navigation={navigation}
+      seoDescription="CT Communication Towers Staff Dashboard - Manage your tasks and daily activities"
+      seoKeywords="staff, dashboard, tasks, reports, telecommunications"
+    >
+      <div className="space-y-6">
+        {renderBreadcrumb()}
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          <Button
-            variant="outline"
-            className="glass-card border-primary/20 h-24 text-lg font-semibold hover:border-primary/40 transition-all duration-300 interactive-card"
-            onClick={() => navigate("/staff/current-tasks")}
-          >
-            <ClipboardList className="mr-2 h-5 w-5" />
-            Current Tasks
-          </Button>
-
-          <Button
-            variant="outline"
-            className="glass-card border-primary/20 h-24 text-lg font-semibold hover:border-primary/40 transition-all duration-300 interactive-card"
-            onClick={() => navigate("/staff/my-tasks")}
-          >
-            <ListTodo className="mr-2 h-5 w-5" />
-            My Tasks
-          </Button>
-
-          <Button
-            variant="outline"
-            className="glass-card border-primary/20 h-24 text-lg font-semibold hover:border-primary/40 transition-all duration-300 interactive-card"
-            onClick={() => navigate("/staff/memos")}
-          >
-            <StickyNote className="mr-2 h-5 w-5" />
-            Memos
-          </Button>
-
-          <Button
-            variant="outline"
-            className="glass-card border-primary/20 h-24 text-lg font-semibold hover:border-primary/40 transition-all duration-300 interactive-card"
-            onClick={() => navigate("/staff/reports")}
-          >
-            <FileText className="mr-2 h-5 w-5" />
-            Reports
-          </Button>
-
-          <Button
-            variant="outline"
-            className="glass-card border-primary/20 h-24 text-lg font-semibold hover:border-primary/40 transition-all duration-300 interactive-card"
-            onClick={() => navigate("/staff/telecom-reports")}
-          >
-            <Signal className="mr-2 h-5 w-5" />
-            Telecom Reports
-          </Button>
-
-          <Button
-            variant="outline"
-            className="glass-card border-primary/20 h-24 text-lg font-semibold hover:border-primary/40 transition-all duration-300 interactive-card"
-            onClick={() => navigate("/staff/battery-reports")}
-          >
-            <Battery className="mr-2 h-5 w-5" />
-            Battery Reports
-          </Button>
-
-          <Button
-            variant="outline"
-            className="glass-card border-primary/20 h-24 text-lg font-semibold hover:border-primary/40 transition-all duration-300 interactive-card"
-            onClick={() => navigate("/staff/meetings")}
-          >
-            <Users className="mr-2 h-5 w-5" />
-            Meeting Center
-          </Button>
-
-          <Button
-            variant="outline"
-            className="glass-card border-primary/20 h-24 text-lg font-semibold hover:border-primary/40 transition-all duration-300 interactive-card"
-            onClick={() => navigate("/staff/profile")}
-          >
-            <User className="mr-2 h-5 w-5" />
-            Profile
-          </Button>
-        </div>
-
-        <Tabs defaultValue="overview" className="space-y-4">
-          <TabsList className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-2 bg-gradient-to-r from-primary/5 to-secondary/5 p-2 rounded-3xl">
-            <TabsTrigger value="overview" className="rounded-2xl">Overview</TabsTrigger>
-            <TabsTrigger value="tasks" className="rounded-2xl">Tasks</TabsTrigger>
-            <TabsTrigger value="reports" className="rounded-2xl">Reports</TabsTrigger>
-            <TabsTrigger value="memos" className="rounded-2xl">Memos</TabsTrigger>
-            <TabsTrigger value="meetings" className="rounded-2xl">Meetings</TabsTrigger>
-            <TabsTrigger value="activity" className="rounded-2xl">Activity</TabsTrigger>
-            <TabsTrigger value="profile" className="rounded-2xl">Profile</TabsTrigger>
-          </TabsList>
-
-          <div className="mt-6 enhanced-card p-4 md:p-6">
-            <TabsContent value="overview" className="space-y-4">
-              <ProjectTracking />
-            </TabsContent>
-
-            <TabsContent value="tasks" className="space-y-4">
-              <TaskList tasks={tasks} />
-            </TabsContent>
-
-            <TabsContent value="reports" className="space-y-4">
-              <div className="grid gap-6">
-                <WeeklyReport />
-                <ProjectReport />
-                <TelecomSiteReport />
-              </div>
-            </TabsContent>
-
-            <TabsContent value="memos" className="space-y-4">
-              <MemoGeneration />
-            </TabsContent>
-
-            <TabsContent value="meetings" className="space-y-4">
-              <MeetingCenter />
-            </TabsContent>
-
-            <TabsContent value="activity" className="space-y-4">
-              <StaffActivityLogs />
-            </TabsContent>
-
-            <TabsContent value="profile" className="space-y-4">
-              <ProfileSection />
-              <LeaveApplication
-                date={date}
-                onDateSelect={setDate}
-                onLeaveRequest={() => {
-                  toast({
-                    title: "Leave Request Submitted",
-                    description: `Your leave request for ${date?.toLocaleDateString()} has been submitted.`,
-                  });
-                }}
-              />
-            </TabsContent>
-          </div>
-        </Tabs>
-
-        <AIChatBox />
+        <ErrorBoundary>
+          <Suspense fallback={
+            <div className="flex items-center justify-center h-[50vh]">
+              <Loader className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          }>
+            {isRootStaffRoute ? <StaffDashboardComponent /> : <Outlet />}
+          </Suspense>
+        </ErrorBoundary>
       </div>
     </DashboardLayout>
   );

@@ -1,65 +1,101 @@
 
-import { useState } from "react";
-import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
+import { useState, Suspense } from "react";
+import { DashboardLayout } from "@/components/DashboardLayout";
 import { ManagerNavigation } from "@/components/manager/ManagerNavigation";
-import { Tabs } from "@/components/ui/tabs";
-import { AIDocumentButton } from "@/components/shared/AIDocumentButton";
-import { BackToAdminButton } from "@/components/shared/BackToAdminButton";
+import { Outlet, useLocation } from "react-router-dom";
+import {
+  Breadcrumb,
+  BreadcrumbList,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import { Loader } from "@/components/ui/Loader";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ManagerTabContent } from "@/components/manager/dashboard/ManagerTabContent";
-import { NeuralNetwork } from "@/components/NeuralNetwork";
-import { MainNavBar } from "@/components/navigation/MainNavBar";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const ManagerDashboard = () => {
-  const [activeTab, setActiveTab] = useState("team");
+  const location = useLocation();
+  const isRootManagerRoute = location.pathname === '/manager';
+
+  const renderBreadcrumb = () => {
+    const paths = location.pathname.split('/').filter(Boolean);
+    
+    return (
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink href="/">Home</BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          {paths.map((path, index) => {
+            const href = `/${paths.slice(0, index + 1).join('/')}`;
+            const isLast = index === paths.length - 1;
+            const displayName = path.charAt(0).toUpperCase() + path.slice(1).replace('-', ' ');
+            
+            return (
+              <BreadcrumbItem key={path}>
+                {isLast ? (
+                  <BreadcrumbPage>{displayName}</BreadcrumbPage>
+                ) : (
+                  <>
+                    <BreadcrumbLink href={href}>{displayName}</BreadcrumbLink>
+                    <BreadcrumbSeparator />
+                  </>
+                )}
+              </BreadcrumbItem>
+            );
+          })}
+        </BreadcrumbList>
+      </Breadcrumb>
+    );
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900">
-      <NeuralNetwork />
-      
-      <SidebarProvider>
-        <div className="min-h-screen flex w-full">
-          <ManagerNavigation 
-            activeTab={activeTab} 
-            onTabChange={setActiveTab} 
-          />
-          
-          <SidebarInset className="flex-1">
-            <MainNavBar 
-              title="Manager Dashboard"
-              actions={
-                <div className="flex items-center space-x-2">
-                  <AIDocumentButton />
-                  <BackToAdminButton />
-                </div>
-              }
-            />
+    <DashboardLayout 
+      title="Manager Dashboard"
+      navigation={<ManagerNavigation />}
+      seoDescription="CT Communication Towers Manager Dashboard - Manage teams, projects, and operations"
+      seoKeywords="manager, dashboard, team management, projects, telecommunications"
+    >
+      <div className="space-y-6">
+        {renderBreadcrumb()}
 
-            {/* Main Content */}
-            <main className="flex-1 p-6">
-              <div className="max-w-7xl mx-auto">
-                <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-                  <div className="rounded-3xl bg-gradient-to-br from-white/90 to-white/60 dark:from-black/30 dark:to-black/20 
-                                 backdrop-blur-xl border border-red-600/20 shadow-2xl shadow-red-600/10 p-6">
-                    <ManagerTabContent />
-                  </div>
-                </Tabs>
-              </div>
-            </main>
-
-            {/* Footer */}
-            <footer className="mt-auto border-t bg-white/50 dark:bg-black/20 backdrop-blur-sm">
-              <div className="max-w-7xl mx-auto px-6 py-4">
-                <div className="text-center text-sm text-muted-foreground">
-                  Licensed By <span className="font-semibold text-primary">BMD Tech Hub</span> • 
-                  Usage Rights by <span className="font-semibold text-primary">CT NIGERIA LTD</span> • 
-                  © 2025 All Rights Reserved
+        <ErrorBoundary>
+          <Suspense fallback={
+            <div className="flex items-center justify-center h-[50vh]">
+              <Loader className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          }>
+            {isRootManagerRoute ? (
+              <Tabs defaultValue="team" className="space-y-6">
+                <div className="border-b">
+                  <TabsList className="grid w-full grid-cols-6 lg:grid-cols-12">
+                    <TabsTrigger value="team">Team</TabsTrigger>
+                    <TabsTrigger value="sites">Sites</TabsTrigger>
+                    <TabsTrigger value="workboard">Work Board</TabsTrigger>
+                    <TabsTrigger value="construction">Construction</TabsTrigger>
+                    <TabsTrigger value="time">Time</TabsTrigger>
+                    <TabsTrigger value="leave">Leave</TabsTrigger>
+                    <TabsTrigger value="telecom">Telecom</TabsTrigger>
+                    <TabsTrigger value="reports">Reports</TabsTrigger>
+                    <TabsTrigger value="memos">Memos</TabsTrigger>
+                    <TabsTrigger value="invoices">Invoices</TabsTrigger>
+                    <TabsTrigger value="settings">Settings</TabsTrigger>
+                    <TabsTrigger value="analytics">Analytics</TabsTrigger>
+                  </TabsList>
                 </div>
-              </div>
-            </footer>
-          </SidebarInset>
-        </div>
-      </SidebarProvider>
-    </div>
+                <ManagerTabContent />
+              </Tabs>
+            ) : (
+              <Outlet />
+            )}
+          </Suspense>
+        </ErrorBoundary>
+      </div>
+    </DashboardLayout>
   );
 };
 

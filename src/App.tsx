@@ -22,6 +22,45 @@ import PaymentProcessing from "./pages/accountant/PaymentProcessing";
 import AccountantSettings from "./pages/accountant/AccountantSettings";
 import { RoleBasedRoute } from "./components/RoleBasedRoute";
 
+// Admin nested routes
+import { UserManagement } from "./components/admin/UserManagement";
+import { DepartmentManagement } from "./components/admin/DepartmentManagement";
+import { ProjectManagement } from "./components/admin/ProjectManagement";
+import { TimeAttendanceManagement } from "./components/admin/TimeAttendanceManagement";
+import { LeaveManagement } from "./components/admin/LeaveManagement";
+import { CommunicationCenter } from "./components/admin/CommunicationCenter";
+import { APIKeyManagement } from "./components/admin/APIKeyManagement";
+import { TelecomSiteManagement } from "./components/admin/TelecomSiteManagement";
+import { ActivityManagement } from "./components/admin/ActivityManagement";
+import { AIManagementSystem } from "./components/ai/AIManagementSystem";
+
+// Staff nested routes
+import { CurrentTasks } from "./components/staff/CurrentTasks";
+import { MyTasks } from "./components/staff/MyTasks";
+import { Memos } from "./components/staff/Memos";
+import { Reports } from "./components/staff/Reports";
+import { StaffProfile } from "./components/staff/StaffProfile";
+import { BatteryReports } from "./components/staff/BatteryReports";
+import { TelecomReports } from "./components/staff/TelecomReports";
+import { Meetings } from "./components/staff/Meetings";
+
+// Manager nested routes
+import { TeamOverview } from "./components/manager/TeamOverview";
+import { WorkBoard } from "./components/manager/WorkBoard";
+import { TeamTimeManagement } from "./components/manager/TeamTimeManagement";
+import { TelecomSites } from "./components/manager/TelecomSites";
+import { ProjectReportManagement } from "./components/reports/ProjectReportManagement";
+import { StaffMemoManagement } from "./components/manager/StaffMemoManagement";
+import { InvoiceGenerator } from "./components/invoices/InvoiceGenerator";
+import { EmailNotificationCenter } from "./components/notifications/EmailNotificationCenter";
+
+// HR nested routes
+import { EmployeeManagement } from "./components/hr/EmployeeManagement";
+import { HRLeaveManagement } from "./components/hr/HRLeaveManagement";
+import { PayrollManagement } from "./components/hr/PayrollManagement";
+import { PerformanceReviews } from "./components/hr/PerformanceReviews";
+import { HRReports } from "./components/hr/HRReports";
+
 const queryClient = new QueryClient();
 
 function App() {
@@ -37,36 +76,110 @@ function App() {
               <Route path="/signup" element={<Signup />} />
               <Route path="/dashboard" element={<Dashboard />} />
               
-              {/* Role-based dashboard routes */}
-              <Route path="/admin/*" element={
+              {/* Admin routes with nested routing */}
+              <Route path="/admin" element={
                 <RoleBasedRoute allowedRoles={['admin']}>
                   <AdminDashboard />
                 </RoleBasedRoute>
-              } />
+              }>
+                <Route path="users" element={<UserManagement />} />
+                <Route path="departments" element={<DepartmentManagement />} />
+                <Route path="projects" element={<ProjectManagement />} />
+                <Route path="time" element={<TimeAttendanceManagement />} />
+                <Route path="telecom-sites" element={<TelecomSiteManagement />} />
+                <Route path="activity" element={<ActivityManagement />} />
+                <Route path="ai" element={<AIManagementSystem />} />
+                <Route path="communication" element={<CommunicationCenter />} />
+                <Route path="settings" element={<APIKeyManagement />} />
+              </Route>
               
-              <Route path="/manager/*" element={
+              {/* Manager routes with nested routing */}
+              <Route path="/manager" element={
                 <RoleBasedRoute allowedRoles={['manager']}>
                   <ManagerDashboard />
                 </RoleBasedRoute>
-              } />
+              }>
+                <Route path="team" element={<TeamOverview />} />
+                <Route path="sites" element={<ProjectManagement />} />
+                <Route path="workboard" element={<WorkBoard />} />
+                <Route path="construction" element={<DepartmentManagement />} />
+                <Route path="time" element={<TeamTimeManagement />} />
+                <Route path="leave" element={<LeaveManagement />} />
+                <Route path="telecom" element={<TelecomSites />} />
+                <Route path="reports" element={<ProjectReportManagement />} />
+                <Route path="memos" element={<StaffMemoManagement />} />
+                <Route path="invoices" element={<InvoiceGenerator />} />
+                <Route path="settings" element={<EmailNotificationCenter />} />
+              </Route>
               
-              <Route path="/accountant/*" element={
+              {/* Accountant routes */}
+              <Route path="/accountant" element={
                 <RoleBasedRoute allowedRoles={['accountant']}>
                   <AccountantDashboard />
                 </RoleBasedRoute>
               } />
+              <Route path="/accountant/financial-reports" element={
+                <RoleBasedRoute allowedRoles={['accountant']}>
+                  <FinancialReports />
+                </RoleBasedRoute>
+              } />
+              <Route path="/accountant/invoices" element={
+                <RoleBasedRoute allowedRoles={['accountant']}>
+                  <InvoiceManagement />
+                </RoleBasedRoute>
+              } />
+              <Route path="/accountant/memo-approval" element={
+                <RoleBasedRoute allowedRoles={['accountant']}>
+                  <MemoApproval />
+                </RoleBasedRoute>
+              } />
+              <Route path="/accountant/inventory" element={
+                <RoleBasedRoute allowedRoles={['accountant']}>
+                  <InventoryManagement />
+                </RoleBasedRoute>
+              } />
+              <Route path="/accountant/payments" element={
+                <RoleBasedRoute allowedRoles={['accountant']}>
+                  <PaymentProcessing />
+                </RoleBasedRoute>
+              } />
+              <Route path="/accountant/settings" element={
+                <RoleBasedRoute allowedRoles={['accountant']}>
+                  <AccountantSettings />
+                </RoleBasedRoute>
+              } />
               
-              <Route path="/hr/*" element={
+              {/* HR routes with nested routing */}
+              <Route path="/hr" element={
                 <RoleBasedRoute allowedRoles={['hr']}>
                   <HRDashboard />
                 </RoleBasedRoute>
-              } />
+              }>
+                <Route path="employees" element={<EmployeeManagement />} />
+                <Route path="leave" element={<HRLeaveManagement />} />
+                <Route path="payroll" element={<PayrollManagement />} />
+                <Route path="performance" element={<PerformanceReviews />} />
+                <Route path="reports" element={<HRReports />} />
+                <Route path="analytics" element={<HRReports />} />
+                <Route path="communications" element={<EmailNotificationCenter />} />
+                <Route path="settings" element={<APIKeyManagement />} />
+              </Route>
               
-              <Route path="/staff/*" element={
+              {/* Staff routes with nested routing */}
+              <Route path="/staff" element={
                 <RoleBasedRoute allowedRoles={['staff']}>
                   <StaffDashboard />
                 </RoleBasedRoute>
-              } />
+              }>
+                <Route path="current-tasks" element={<CurrentTasks />} />
+                <Route path="my-tasks" element={<MyTasks />} />
+                <Route path="memos" element={<Memos />} />
+                <Route path="reports" element={<Reports />} />
+                <Route path="profile" element={<StaffProfile />} />
+                <Route path="battery-reports" element={<BatteryReports />} />
+                <Route path="telecom-reports" element={<TelecomReports />} />
+                <Route path="meetings" element={<Meetings />} />
+              </Route>
               
               {/* AI Document Analysis Routes - accessible by all authenticated users */}
               <Route path="/documents" element={

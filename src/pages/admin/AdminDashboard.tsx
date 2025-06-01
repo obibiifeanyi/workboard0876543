@@ -2,7 +2,7 @@
 import { useState, Suspense } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { AdminNavigation } from "@/components/admin/AdminNavigation";
-import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -19,7 +19,6 @@ import { AdminDashboardModule } from "@/components/admin/dashboard/AdminDashboar
 const AdminDashboard = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const location = useLocation();
-  const navigate = useNavigate();
   const isRootAdminRoute = location.pathname === '/admin';
 
   const renderBreadcrumb = () => {
@@ -35,14 +34,15 @@ const AdminDashboard = () => {
           {paths.map((path, index) => {
             const href = `/${paths.slice(0, index + 1).join('/')}`;
             const isLast = index === paths.length - 1;
+            const displayName = path.charAt(0).toUpperCase() + path.slice(1).replace('-', ' ');
             
             return (
               <BreadcrumbItem key={path}>
                 {isLast ? (
-                  <BreadcrumbPage>{path}</BreadcrumbPage>
+                  <BreadcrumbPage>{displayName}</BreadcrumbPage>
                 ) : (
                   <>
-                    <BreadcrumbLink href={href}>{path}</BreadcrumbLink>
+                    <BreadcrumbLink href={href}>{displayName}</BreadcrumbLink>
                     <BreadcrumbSeparator />
                   </>
                 )}
@@ -57,9 +57,11 @@ const AdminDashboard = () => {
   return (
     <DashboardLayout 
       title="Admin Dashboard"
-      navigation={isSidebarOpen && <AdminNavigation />}
+      navigation={<AdminNavigation />}
+      seoDescription="CT Communication Towers Admin Dashboard - Manage users, projects, and system operations"
+      seoKeywords="admin, dashboard, management, users, projects, telecommunications"
     >
-      <div className="flex flex-col p-6 space-y-4">
+      <div className="space-y-6">
         <div className="flex justify-between items-center">
           {renderBreadcrumb()}
           <Button 

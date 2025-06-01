@@ -1,198 +1,130 @@
 
-import { useState } from "react";
-import { Routes, Route } from "react-router-dom";
+import { useState, Suspense } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
-import { StatsCards } from "@/components/StatsCards";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { 
-  Users, Calendar, FileText, TrendingUp, Settings, 
-  UserPlus, Clock, Award, MessageSquare
-} from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
 import { HRNavigation } from "@/components/hr/HRNavigation";
-import { EmployeeManagement } from "@/components/hr/EmployeeManagement";
-import { HRLeaveManagement } from "@/components/hr/HRLeaveManagement";
-import { PayrollManagement } from "@/components/hr/PayrollManagement";
-import { PerformanceReviews } from "@/components/hr/PerformanceReviews";
-import { HRReports } from "@/components/hr/HRReports";
+import { Outlet, useLocation } from "react-router-dom";
+import {
+  Breadcrumb,
+  BreadcrumbList,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import { Loader } from "@/components/ui/Loader";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Users, Calendar, Clock, Award } from "lucide-react";
 
 const HRDashboard = () => {
-  const { toast } = useToast();
+  const location = useLocation();
+  const isRootHRRoute = location.pathname === '/hr';
 
-  const stats = [
-    {
-      title: "Total Employees",
-      value: "247",
-      description: "Active employees",
-      icon: Users,
-    },
-    {
-      title: "Pending Leave Requests",
-      value: "12",
-      description: "Awaiting approval",
-      icon: Calendar,
-    },
-    {
-      title: "New Hires This Month",
-      value: "8",
-      description: "Onboarding in progress",
-      icon: UserPlus,
-    },
-    {
-      title: "Performance Reviews Due",
-      value: "23",
-      description: "This quarter",
-      icon: Award,
-    },
-  ];
+  const renderBreadcrumb = () => {
+    const paths = location.pathname.split('/').filter(Boolean);
+    
+    return (
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink href="/">Home</BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          {paths.map((path, index) => {
+            const href = `/${paths.slice(0, index + 1).join('/')}`;
+            const isLast = index === paths.length - 1;
+            const displayName = path.charAt(0).toUpperCase() + path.slice(1).replace('-', ' ');
+            
+            return (
+              <BreadcrumbItem key={path}>
+                {isLast ? (
+                  <BreadcrumbPage>{displayName}</BreadcrumbPage>
+                ) : (
+                  <>
+                    <BreadcrumbLink href={href}>{displayName}</BreadcrumbLink>
+                    <BreadcrumbSeparator />
+                  </>
+                )}
+              </BreadcrumbItem>
+            );
+          })}
+        </BreadcrumbList>
+      </Breadcrumb>
+    );
+  };
+
+  const HROverview = () => (
+    <div className="space-y-6">
+      <h1 className="text-3xl font-bold">HR Dashboard</h1>
+      
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Employees</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">0</div>
+            <p className="text-xs text-muted-foreground">Active employees</p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Pending Leave Requests</CardTitle>
+            <Calendar className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">0</div>
+            <p className="text-xs text-muted-foreground">Awaiting approval</p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Payroll Due</CardTitle>
+            <Clock className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">0</div>
+            <p className="text-xs text-muted-foreground">Processing required</p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Performance Reviews</CardTitle>
+            <Award className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">0</div>
+            <p className="text-xs text-muted-foreground">Due this month</p>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
 
   return (
     <DashboardLayout 
       title="HR Dashboard"
       navigation={<HRNavigation />}
+      seoDescription="CT Communication Towers HR Dashboard - Manage employees, payroll, and human resources"
+      seoKeywords="hr, human resources, employees, payroll, leave management"
     >
-      <Routes>
-        <Route path="/" element={
-          <div className="space-y-6 p-4 md:p-6 max-w-7xl mx-auto">
-            <div className="grid gap-4 md:gap-6">
-              <StatsCards stats={stats} />
+      <div className="space-y-6">
+        {renderBreadcrumb()}
+
+        <ErrorBoundary>
+          <Suspense fallback={
+            <div className="flex items-center justify-center h-[50vh]">
+              <Loader className="h-8 w-8 animate-spin text-primary" />
             </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              <Button
-                variant="outline"
-                className="glass-card border-primary/20 h-24 text-lg font-semibold hover:border-primary/40 transition-all duration-300"
-                onClick={() => toast({
-                  title: "Employee Management",
-                  description: "Navigate to employee management section",
-                })}
-              >
-                <Users className="mr-2 h-5 w-5" />
-                Employee Management
-              </Button>
-
-              <Button
-                variant="outline"
-                className="glass-card border-primary/20 h-24 text-lg font-semibold hover:border-primary/40 transition-all duration-300"
-                onClick={() => toast({
-                  title: "Leave Management",
-                  description: "Navigate to leave management section",
-                })}
-              >
-                <Calendar className="mr-2 h-5 w-5" />
-                Leave Management
-              </Button>
-
-              <Button
-                variant="outline"
-                className="glass-card border-primary/20 h-24 text-lg font-semibold hover:border-primary/40 transition-all duration-300"
-                onClick={() => toast({
-                  title: "Payroll",
-                  description: "Navigate to payroll management",
-                })}
-              >
-                <Clock className="mr-2 h-5 w-5" />
-                Payroll
-              </Button>
-
-              <Button
-                variant="outline"
-                className="glass-card border-primary/20 h-24 text-lg font-semibold hover:border-primary/40 transition-all duration-300"
-                onClick={() => toast({
-                  title: "Performance Reviews",
-                  description: "Navigate to performance reviews",
-                })}
-              >
-                <Award className="mr-2 h-5 w-5" />
-                Performance Reviews
-              </Button>
-
-              <Button
-                variant="outline"
-                className="glass-card border-primary/20 h-24 text-lg font-semibold hover:border-primary/40 transition-all duration-300"
-                onClick={() => toast({
-                  title: "HR Reports",
-                  description: "Navigate to HR reports section",
-                })}
-              >
-                <FileText className="mr-2 h-5 w-5" />
-                HR Reports
-              </Button>
-
-              <Button
-                variant="outline"
-                className="glass-card border-primary/20 h-24 text-lg font-semibold hover:border-primary/40 transition-all duration-300"
-                onClick={() => toast({
-                  title: "Analytics",
-                  description: "Navigate to HR analytics",
-                })}
-              >
-                <TrendingUp className="mr-2 h-5 w-5" />
-                Analytics
-              </Button>
-
-              <Button
-                variant="outline"
-                className="glass-card border-primary/20 h-24 text-lg font-semibold hover:border-primary/40 transition-all duration-300"
-                onClick={() => toast({
-                  title: "Employee Communications",
-                  description: "Navigate to communications",
-                })}
-              >
-                <MessageSquare className="mr-2 h-5 w-5" />
-                Communications
-              </Button>
-
-              <Button
-                variant="outline"
-                className="glass-card border-primary/20 h-24 text-lg font-semibold hover:border-primary/40 transition-all duration-300"
-                onClick={() => toast({
-                  title: "HR Settings",
-                  description: "Navigate to HR settings",
-                })}
-              >
-                <Settings className="mr-2 h-5 w-5" />
-                Settings
-              </Button>
-            </div>
-
-            <Tabs defaultValue="overview" className="space-y-4">
-              <TabsList className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                <TabsTrigger value="overview">Overview</TabsTrigger>
-                <TabsTrigger value="employees">Employees</TabsTrigger>
-                <TabsTrigger value="leave">Leave</TabsTrigger>
-                <TabsTrigger value="reports">Reports</TabsTrigger>
-              </TabsList>
-
-              <div className="mt-6 bg-black/5 dark:bg-black/20 rounded-3xl p-4 md:p-6">
-                <TabsContent value="overview" className="space-y-4">
-                  <div className="grid gap-6">
-                    <EmployeeManagement />
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="employees" className="space-y-4">
-                  <EmployeeManagement />
-                </TabsContent>
-
-                <TabsContent value="leave" className="space-y-4">
-                  <HRLeaveManagement />
-                </TabsContent>
-
-                <TabsContent value="reports" className="space-y-4">
-                  <HRReports />
-                </TabsContent>
-              </div>
-            </Tabs>
-          </div>
-        } />
-        <Route path="/employees" element={<EmployeeManagement />} />
-        <Route path="/leave" element={<HRLeaveManagement />} />
-        <Route path="/payroll" element={<PayrollManagement />} />
-        <Route path="/performance" element={<PerformanceReviews />} />
-        <Route path="/reports" element={<HRReports />} />
-      </Routes>
+          }>
+            {isRootHRRoute ? <HROverview /> : <Outlet />}
+          </Suspense>
+        </ErrorBoundary>
+      </div>
     </DashboardLayout>
   );
 };
