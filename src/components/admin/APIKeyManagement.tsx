@@ -1,14 +1,12 @@
 
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Key, DollarSign, Activity, Shield, Trash2, Edit } from "lucide-react";
+import { Key, Plus, Edit, Trash2, Eye, EyeOff, Loader, DollarSign } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -23,6 +21,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 interface APIKey {
   id: string;
@@ -33,39 +40,28 @@ interface APIKey {
   cost_per_request: number;
   total_cost: number;
   is_active: boolean;
-  created_at: string;
   last_used: string | null;
-}
-
-interface APIUsage {
-  id: string;
-  api_key_id: string;
-  user_id: string;
-  endpoint: string;
-  request_count: number;
-  cost: number;
-  date: string;
-  user_name?: string;
+  created_at: string;
+  created_by: string;
 }
 
 export const APIKeyManagement = () => {
   const [apiKeys, setApiKeys] = useState<APIKey[]>([]);
-  const [apiUsage, setApiUsage] = useState<APIUsage[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingKey, setEditingKey] = useState<APIKey | null>(null);
+  const [showKeyValues, setShowKeyValues] = useState<{[key: string]: boolean}>({});
   const { toast } = useToast();
 
   const [formData, setFormData] = useState({
     name: "",
     key_type: "",
-    usage_limit: 1000,
-    cost_per_request: 0.01,
+    usage_limit: "1000",
+    cost_per_request: "0.01",
   });
 
   useEffect(() => {
     fetchAPIKeys();
-    fetchAPIUsage();
   }, []);
 
   const fetchAPIKeys = async () => {
@@ -84,71 +80,35 @@ export const APIKeyManagement = () => {
         description: "Failed to fetch API keys",
         variant: "destructive",
       });
-    }
-  };
-
-  const fetchAPIUsage = async () => {
-    try {
-      // First get the API usage data
-      const { data: usageData, error: usageError } = await supabase
-        .from('api_usage')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(100);
-
-      if (usageError) throw usageError;
-
-      // Then get user profiles separately and match them
-      const userIds = [...new Set(usageData?.map(usage => usage.user_id).filter(Boolean) || [])];
-      
-      let profilesData: any[] = [];
-      if (userIds.length > 0) {
-        const { data: profiles, error: profilesError } = await supabase
-          .from('profiles')
-          .select('id, full_name')
-          .in('id', userIds);
-
-        if (profilesError) {
-          console.error('Error fetching profiles:', profilesError);
-        } else {
-          profilesData = profiles || [];
-        }
-      }
-
-      // Merge the data
-      const enrichedUsage = usageData?.map(usage => {
-        const profile = profilesData.find(p => p.id === usage.user_id);
-        return {
-          ...usage,
-          user_name: profile?.full_name || 'Unknown User'
-        };
-      }) || [];
-
-      setApiUsage(enrichedUsage);
-    } catch (error) {
-      console.error('Error fetching API usage:', error);
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
+
     try {
-      const { data: user } = await supabase.auth.getUser();
-      if (!user.user) throw new Error("Not authenticated");
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
+      const keyData = {
+        name: formData.name,
+        key_type: formData.key_type,
+        usage_limit: parseInt(formData.usage_limit),
+        cost_per_request: parseFloat(formData.cost_per_request),
+        created_by: user.id,
+      };
 
       if (editingKey) {
         const { error } = await supabase
           .from('api_keys')
-          .update({
-            name: formData.name,
-            usage_limit: formData.usage_limit,
-            cost_per_request: formData.cost_per_request,
-          })
+          .update(keyData)
           .eq('id', editingKey.id);
 
         if (error) throw error;
+
         toast({
           title: "Success",
           description: "API key updated successfully",
@@ -156,30 +116,52 @@ export const APIKeyManagement = () => {
       } else {
         const { error } = await supabase
           .from('api_keys')
-          .insert({
-            name: formData.name,
-            key_type: formData.key_type,
-            usage_limit: formData.usage_limit,
-            cost_per_request: formData.cost_per_request,
-            created_by: user.user.id,
-          });
+          .insert(keyData);
 
         if (error) throw error;
+
         toast({
           title: "Success",
           description: "API key created successfully",
         });
       }
 
-      setFormData({ name: "", key_type: "", usage_limit: 1000, cost_per_request: 0.01 });
-      setEditingKey(null);
-      setIsDialogOpen(false);
+      resetForm();
       fetchAPIKeys();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving API key:', error);
       toast({
         title: "Error",
-        description: "Failed to save API key",
+        description: error.message || "Failed to save API key",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this API key?')) return;
+
+    try {
+      const { error } = await supabase
+        .from('api_keys')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "API key deleted successfully",
+      });
+
+      fetchAPIKeys();
+    } catch (error: any) {
+      console.error('Error deleting API key:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete API key",
         variant: "destructive",
       });
     }
@@ -193,111 +175,131 @@ export const APIKeyManagement = () => {
         .eq('id', id);
 
       if (error) throw error;
-      fetchAPIKeys();
+
       toast({
         title: "Success",
-        description: `API key ${!isActive ? 'activated' : 'deactivated'}`,
+        description: `API key ${!isActive ? 'activated' : 'deactivated'} successfully`,
       });
-    } catch (error) {
-      console.error('Error updating API key:', error);
+
+      fetchAPIKeys();
+    } catch (error: any) {
+      console.error('Error updating API key status:', error);
       toast({
         title: "Error",
-        description: "Failed to update API key status",
+        description: error.message || "Failed to update API key status",
         variant: "destructive",
       });
     }
   };
 
-  const deleteApiKey = async (id: string) => {
-    try {
-      const { error } = await supabase
-        .from('api_keys')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-      fetchAPIKeys();
-      toast({
-        title: "Success",
-        description: "API key deleted successfully",
-      });
-    } catch (error) {
-      console.error('Error deleting API key:', error);
-      toast({
-        title: "Error",
-        description: "Failed to delete API key",
-        variant: "destructive",
-      });
-    }
+  const resetForm = () => {
+    setFormData({
+      name: "",
+      key_type: "",
+      usage_limit: "1000",
+      cost_per_request: "0.01",
+    });
+    setEditingKey(null);
+    setIsCreateOpen(false);
   };
 
-  const totalCost = apiKeys.reduce((sum, key) => sum + key.total_cost, 0);
-  const totalUsage = apiKeys.reduce((sum, key) => sum + key.current_usage, 0);
+  const openEditDialog = (apiKey: APIKey) => {
+    setFormData({
+      name: apiKey.name,
+      key_type: apiKey.key_type,
+      usage_limit: apiKey.usage_limit.toString(),
+      cost_per_request: apiKey.cost_per_request.toString(),
+    });
+    setEditingKey(apiKey);
+    setIsCreateOpen(true);
+  };
 
-  if (isLoading) {
+  const toggleKeyVisibility = (keyId: string) => {
+    setShowKeyValues(prev => ({
+      ...prev,
+      [keyId]: !prev[keyId]
+    }));
+  };
+
+  const getUsagePercentage = (current: number, limit: number) => {
+    return Math.round((current / limit) * 100);
+  };
+
+  const getUsageBadge = (current: number, limit: number) => {
+    const percentage = getUsagePercentage(current, limit);
+    if (percentage >= 90) return <Badge variant="destructive">{percentage}%</Badge>;
+    if (percentage >= 70) return <Badge className="bg-orange-500">{percentage}%</Badge>;
+    return <Badge variant="secondary">{percentage}%</Badge>;
+  };
+
+  if (loading && apiKeys.length === 0) {
     return (
-      <div className="flex justify-center p-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
+      <Card>
+        <CardContent className="flex items-center justify-center h-32">
+          <Loader className="h-6 w-6 animate-spin" />
+        </CardContent>
+      </Card>
     );
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-2xl font-bold">API Key Management</h2>
-          <p className="text-muted-foreground">Manage API keys and monitor usage</p>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Key className="h-6 w-6 text-red-600" />
+          <h1 className="text-2xl font-bold">API Key Management</h1>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
           <DialogTrigger asChild>
-            <Button className="rounded-[30px]">
-              <Key className="mr-2 h-4 w-4" />
+            <Button onClick={() => resetForm()}>
+              <Plus className="h-4 w-4 mr-2" />
               Add API Key
             </Button>
           </DialogTrigger>
-          <DialogContent className="rounded-[30px]">
+          <DialogContent>
             <DialogHeader>
-              <DialogTitle>{editingKey ? 'Edit' : 'Add'} API Key</DialogTitle>
+              <DialogTitle>
+                {editingKey ? "Edit API Key" : "Create API Key"}
+              </DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <Label htmlFor="name">Name</Label>
+                <Label htmlFor="name">Key Name</Label>
                 <Input
                   id="name"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="rounded-[30px]"
+                  placeholder="e.g., OpenAI Production Key"
                   required
                 />
               </div>
-              {!editingKey && (
-                <div>
-                  <Label htmlFor="key_type">API Type</Label>
-                  <Select
-                    value={formData.key_type}
-                    onValueChange={(value) => setFormData({ ...formData, key_type: value })}
-                  >
-                    <SelectTrigger className="rounded-[30px]">
-                      <SelectValue placeholder="Select API type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="openai">OpenAI</SelectItem>
-                      <SelectItem value="anthropic">Anthropic</SelectItem>
-                      <SelectItem value="google">Google AI</SelectItem>
-                      <SelectItem value="aws">AWS</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
+              <div>
+                <Label htmlFor="key_type">Key Type</Label>
+                <Select
+                  value={formData.key_type}
+                  onValueChange={(value) => setFormData({ ...formData, key_type: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select key type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="openai">OpenAI</SelectItem>
+                    <SelectItem value="google">Google AI</SelectItem>
+                    <SelectItem value="anthropic">Anthropic</SelectItem>
+                    <SelectItem value="stripe">Stripe</SelectItem>
+                    <SelectItem value="sendgrid">SendGrid</SelectItem>
+                    <SelectItem value="twilio">Twilio</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               <div>
                 <Label htmlFor="usage_limit">Usage Limit</Label>
                 <Input
                   id="usage_limit"
                   type="number"
                   value={formData.usage_limit}
-                  onChange={(e) => setFormData({ ...formData, usage_limit: Number(e.target.value) })}
-                  className="rounded-[30px]"
+                  onChange={(e) => setFormData({ ...formData, usage_limit: e.target.value })}
                   required
                 />
               </div>
@@ -308,147 +310,121 @@ export const APIKeyManagement = () => {
                   type="number"
                   step="0.001"
                   value={formData.cost_per_request}
-                  onChange={(e) => setFormData({ ...formData, cost_per_request: Number(e.target.value) })}
-                  className="rounded-[30px]"
+                  onChange={(e) => setFormData({ ...formData, cost_per_request: e.target.value })}
                   required
                 />
               </div>
-              <Button type="submit" className="w-full rounded-[30px]">
-                {editingKey ? 'Update' : 'Create'} API Key
-              </Button>
+              <div className="flex justify-end gap-2">
+                <Button type="button" variant="outline" onClick={resetForm}>
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={loading}>
+                  {loading ? "Saving..." : editingKey ? "Update" : "Create"}
+                </Button>
+              </div>
             </form>
           </DialogContent>
         </Dialog>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Cost</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">${totalCost.toFixed(2)}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Usage</CardTitle>
-            <Activity className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalUsage.toLocaleString()}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Keys</CardTitle>
-            <Shield className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{apiKeys.filter(key => key.is_active).length}</div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Tabs defaultValue="keys" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="keys">API Keys</TabsTrigger>
-          <TabsTrigger value="usage">Usage Reports</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="keys" className="space-y-4">
-          <div className="grid gap-4">
-            {apiKeys.map((key) => (
-              <Card key={key.id}>
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-semibold">{key.name}</h3>
-                        <Badge variant={key.is_active ? "default" : "secondary"}>
-                          {key.is_active ? "Active" : "Inactive"}
-                        </Badge>
-                        <Badge variant="outline">{key.key_type}</Badge>
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        Usage: {key.current_usage} / {key.usage_limit} | 
-                        Cost: ${key.total_cost.toFixed(2)} | 
-                        Rate: ${key.cost_per_request}/request
-                      </div>
-                      {key.last_used && (
-                        <div className="text-xs text-muted-foreground">
-                          Last used: {new Date(key.last_used).toLocaleString()}
-                        </div>
-                      )}
+      {/* API Keys Table */}
+      <Card>
+        <CardHeader>
+          <CardTitle>API Keys</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead>Type</TableHead>
+                <TableHead>Usage</TableHead>
+                <TableHead>Cost</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Last Used</TableHead>
+                <TableHead>Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {apiKeys.map((apiKey) => (
+                <TableRow key={apiKey.id}>
+                  <TableCell className="font-medium">{apiKey.name}</TableCell>
+                  <TableCell>
+                    <Badge variant="outline">{apiKey.key_type.toUpperCase()}</Badge>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      {getUsageBadge(apiKey.current_usage, apiKey.usage_limit)}
+                      <span className="text-sm text-muted-foreground">
+                        {apiKey.current_usage}/{apiKey.usage_limit}
+                      </span>
                     </div>
-                    <div className="flex gap-2">
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-1">
+                      <DollarSign className="h-3 w-3" />
+                      <span>{apiKey.total_cost.toFixed(2)}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={apiKey.is_active ? "default" : "secondary"}>
+                      {apiKey.is_active ? "Active" : "Inactive"}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    {apiKey.last_used 
+                      ? new Date(apiKey.last_used).toLocaleDateString()
+                      : 'Never'
+                    }
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex space-x-2">
                       <Button
-                        variant="outline"
+                        variant="ghost"
                         size="sm"
-                        onClick={() => {
-                          setEditingKey(key);
-                          setFormData({
-                            name: key.name,
-                            key_type: key.key_type,
-                            usage_limit: key.usage_limit,
-                            cost_per_request: key.cost_per_request,
-                          });
-                          setIsDialogOpen(true);
-                        }}
+                        onClick={() => toggleKeyVisibility(apiKey.id)}
+                      >
+                        {showKeyValues[apiKey.id] ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => openEditDialog(apiKey)}
                       >
                         <Edit className="h-4 w-4" />
                       </Button>
                       <Button
-                        variant="outline"
+                        variant="ghost"
                         size="sm"
-                        onClick={() => toggleKeyStatus(key.id, key.is_active)}
+                        onClick={() => toggleKeyStatus(apiKey.id, apiKey.is_active)}
                       >
-                        {key.is_active ? "Deactivate" : "Activate"}
+                        {apiKey.is_active ? "Deactivate" : "Activate"}
                       </Button>
                       <Button
-                        variant="destructive"
+                        variant="ghost"
                         size="sm"
-                        onClick={() => deleteApiKey(key.id)}
+                        onClick={() => handleDelete(apiKey.id)}
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="h-4 w-4 text-destructive" />
                       </Button>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </TabsContent>
-
-        <TabsContent value="usage" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Recent API Usage</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {apiUsage.map((usage) => (
-                  <div key={usage.id} className="flex items-center justify-between p-4 border rounded-lg">
-                    <div>
-                      <div className="font-medium">{usage.user_name}</div>
-                      <div className="text-sm text-muted-foreground">
-                        {usage.endpoint} | {usage.request_count} requests
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        {new Date(usage.date).toLocaleDateString()}
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="font-medium">${usage.cost.toFixed(3)}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+          
+          {apiKeys.length === 0 && !loading && (
+            <div className="text-center py-8 text-muted-foreground">
+              No API keys found. Create your first API key to get started.
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 };

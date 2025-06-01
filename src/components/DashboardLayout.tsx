@@ -1,6 +1,6 @@
+
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { NeuralNetwork } from "@/components/NeuralNetwork";
 import { DashboardClockInButton } from "@/components/DashboardClockInButton";
 import { useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -50,7 +50,6 @@ export const DashboardLayout = ({
         description={seoDescription}
         keywords={seoKeywords}
       />
-      <NeuralNetwork />
       
       <MainNavBar title={title} actions={navbarActions} />
 
