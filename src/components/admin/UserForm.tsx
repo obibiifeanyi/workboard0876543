@@ -48,8 +48,8 @@ export const UserForm = ({ defaultValues, onSubmit }: UserFormProps) => {
   };
 
   return (
-    <form onSubmit={onSubmit} className="space-y-6">
-      <div className="grid gap-6 md:grid-cols-2">
+    <form onSubmit={onSubmit} className="space-y-4 md:space-y-6">
+      <div className="grid gap-4 md:gap-6 grid-cols-1 md:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="name" className="text-sm font-medium text-red-700">Full Name</Label>
           <Input 
@@ -90,7 +90,7 @@ export const UserForm = ({ defaultValues, onSubmit }: UserFormProps) => {
         </div>
         <div className="space-y-2">
           <Label htmlFor="department" className="text-sm font-medium text-red-700">Department</Label>
-          <Select name="department" defaultValue={defaultValues?.department || undefined}>
+          <Select name="department" defaultValue={defaultValues?.department || ""}>
             <SelectTrigger className="rounded-[30px] border-red-300 focus:border-red-500">
               <SelectValue placeholder="Select department" />
             </SelectTrigger>
@@ -110,17 +110,17 @@ export const UserForm = ({ defaultValues, onSubmit }: UserFormProps) => {
       </div>
 
       {!defaultValues && (
-        <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-[20px] border border-red-200 dark:border-red-800/30">
+        <div className="bg-red-50 dark:bg-red-900/20 p-3 md:p-4 rounded-[20px] border border-red-200 dark:border-red-800/30">
           <p className="text-sm text-red-800 dark:text-red-200">
             A temporary password will be generated and the user will be required to change it on first login.
           </p>
         </div>
       )}
 
-      <div className="flex gap-4 justify-end">
+      <div className="flex flex-col sm:flex-row gap-4 justify-end pt-4">
         <Button 
           type="submit" 
-          className="bg-gradient-to-r from-red-600 to-red-700 text-white hover:from-red-700 hover:to-red-800 hover:shadow-lg hover:shadow-red-600/25 transition-all duration-300 rounded-[30px]"
+          className="bg-gradient-to-r from-red-600 to-red-700 text-white hover:from-red-700 hover:to-red-800 hover:shadow-lg hover:shadow-red-600/25 transition-all duration-300 rounded-[30px] w-full sm:w-auto"
         >
           {defaultValues ? "Update User" : "Create User"}
         </Button>

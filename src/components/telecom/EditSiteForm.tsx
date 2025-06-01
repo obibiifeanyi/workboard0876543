@@ -19,7 +19,6 @@ const siteSchema = z.object({
   address: z.string().optional(),
   region: z.string().optional(),
   status: z.enum(["active", "maintenance", "inactive", "planned"]),
-  notes: z.string().optional(),
 });
 
 type SiteFormData = z.infer<typeof siteSchema>;
@@ -42,7 +41,6 @@ export const EditSiteForm = ({ site, onSuccess }: EditSiteFormProps) => {
       address: site.address || "",
       region: site.region || "",
       status: (site.status as "active" | "maintenance" | "inactive" | "planned") || "active",
-      notes: site.notes || "",
     },
   });
 
@@ -58,7 +56,6 @@ export const EditSiteForm = ({ site, onSuccess }: EditSiteFormProps) => {
           address: data.address || null,
           region: data.region || null,
           status: data.status,
-          notes: data.notes || null,
         })
         .eq('id', site.id);
 
@@ -84,7 +81,7 @@ export const EditSiteForm = ({ site, onSuccess }: EditSiteFormProps) => {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 md:space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
             control={form.control}
@@ -146,7 +143,7 @@ export const EditSiteForm = ({ site, onSuccess }: EditSiteFormProps) => {
             control={form.control}
             name="status"
             render={({ field }) => (
-              <FormItem>
+              <FormItem className="md:col-span-2">
                 <FormLabel>Status</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
@@ -174,28 +171,14 @@ export const EditSiteForm = ({ site, onSuccess }: EditSiteFormProps) => {
             <FormItem>
               <FormLabel>Address</FormLabel>
               <FormControl>
-                <Textarea {...field} className="rounded-[30px]" placeholder="Enter full address" />
+                <Textarea {...field} className="rounded-[30px] min-h-[80px]" placeholder="Enter full address" />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="notes"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Notes</FormLabel>
-              <FormControl>
-                <Textarea {...field} className="rounded-[30px]" placeholder="Additional notes" />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <div className="flex gap-4">
+        <div className="flex flex-col sm:flex-row gap-4 pt-4">
           <Button 
             type="submit" 
             className="rounded-[30px] flex-1" 

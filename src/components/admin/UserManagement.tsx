@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Users, UserPlus, Building2, FolderOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface User {
   id: string;
@@ -16,6 +17,7 @@ interface User {
   email: string;
   role: string;
   department: string;
+  departmentId?: string;
   avatar?: string;
 }
 
@@ -41,7 +43,7 @@ export const UserManagement = () => {
           role,
           department_id,
           avatar_url,
-          departments(name)
+          departments(id, name)
         `)
         .order('created_at', { ascending: false });
 
@@ -53,6 +55,7 @@ export const UserManagement = () => {
         email: profile.email || '',
         role: profile.role || 'staff',
         department: profile.departments?.name || 'Not Assigned',
+        departmentId: profile.department_id || '',
         avatar: profile.avatar_url || undefined
       }));
       
@@ -111,6 +114,7 @@ export const UserManagement = () => {
             data: {
               full_name: userData.full_name,
               role: userData.role,
+              department_id: userData.department_id,
             }
           }
         });
@@ -146,25 +150,25 @@ export const UserManagement = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6 p-4 md:p-0">
       {/* Enhanced Header */}
-      <div className="p-6 rounded-3xl bg-gradient-to-r from-red-600/10 to-red-500/10 
+      <div className="p-4 md:p-6 rounded-3xl bg-gradient-to-r from-red-600/10 to-red-500/10 
                      border border-red-600/20 backdrop-blur-sm">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="p-3 rounded-2xl bg-gradient-to-r from-red-600 to-red-700 shadow-lg">
               <Users className="h-6 w-6 text-white" />
             </div>
             <div>
-              <h2 className="text-2xl font-bold bg-gradient-to-r from-red-600 to-red-700 bg-clip-text text-transparent">
+              <h2 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-red-600 to-red-700 bg-clip-text text-transparent">
                 User Management
               </h2>
-              <p className="text-muted-foreground">Manage users, departments, and projects</p>
+              <p className="text-muted-foreground text-sm md:text-base">Manage users, departments, and projects</p>
             </div>
           </div>
           <Button 
             onClick={handleCreateUser}
-            className="bg-gradient-to-r from-red-600 to-red-700 text-white hover:from-red-700 hover:to-red-800 shadow-lg hover:shadow-red-600/25 rounded-[30px]"
+            className="bg-gradient-to-r from-red-600 to-red-700 text-white hover:from-red-700 hover:to-red-800 shadow-lg hover:shadow-red-600/25 rounded-[30px] w-full sm:w-auto"
           >
             <UserPlus className="mr-2 h-4 w-4" />
             Add New User
@@ -172,16 +176,16 @@ export const UserManagement = () => {
         </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 md:space-y-6">
         <div className="p-2 rounded-3xl bg-gradient-to-r from-red-600/5 to-red-500/5 
-                       border border-red-600/20 backdrop-blur-sm">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 gap-2 bg-transparent p-1">
+                       border border-red-600/20 backdrop-blur-sm overflow-x-auto">
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 gap-2 bg-transparent p-1 min-w-[600px] md:min-w-0">
             <TabsTrigger 
               value="users"
               className="rounded-2xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-red-600 
                        data-[state=active]:to-red-700 data-[state=active]:text-white
                        hover:bg-red-600/10 transition-all duration-300 font-medium
-                       data-[state=active]:shadow-lg data-[state=active]:shadow-red-600/25"
+                       data-[state=active]:shadow-lg data-[state=active]:shadow-red-600/25 text-xs md:text-sm"
             >
               <Users className="h-4 w-4 mr-2" />
               Users
@@ -191,7 +195,7 @@ export const UserManagement = () => {
               className="rounded-2xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-red-600 
                        data-[state=active]:to-red-700 data-[state=active]:text-white
                        hover:bg-red-600/10 transition-all duration-300 font-medium
-                       data-[state=active]:shadow-lg data-[state=active]:shadow-red-600/25"
+                       data-[state=active]:shadow-lg data-[state=active]:shadow-red-600/25 text-xs md:text-sm"
             >
               <UserPlus className="h-4 w-4 mr-2" />
               {selectedUser ? "Edit User" : "Add User"}
@@ -201,7 +205,7 @@ export const UserManagement = () => {
               className="rounded-2xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-red-600 
                        data-[state=active]:to-red-700 data-[state=active]:text-white
                        hover:bg-red-600/10 transition-all duration-300 font-medium
-                       data-[state=active]:shadow-lg data-[state=active]:shadow-red-600/25"
+                       data-[state=active]:shadow-lg data-[state=active]:shadow-red-600/25 text-xs md:text-sm"
             >
               <Building2 className="h-4 w-4 mr-2" />
               Departments
@@ -211,7 +215,7 @@ export const UserManagement = () => {
               className="rounded-2xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-red-600 
                        data-[state=active]:to-red-700 data-[state=active]:text-white
                        hover:bg-red-600/10 transition-all duration-300 font-medium
-                       data-[state=active]:shadow-lg data-[state=active]:shadow-red-600/25"
+                       data-[state=active]:shadow-lg data-[state=active]:shadow-red-600/25 text-xs md:text-sm"
             >
               <FolderOpen className="h-4 w-4 mr-2" />
               Projects
@@ -220,32 +224,40 @@ export const UserManagement = () => {
         </div>
 
         <div className="rounded-3xl bg-gradient-to-br from-white/90 to-white/60 dark:from-black/30 dark:to-black/20 
-                       backdrop-blur-xl border border-red-600/20 shadow-2xl shadow-red-600/10 p-6">
+                       backdrop-blur-xl border border-red-600/20 shadow-2xl shadow-red-600/10 p-4 md:p-6 overflow-hidden">
           <TabsContent value="users" className="space-y-4 mt-0">
-            <UserList 
-              users={users} 
-              onEditUser={handleEditUser}
-            />
+            <ScrollArea className="h-[calc(100vh-400px)] md:h-[calc(100vh-350px)]">
+              <UserList 
+                users={users} 
+                onEditUser={handleEditUser}
+              />
+            </ScrollArea>
           </TabsContent>
 
           <TabsContent value="new" className="space-y-4 mt-0">
-            <UserForm 
-              onSubmit={handleSubmit}
-              defaultValues={selectedUser ? {
-                name: selectedUser.name,
-                email: selectedUser.email,
-                role: selectedUser.role,
-                department: selectedUser.department
-              } : undefined}
-            />
+            <ScrollArea className="h-[calc(100vh-400px)] md:h-[calc(100vh-350px)]">
+              <UserForm 
+                onSubmit={handleSubmit}
+                defaultValues={selectedUser ? {
+                  name: selectedUser.name,
+                  email: selectedUser.email,
+                  role: selectedUser.role,
+                  department: selectedUser.departmentId || ''
+                } : undefined}
+              />
+            </ScrollArea>
           </TabsContent>
 
           <TabsContent value="departments" className="space-y-4 mt-0">
-            <DepartmentManagement />
+            <ScrollArea className="h-[calc(100vh-400px)] md:h-[calc(100vh-350px)]">
+              <DepartmentManagement />
+            </ScrollArea>
           </TabsContent>
 
           <TabsContent value="projects" className="space-y-4 mt-0">
-            <ProjectManagement />
+            <ScrollArea className="h-[calc(100vh-400px)] md:h-[calc(100vh-350px)]">
+              <ProjectManagement />
+            </ScrollArea>
           </TabsContent>
         </div>
       </Tabs>

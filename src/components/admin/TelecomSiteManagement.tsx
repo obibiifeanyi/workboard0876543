@@ -7,11 +7,12 @@ import { Badge } from "@/components/ui/badge";
 import { MapPin, Eye, Plus, Search, Edit, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { CreateSiteForm } from "../telecom/CreateSiteForm";
 import { EditSiteForm } from "../telecom/EditSiteForm";
 import { SiteReports } from "../telecom/SiteReports";
 import { TelecomSiteRow } from "@/integrations/supabase/types/telecom";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export const TelecomSiteManagement = () => {
   const [sites, setSites] = useState<TelecomSiteRow[]>([]);
@@ -107,15 +108,15 @@ export const TelecomSiteManagement = () => {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="space-y-4 md:space-y-6 p-4 md:p-0">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-bold">Telecom Site Management</h2>
-          <p className="text-muted-foreground">Manage telecom sites and infrastructure</p>
+          <h2 className="text-xl md:text-2xl font-bold">Telecom Site Management</h2>
+          <p className="text-muted-foreground text-sm md:text-base">Manage telecom sites and infrastructure</p>
         </div>
         <Button 
           onClick={() => setIsCreateFormOpen(true)}
-          className="rounded-[30px] bg-primary hover:bg-primary/90"
+          className="rounded-[30px] bg-primary hover:bg-primary/90 w-full sm:w-auto"
         >
           <Plus className="h-4 w-4 mr-2" />
           Add New Site
@@ -134,17 +135,17 @@ export const TelecomSiteManagement = () => {
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {filteredSites.map((site) => (
           <Card key={site.id} className="hover:shadow-lg transition-shadow">
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between">
-                <MapPin className="h-8 w-8 text-primary" />
-                <Badge className={`${getStatusColor(site.status)} text-white`}>
+                <MapPin className="h-8 w-8 text-primary flex-shrink-0" />
+                <Badge className={`${getStatusColor(site.status)} text-white text-xs`}>
                   {site.status || 'unknown'}
                 </Badge>
               </div>
-              <CardTitle className="text-lg">{site.name}</CardTitle>
+              <CardTitle className="text-base md:text-lg line-clamp-2">{site.name}</CardTitle>
               {site.site_number && (
                 <p className="text-sm text-muted-foreground">#{site.site_number}</p>
               )}
@@ -152,33 +153,33 @@ export const TelecomSiteManagement = () => {
             <CardContent>
               <div className="space-y-3">
                 <div className="text-sm space-y-1">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Location:</span>
-                    <span>{site.location}</span>
+                  <div className="flex justify-between items-start gap-2">
+                    <span className="text-muted-foreground flex-shrink-0">Location:</span>
+                    <span className="text-right text-xs line-clamp-2">{site.location}</span>
                   </div>
                   {site.region && (
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Region:</span>
-                      <span>{site.region}</span>
+                    <div className="flex justify-between items-start gap-2">
+                      <span className="text-muted-foreground flex-shrink-0">Region:</span>
+                      <span className="text-right text-xs">{site.region}</span>
                     </div>
                   )}
                   {site.address && (
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Address:</span>
-                      <span className="text-right text-xs">{site.address}</span>
+                    <div className="flex justify-between items-start gap-2">
+                      <span className="text-muted-foreground flex-shrink-0">Address:</span>
+                      <span className="text-right text-xs line-clamp-2">{site.address}</span>
                     </div>
                   )}
                 </div>
 
-                <div className="flex gap-2 pt-2">
+                <div className="flex gap-2 pt-2 flex-wrap">
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    className="rounded-[30px] flex-1"
+                    className="rounded-[30px] flex-1 min-w-0"
                     onClick={() => handleViewReports(site)}
                   >
                     <Eye className="h-4 w-4 mr-1" />
-                    Reports
+                    <span className="hidden sm:inline">Reports</span>
                   </Button>
                   <Button 
                     variant="outline" 
@@ -205,46 +206,52 @@ export const TelecomSiteManagement = () => {
 
       {/* Create Site Dialog */}
       <Dialog open={isCreateFormOpen} onOpenChange={setIsCreateFormOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden">
           <DialogHeader>
             <DialogTitle>Create New Telecom Site</DialogTitle>
           </DialogHeader>
-          <CreateSiteForm onSuccess={() => {
-            setIsCreateFormOpen(false);
-            fetchSites();
-          }} />
+          <ScrollArea className="max-h-[70vh] pr-4">
+            <CreateSiteForm onSuccess={() => {
+              setIsCreateFormOpen(false);
+              fetchSites();
+            }} />
+          </ScrollArea>
         </DialogContent>
       </Dialog>
 
       {/* Edit Site Dialog */}
       <Dialog open={isEditFormOpen} onOpenChange={setIsEditFormOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden">
           <DialogHeader>
             <DialogTitle>Edit Site</DialogTitle>
           </DialogHeader>
-          {selectedSite && (
-            <EditSiteForm 
-              site={selectedSite}
-              onSuccess={() => {
-                setIsEditFormOpen(false);
-                fetchSites();
-              }} 
-            />
-          )}
+          <ScrollArea className="max-h-[70vh] pr-4">
+            {selectedSite && (
+              <EditSiteForm 
+                site={selectedSite}
+                onSuccess={() => {
+                  setIsEditFormOpen(false);
+                  fetchSites();
+                }} 
+              />
+            )}
+          </ScrollArea>
         </DialogContent>
       </Dialog>
 
       {/* Site Reports Dialog */}
       <Dialog open={isReportsOpen} onOpenChange={setIsReportsOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden">
           <DialogHeader>
             <DialogTitle>Site Reports - {selectedSite?.name}</DialogTitle>
           </DialogHeader>
-          {selectedSite && <SiteReports siteId={selectedSite.id} />}
+          <ScrollArea className="max-h-[70vh] pr-4">
+            {selectedSite && <SiteReports siteId={selectedSite.id} />}
+          </ScrollArea>
         </DialogContent>
       </Dialog>
 
-      {filteredSites.length === 0 && (
+      {filteredSites.length === 0 && !loading && (
         <div className="text-center py-12">
           <MapPin className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
           <h3 className="text-lg font-medium">No sites found</h3>
