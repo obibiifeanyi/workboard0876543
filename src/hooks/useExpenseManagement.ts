@@ -1,7 +1,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { ExpenseRecord, DynamicExpenseTable, ExpenseImport } from '@/types/expenses';
+import { ExpenseRecord } from '@/types/expenses';
 import { useToast } from '@/hooks/use-toast';
 
 export const useExpenseManagement = () => {
@@ -19,43 +19,13 @@ export const useExpenseManagement = () => {
           .order('created_at', { ascending: false });
         
         if (error) throw error;
-        return data as ExpenseRecord[];
-      },
-    });
-  };
-
-  // Fetch dynamic expense tables
-  const useDynamicTables = () => {
-    return useQuery({
-      queryKey: ['dynamic_expense_tables'],
-      queryFn: async () => {
-        const { data, error } = await supabase
-          .from('dynamic_expense_tables')
-          .select('*')
-          .order('created_at', { ascending: false });
         
-        if (error) throw error;
-        return data as DynamicExpenseTable[];
+        // Transform the data to match our ExpenseRecord interface
+        return data.map(expense => ({
+          ...expense,
+          date: expense.expense_date, // Map expense_date to date for compatibility
+        })) as ExpenseRecord[];
       },
-    });
-  };
-
-  // Fetch data from a dynamic table
-  const useDynamicTableData = (tableName: string) => {
-    return useQuery({
-      queryKey: ['dynamic_table_data', tableName],
-      queryFn: async () => {
-        if (!tableName) return [];
-        
-        const { data, error } = await supabase
-          .from(tableName)
-          .select('*')
-          .order('created_at', { ascending: false });
-        
-        if (error) throw error;
-        return data;
-      },
-      enabled: !!tableName,
     });
   };
 
@@ -68,7 +38,13 @@ export const useExpenseManagement = () => {
       const { data, error } = await supabase
         .from('expenses')
         .insert({
-          ...expense,
+          title: expense.title,
+          description: expense.description,
+          amount: expense.amount,
+          expense_date: expense.expense_date,
+          category: expense.category,
+          receipt_url: expense.receipt_url,
+          status: expense.status || 'pending',
           created_by: user.id,
         })
         .select()
@@ -98,7 +74,15 @@ export const useExpenseManagement = () => {
     mutationFn: async ({ id, ...updates }: Partial<ExpenseRecord> & { id: string }) => {
       const { data, error } = await supabase
         .from('expenses')
-        .update(updates)
+        .update({
+          title: updates.title,
+          description: updates.description,
+          amount: updates.amount,
+          expense_date: updates.expense_date,
+          category: updates.category,
+          receipt_url: updates.receipt_url,
+          status: updates.status,
+        })
         .eq('id', id)
         .select()
         .single();
@@ -134,41 +118,10 @@ export const useExpenseManagement = () => {
     },
   });
 
-  // Create dynamic table
-  const createDynamicTable = useMutation({
-    mutationFn: async (tableConfig: Partial<DynamicExpenseTable>) => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('User not authenticated');
-
-      // First create the table configuration
-      const { data, error } = await supabase
-        .from('dynamic_expense_tables')
-        .insert({
-          ...tableConfig,
-          created_by: user.id,
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['dynamic_expense_tables'] });
-      toast({
-        title: "Success",
-        description: "Dynamic table created successfully",
-      });
-    },
-  });
-
   return {
     useExpenses,
-    useDynamicTables,
-    useDynamicTableData,
     createExpense,
     updateExpense,
     deleteExpense,
-    createDynamicTable,
   };
 };

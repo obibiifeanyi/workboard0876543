@@ -5,8 +5,11 @@ import { WorkProgressDonut } from "./WorkProgressDonut";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AdminTabContent } from "./AdminTabContent";
 import { Search, Settings } from "lucide-react";
+import { useState } from "react";
 
 export const AdminDashboardModule = () => {
+  const [activeTab, setActiveTab] = useState("overview");
+
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Enhanced Header Section */}
@@ -64,7 +67,7 @@ export const AdminDashboardModule = () => {
       </div>
 
       {/* Enhanced Tab System */}
-      <Tabs defaultValue="overview" className="space-y-6">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <div className="p-2 rounded-3xl bg-gradient-to-r from-red-600/5 to-red-500/5 border border-red-600/20 backdrop-blur-sm">
           <TabsList className="grid w-full grid-cols-4 md:grid-cols-7 gap-2 bg-transparent p-1">
             <TabsTrigger 
@@ -135,7 +138,7 @@ export const AdminDashboardModule = () => {
 
         <div className="rounded-3xl bg-gradient-to-br from-white/90 to-white/60 dark:from-black/30 dark:to-black/20 
                        backdrop-blur-xl border border-red-600/20 shadow-2xl shadow-red-600/10 p-8">
-          <AdminTabContent />
+          <AdminTabContent activeTab={activeTab} />
         </div>
       </Tabs>
     </div>

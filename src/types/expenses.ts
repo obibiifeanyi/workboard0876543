@@ -1,19 +1,16 @@
 
 export interface ExpenseRecord {
   id: string;
-  date: string;
-  category: string;
-  description: string;
+  title: string;
+  description?: string;
   amount: number;
-  vendor?: string;
-  payment_method?: string;
-  reference_number?: string;
-  department?: string;
-  project_id?: string;
-  receipt_url?: string;
+  expense_date: string;
+  category: string;
   status: 'pending' | 'approved' | 'paid' | 'rejected';
+  receipt_url?: string;
   created_by: string;
   approved_by?: string;
+  approved_at?: string;
   created_at: string;
   updated_at: string;
 }

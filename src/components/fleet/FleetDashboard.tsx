@@ -1,131 +1,142 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Car, Fuel, Wrench, Calendar } from "lucide-react";
 import { useFleetOperations } from "@/hooks/useFleetOperations";
-import { Car, Wrench, Fuel, MapPin, Loader } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 export const FleetDashboard = () => {
   const { 
-    vehicles, 
-    maintenanceRecords, 
-    fuelTransactions, 
-    tripLogs,
-    isLoadingVehicles,
-    isLoadingMaintenance,
-    isLoadingFuel,
-    isLoadingTrips
+    useVehicles, 
+    useVehicleMaintenance,
+    useFuelTransactions,
+    useTripLogs
   } = useFleetOperations();
+  
+  const { data: vehicles = [], isLoading: isLoadingVehicles } = useVehicles();
+  const { data: maintenanceRecords = [], isLoading: isLoadingMaintenance } = useVehicleMaintenance();
+  const { data: fuelTransactions = [], isLoading: isLoadingFuel } = useFuelTransactions();
+  const { data: tripLogs = [], isLoading: isLoadingTrips } = useTripLogs();
 
-  if (isLoadingVehicles || isLoadingMaintenance || isLoadingFuel || isLoadingTrips) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Loader className="h-8 w-8 animate-spin text-red-600" />
-      </div>
-    );
+  const activeVehicles = vehicles.filter(v => v.status === 'active');
+  const maintenanceNeeded = vehicles.filter(v => v.status === 'maintenance');
+  
+  const totalFuelCost = fuelTransactions.reduce((total, transaction) => 
+    total + Number(transaction.total_cost || 0), 0
+  );
+
+  const pendingMaintenance = maintenanceRecords.filter(m => m.status === 'scheduled').length;
+
+  if (isLoadingVehicles) {
+    return <div>Loading fleet data...</div>;
   }
-
-  const activeVehicles = vehicles?.filter(v => v.status === 'active').length || 0;
-  const maintenanceVehicles = vehicles?.filter(v => v.status === 'maintenance').length || 0;
-  const totalMaintenanceCost = maintenanceRecords?.reduce((sum, record) => sum + record.cost, 0) || 0;
-  const totalFuelCost = fuelTransactions?.reduce((sum, transaction) => sum + transaction.total_cost, 0) || 0;
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-2">
-        <Car className="h-6 w-6 text-red-600" />
-        <h1 className="text-2xl font-bold">Fleet Management</h1>
-      </div>
-
-      {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="rounded-3xl border-red-600/20">
+        <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Vehicles</CardTitle>
-            <Car className="h-4 w-4 text-green-600" />
+            <CardTitle className="text-sm font-medium">Total Vehicles</CardTitle>
+            <Car className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{activeVehicles}</div>
-            <p className="text-xs text-muted-foreground">Total fleet vehicles</p>
+            <div className="text-2xl font-bold">{vehicles.length}</div>
+            <p className="text-xs text-muted-foreground">
+              {activeVehicles.length} active
+            </p>
           </CardContent>
         </Card>
 
-        <Card className="rounded-3xl border-red-600/20">
+        <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">In Maintenance</CardTitle>
-            <Wrench className="h-4 w-4 text-yellow-600" />
+            <CardTitle className="text-sm font-medium">Maintenance Needed</CardTitle>
+            <Wrench className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{maintenanceVehicles}</div>
-            <p className="text-xs text-muted-foreground">Vehicles under service</p>
+            <div className="text-2xl font-bold">{maintenanceNeeded.length}</div>
+            <p className="text-xs text-muted-foreground">
+              {pendingMaintenance} scheduled
+            </p>
           </CardContent>
         </Card>
 
-        <Card className="rounded-3xl border-red-600/20">
+        <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Maintenance Cost</CardTitle>
-            <Wrench className="h-4 w-4 text-red-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">${totalMaintenanceCost.toFixed(2)}</div>
-            <p className="text-xs text-muted-foreground">Total this month</p>
-          </CardContent>
-        </Card>
-
-        <Card className="rounded-3xl border-red-600/20">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Fuel Cost</CardTitle>
-            <Fuel className="h-4 w-4 text-blue-600" />
+            <CardTitle className="text-sm font-medium">Fuel Cost (Month)</CardTitle>
+            <Fuel className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">${totalFuelCost.toFixed(2)}</div>
-            <p className="text-xs text-muted-foreground">Total this month</p>
+            <p className="text-xs text-muted-foreground">
+              {fuelTransactions.length} transactions
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Trips This Month</CardTitle>
+            <Calendar className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{tripLogs.length}</div>
+            <p className="text-xs text-muted-foreground">
+              Active trips
+            </p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Recent Vehicles */}
-      <Card className="rounded-3xl border-red-600/20">
-        <CardHeader>
-          <CardTitle className="text-red-700">Fleet Vehicles</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {vehicles?.slice(0, 5).map((vehicle) => (
-              <div key={vehicle.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <Car className="h-5 w-5 text-gray-600" />
+      <div className="grid gap-6 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>Vehicle Status</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {vehicles.slice(0, 5).map((vehicle) => (
+                <div key={vehicle.id} className="flex items-center justify-between">
                   <div>
                     <p className="font-medium">{vehicle.vehicle_number}</p>
                     <p className="text-sm text-muted-foreground">
-                      {vehicle.make} {vehicle.model} ({vehicle.year})
+                      {vehicle.make} {vehicle.model}
                     </p>
                   </div>
-                </div>
-                <div className="flex items-center gap-2">
                   <Badge 
-                    variant={
-                      vehicle.status === 'active' ? 'default' : 
-                      vehicle.status === 'maintenance' ? 'secondary' : 'outline'
-                    }
+                    variant={vehicle.status === 'active' ? 'default' : 'secondary'}
                   >
                     {vehicle.status}
                   </Badge>
-                  <span className="text-sm text-muted-foreground">
-                    {vehicle.current_mileage.toLocaleString()} km
-                  </span>
                 </div>
-              </div>
-            ))}
-            {vehicles?.length === 0 && (
-              <div className="text-center py-8">
-                <Car className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <h3 className="text-lg font-medium">No Vehicles</h3>
-                <p className="text-muted-foreground">No vehicles have been added to the fleet yet.</p>
-              </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Recent Maintenance</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {maintenanceRecords.slice(0, 5).map((maintenance) => (
+                <div key={maintenance.id} className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">{maintenance.maintenance_type}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {maintenance.vehicle?.vehicle_number}
+                    </p>
+                  </div>
+                  <Badge 
+                    variant={maintenance.status === 'completed' ? 'default' : 'secondary'}
+                  >
+                    {maintenance.status}
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };

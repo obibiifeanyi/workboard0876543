@@ -398,6 +398,100 @@ export type Database = {
         }
         Relationships: []
       }
+      battery_reports: {
+        Row: {
+          backup_time_remaining: number | null
+          battery_id: string | null
+          battery_voltage: number | null
+          charging_status: string | null
+          created_at: string
+          current_capacity: number | null
+          health_status: string | null
+          id: string
+          issues_reported: string | null
+          load_current: number | null
+          maintenance_notes: string | null
+          maintenance_required: boolean | null
+          next_maintenance_date: string | null
+          photos: string[] | null
+          recommendations: string | null
+          report_date: string
+          reporter_id: string
+          runtime_hours: number | null
+          site_id: string | null
+          temperature: number | null
+          updated_at: string
+        }
+        Insert: {
+          backup_time_remaining?: number | null
+          battery_id?: string | null
+          battery_voltage?: number | null
+          charging_status?: string | null
+          created_at?: string
+          current_capacity?: number | null
+          health_status?: string | null
+          id?: string
+          issues_reported?: string | null
+          load_current?: number | null
+          maintenance_notes?: string | null
+          maintenance_required?: boolean | null
+          next_maintenance_date?: string | null
+          photos?: string[] | null
+          recommendations?: string | null
+          report_date?: string
+          reporter_id: string
+          runtime_hours?: number | null
+          site_id?: string | null
+          temperature?: number | null
+          updated_at?: string
+        }
+        Update: {
+          backup_time_remaining?: number | null
+          battery_id?: string | null
+          battery_voltage?: number | null
+          charging_status?: string | null
+          created_at?: string
+          current_capacity?: number | null
+          health_status?: string | null
+          id?: string
+          issues_reported?: string | null
+          load_current?: number | null
+          maintenance_notes?: string | null
+          maintenance_required?: boolean | null
+          next_maintenance_date?: string | null
+          photos?: string[] | null
+          recommendations?: string | null
+          report_date?: string
+          reporter_id?: string
+          runtime_hours?: number | null
+          site_id?: string | null
+          temperature?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "battery_reports_battery_id_fkey"
+            columns: ["battery_id"]
+            isOneToOne: false
+            referencedRelation: "battery_inventory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "battery_reports_reporter_id_fkey"
+            columns: ["reporter_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "battery_reports_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "telecom_sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       battery_sales: {
         Row: {
           battery_id: string | null
@@ -1368,6 +1462,136 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      meeting_participants: {
+        Row: {
+          attendance_status: string | null
+          created_at: string
+          id: string
+          joined_at: string | null
+          left_at: string | null
+          meeting_id: string
+          participant_id: string
+          response: string | null
+        }
+        Insert: {
+          attendance_status?: string | null
+          created_at?: string
+          id?: string
+          joined_at?: string | null
+          left_at?: string | null
+          meeting_id: string
+          participant_id: string
+          response?: string | null
+        }
+        Update: {
+          attendance_status?: string | null
+          created_at?: string
+          id?: string
+          joined_at?: string | null
+          left_at?: string | null
+          meeting_id?: string
+          participant_id?: string
+          response?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meeting_participants_meeting_id_fkey"
+            columns: ["meeting_id"]
+            isOneToOne: false
+            referencedRelation: "meetings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "meeting_participants_participant_id_fkey"
+            columns: ["participant_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      meetings: {
+        Row: {
+          agenda: string | null
+          created_at: string
+          department_id: string | null
+          description: string | null
+          end_time: string
+          id: string
+          location: string | null
+          meeting_type: string | null
+          meeting_url: string | null
+          notes: string | null
+          organizer_id: string
+          project_id: string | null
+          recording_url: string | null
+          start_time: string
+          status: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          agenda?: string | null
+          created_at?: string
+          department_id?: string | null
+          description?: string | null
+          end_time: string
+          id?: string
+          location?: string | null
+          meeting_type?: string | null
+          meeting_url?: string | null
+          notes?: string | null
+          organizer_id: string
+          project_id?: string | null
+          recording_url?: string | null
+          start_time: string
+          status?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          agenda?: string | null
+          created_at?: string
+          department_id?: string | null
+          description?: string | null
+          end_time?: string
+          id?: string
+          location?: string | null
+          meeting_type?: string | null
+          meeting_url?: string | null
+          notes?: string | null
+          organizer_id?: string
+          project_id?: string | null
+          recording_url?: string | null
+          start_time?: string
+          status?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meetings_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "meetings_organizer_id_fkey"
+            columns: ["organizer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "meetings_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
             referencedColumns: ["id"]
           },
         ]
@@ -2712,6 +2936,78 @@ export type Database = {
             columns: ["vehicle_id"]
             isOneToOne: false
             referencedRelation: "fleet_vehicles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      weekly_reports: {
+        Row: {
+          accomplishments: string | null
+          challenges: string | null
+          created_at: string
+          hours_worked: number | null
+          id: string
+          next_week_goals: string | null
+          projects_worked_on: string[] | null
+          review_comments: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string | null
+          submitted_at: string | null
+          updated_at: string
+          user_id: string
+          week_end_date: string
+          week_start_date: string
+        }
+        Insert: {
+          accomplishments?: string | null
+          challenges?: string | null
+          created_at?: string
+          hours_worked?: number | null
+          id?: string
+          next_week_goals?: string | null
+          projects_worked_on?: string[] | null
+          review_comments?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string | null
+          submitted_at?: string | null
+          updated_at?: string
+          user_id: string
+          week_end_date: string
+          week_start_date: string
+        }
+        Update: {
+          accomplishments?: string | null
+          challenges?: string | null
+          created_at?: string
+          hours_worked?: number | null
+          id?: string
+          next_week_goals?: string | null
+          projects_worked_on?: string[] | null
+          review_comments?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string | null
+          submitted_at?: string | null
+          updated_at?: string
+          user_id?: string
+          week_end_date?: string
+          week_start_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "weekly_reports_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "weekly_reports_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
