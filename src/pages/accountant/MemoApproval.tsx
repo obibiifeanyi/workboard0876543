@@ -10,6 +10,8 @@ const MemoApproval = () => {
     <DashboardLayout
       title="Memo Approval"
       navigation={<AccountantNavigation />}
+      seoDescription="Manage and approve memo submissions from staff members"
+      seoKeywords="memo approval, accountant dashboard, document management"
     >
       <div className="flex justify-between items-center mb-6">
         <div />
