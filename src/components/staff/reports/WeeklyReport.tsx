@@ -3,95 +3,61 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Calendar, CheckCircle, FileText } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { useStaffOperations } from "@/hooks/useStaffOperations";
 import { Badge } from "@/components/ui/badge";
-import { format, startOfWeek, endOfWeek } from "date-fns";
+import { FileText, Plus, Calendar, Clock } from "lucide-react";
+import { useStaffOperations } from "@/hooks/useStaffOperations";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { format } from "date-fns";
 
 export const WeeklyReport = () => {
-  const { useWeeklyReports, createWeeklyReport, updateWeeklyReport } = useStaffOperations();
+  const { useWeeklyReports, createWeeklyReport } = useStaffOperations();
   const { data: reports = [], isLoading } = useWeeklyReports();
-  const { toast } = useToast();
-  
-  const [selectedWeek, setSelectedWeek] = useState(format(new Date(), 'yyyy-MM-dd'));
-  const [reportForm, setReportForm] = useState({
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [newReport, setNewReport] = useState({
+    week_start_date: '',
+    week_end_date: '',
     accomplishments: '',
     challenges: '',
     next_week_goals: '',
     hours_worked: 0,
     projects_worked_on: [] as string[],
-    projectInput: '',
   });
 
-  const weekStart = startOfWeek(new Date(selectedWeek), { weekStartsOn: 1 });
-  const weekEnd = endOfWeek(new Date(selectedWeek), { weekStartsOn: 1 });
-  
-  const existingReport = reports.find(report => 
-    report.week_start_date === format(weekStart, 'yyyy-MM-dd')
-  );
-
-  const handleSubmitReport = () => {
-    if (!reportForm.accomplishments) {
-      toast({
-        title: "Missing Information",
-        description: "Please provide accomplishments for the week.",
-        variant: "destructive",
-      });
+  const handleCreateReport = () => {
+    if (!newReport.week_start_date || !newReport.week_end_date || !newReport.accomplishments) {
       return;
     }
 
-    const reportData = {
-      week_start_date: format(weekStart, 'yyyy-MM-dd'),
-      week_end_date: format(weekEnd, 'yyyy-MM-dd'),
-      accomplishments: reportForm.accomplishments,
-      challenges: reportForm.challenges,
-      next_week_goals: reportForm.next_week_goals,
-      hours_worked: reportForm.hours_worked,
-      projects_worked_on: reportForm.projects_worked_on,
-      status: 'submitted' as const,
-      submitted_at: new Date().toISOString(),
-    };
-
-    if (existingReport) {
-      updateWeeklyReport.mutate({ id: existingReport.id, ...reportData });
-    } else {
-      createWeeklyReport.mutate(reportData);
-    }
-  };
-
-  const addProject = () => {
-    if (reportForm.projectInput.trim()) {
-      setReportForm({
-        ...reportForm,
-        projects_worked_on: [...reportForm.projects_worked_on, reportForm.projectInput.trim()],
-        projectInput: '',
-      });
-    }
-  };
-
-  const removeProject = (index: number) => {
-    setReportForm({
-      ...reportForm,
-      projects_worked_on: reportForm.projects_worked_on.filter((_, i) => i !== index),
+    createWeeklyReport.mutate(newReport, {
+      onSuccess: () => {
+        setIsCreateDialogOpen(false);
+        setNewReport({
+          week_start_date: '',
+          week_end_date: '',
+          accomplishments: '',
+          challenges: '',
+          next_week_goals: '',
+          hours_worked: 0,
+          projects_worked_on: [],
+        });
+      },
     });
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'draft': return 'bg-yellow-100 text-yellow-800';
+      case 'draft': return 'bg-gray-100 text-gray-800';
       case 'submitted': return 'bg-blue-100 text-blue-800';
-      case 'reviewed': return 'bg-purple-100 text-purple-800';
       case 'approved': return 'bg-green-100 text-green-800';
+      case 'rejected': return 'bg-red-100 text-red-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
@@ -101,177 +67,174 @@ export const WeeklyReport = () => {
   }
 
   return (
-    <div className="space-y-6">
-      <Card className="bg-black/10 dark:bg-white/5 backdrop-blur-lg border-none">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-lg font-medium">
-            <Calendar className="h-5 w-5 text-primary" />
-            Weekly Report
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="week">Select Week</Label>
-              <Input
-                id="week"
-                type="date"
-                value={selectedWeek}
-                onChange={(e) => setSelectedWeek(e.target.value)}
-                className="w-full"
-              />
-              <p className="text-sm text-muted-foreground">
-                Week: {format(weekStart, 'MMM dd')} - {format(weekEnd, 'MMM dd, yyyy')}
-              </p>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="hours">Hours Worked</Label>
-              <Input
-                id="hours"
-                type="number"
-                value={reportForm.hours_worked}
-                onChange={(e) => setReportForm({ ...reportForm, hours_worked: Number(e.target.value) })}
-                placeholder="40"
-                min="0"
-                max="168"
-              />
-            </div>
-          </div>
-
-          {existingReport && (
-            <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium">Existing Report Found</p>
-                  <p className="text-sm text-muted-foreground">
-                    Status: <Badge className={getStatusColor(existingReport.status)}>
-                      {existingReport.status}
-                    </Badge>
-                  </p>
-                </div>
-                {existingReport.status !== 'draft' && (
-                  <Badge variant="outline">Read Only</Badge>
-                )}
-              </div>
-            </div>
-          )}
-
-          <div className="space-y-2">
-            <Label htmlFor="accomplishments">Weekly Accomplishments *</Label>
-            <Textarea
-              id="accomplishments"
-              value={reportForm.accomplishments}
-              onChange={(e) => setReportForm({ ...reportForm, accomplishments: e.target.value })}
-              placeholder="Describe what you accomplished this week..."
-              className="min-h-[100px]"
-              disabled={!!existingReport && existingReport.status !== 'draft'}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="challenges">Challenges Faced</Label>
-            <Textarea
-              id="challenges"
-              value={reportForm.challenges}
-              onChange={(e) => setReportForm({ ...reportForm, challenges: e.target.value })}
-              placeholder="Describe any challenges or blockers..."
-              className="min-h-[80px]"
-              disabled={!!existingReport && existingReport.status !== 'draft'}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="goals">Next Week Goals</Label>
-            <Textarea
-              id="goals"
-              value={reportForm.next_week_goals}
-              onChange={(e) => setReportForm({ ...reportForm, next_week_goals: e.target.value })}
-              placeholder="What do you plan to accomplish next week?"
-              className="min-h-[80px]"
-              disabled={!!existingReport && existingReport.status !== 'draft'}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label>Projects Worked On</Label>
-            <div className="flex gap-2">
-              <Input
-                value={reportForm.projectInput}
-                onChange={(e) => setReportForm({ ...reportForm, projectInput: e.target.value })}
-                placeholder="Project name"
-                disabled={!!existingReport && existingReport.status !== 'draft'}
-                onKeyPress={(e) => e.key === 'Enter' && addProject()}
-              />
-              <Button 
-                type="button" 
-                onClick={addProject}
-                disabled={!!existingReport && existingReport.status !== 'draft'}
-              >
-                Add
-              </Button>
-            </div>
-            {reportForm.projects_worked_on.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {reportForm.projects_worked_on.map((project, index) => (
-                  <Badge 
-                    key={index} 
-                    variant="secondary"
-                    className="cursor-pointer"
-                    onClick={() => (!existingReport || existingReport.status === 'draft') ? removeProject(index) : undefined}
-                  >
-                    {project} {(!existingReport || existingReport.status === 'draft') && '×'}
-                  </Badge>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {(!existingReport || existingReport.status === 'draft') && (
-            <Button 
-              onClick={handleSubmitReport} 
-              className="w-full md:w-auto"
-              disabled={createWeeklyReport.isPending || updateWeeklyReport.isPending}
-            >
-              <CheckCircle className="mr-2 h-4 w-4" />
-              {existingReport ? 'Update Report' : 'Submit Weekly Report'}
-            </Button>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Recent Reports */}
-      <Card className="bg-black/10 dark:bg-white/5 backdrop-blur-lg border-none">
-        <CardHeader>
+    <Card className="bg-black/10 dark:bg-white/5 backdrop-blur-lg border-none">
+      <CardHeader>
+        <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-lg font-medium">
             <FileText className="h-5 w-5 text-primary" />
-            Recent Reports
+            Weekly Reports
           </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {reports.length === 0 ? (
-            <p className="text-muted-foreground text-center py-4">No reports submitted yet.</p>
-          ) : (
-            <div className="space-y-3">
-              {reports.slice(0, 5).map((report) => (
-                <div key={report.id} className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
-                  <div>
-                    <p className="font-medium">
-                      Week of {format(new Date(report.week_start_date), 'MMM dd, yyyy')}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {report.hours_worked} hours worked
-                    </p>
+          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="mr-2 h-4 w-4" />
+                Create Report
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle>Create Weekly Report</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="start-date">Week Start Date *</Label>
+                    <Input
+                      id="start-date"
+                      type="date"
+                      value={newReport.week_start_date}
+                      onChange={(e) => setNewReport({ ...newReport, week_start_date: e.target.value })}
+                    />
                   </div>
-                  <Badge className={getStatusColor(report.status)}>
-                    {report.status}
-                  </Badge>
+                  <div className="space-y-2">
+                    <Label htmlFor="end-date">Week End Date *</Label>
+                    <Input
+                      id="end-date"
+                      type="date"
+                      value={newReport.week_end_date}
+                      onChange={(e) => setNewReport({ ...newReport, week_end_date: e.target.value })}
+                    />
+                  </div>
                 </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="hours">Hours Worked</Label>
+                  <Input
+                    id="hours"
+                    type="number"
+                    value={newReport.hours_worked}
+                    onChange={(e) => setNewReport({ ...newReport, hours_worked: Number(e.target.value) })}
+                    placeholder="40"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="accomplishments">Accomplishments *</Label>
+                  <Textarea
+                    id="accomplishments"
+                    value={newReport.accomplishments}
+                    onChange={(e) => setNewReport({ ...newReport, accomplishments: e.target.value })}
+                    placeholder="What did you accomplish this week?"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="challenges">Challenges</Label>
+                  <Textarea
+                    id="challenges"
+                    value={newReport.challenges}
+                    onChange={(e) => setNewReport({ ...newReport, challenges: e.target.value })}
+                    placeholder="What challenges did you face?"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="goals">Next Week Goals</Label>
+                  <Textarea
+                    id="goals"
+                    value={newReport.next_week_goals}
+                    onChange={(e) => setNewReport({ ...newReport, next_week_goals: e.target.value })}
+                    placeholder="What are your goals for next week?"
+                  />
+                </div>
+
+                <Button 
+                  onClick={handleCreateReport} 
+                  className="w-full" 
+                  disabled={createWeeklyReport.isPending}
+                >
+                  {createWeeklyReport.isPending ? "Creating..." : "Create Report"}
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
+      </CardHeader>
+      
+      <CardContent>
+        {reports.length === 0 ? (
+          <div className="text-center py-8 text-muted-foreground">
+            No weekly reports yet. Create your first report to get started.
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {reports.map((report) => (
+              <Card key={report.id} className="glass-card">
+                <CardContent className="p-4">
+                  <div className="space-y-3">
+                    <div className="flex items-start justify-between">
+                      <div className="space-y-1">
+                        <h4 className="font-medium">
+                          Week of {format(new Date(report.week_start_date), 'MMM dd')} - {format(new Date(report.week_end_date), 'MMM dd, yyyy')}
+                        </h4>
+                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                          <div className="flex items-center gap-1">
+                            <Clock className="h-4 w-4" />
+                            <span>{report.hours_worked} hours</span>
+                          </div>
+                          {report.submitted_at && (
+                            <div className="flex items-center gap-1">
+                              <Calendar className="h-4 w-4" />
+                              <span>Submitted {format(new Date(report.submitted_at), 'MMM dd')}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <Badge className={getStatusColor(report.status)}>
+                        {report.status}
+                      </Badge>
+                    </div>
+
+                    <div className="space-y-2 text-sm">
+                      <div>
+                        <strong>Accomplishments:</strong>
+                        <p className="mt-1">{report.accomplishments}</p>
+                      </div>
+                      
+                      {report.challenges && (
+                        <div>
+                          <strong>Challenges:</strong>
+                          <p className="mt-1">{report.challenges}</p>
+                        </div>
+                      )}
+                      
+                      {report.next_week_goals && (
+                        <div>
+                          <strong>Next Week Goals:</strong>
+                          <p className="mt-1">{report.next_week_goals}</p>
+                        </div>
+                      )}
+                    </div>
+
+                    {report.review_comments && (
+                      <div className="mt-3 p-3 bg-muted/50 rounded">
+                        <p className="text-sm">
+                          <strong>Review Comments:</strong> {report.review_comments}
+                        </p>
+                        {report.reviewer && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Reviewed by: {report.reviewer.full_name}
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 };

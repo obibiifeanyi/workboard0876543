@@ -419,6 +419,7 @@ export type Database = {
           reporter_id: string
           runtime_hours: number | null
           site_id: string | null
+          site_name: string | null
           temperature: number | null
           updated_at: string
         }
@@ -442,6 +443,7 @@ export type Database = {
           reporter_id: string
           runtime_hours?: number | null
           site_id?: string | null
+          site_name?: string | null
           temperature?: number | null
           updated_at?: string
         }
@@ -465,6 +467,7 @@ export type Database = {
           reporter_id?: string
           runtime_hours?: number | null
           site_id?: string | null
+          site_name?: string | null
           temperature?: number | null
           updated_at?: string
         }
@@ -2310,6 +2313,39 @@ export type Database = {
           },
         ]
       }
+      sites: {
+        Row: {
+          coordinates: unknown | null
+          created_at: string | null
+          id: string
+          location: string | null
+          name: string
+          site_type: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          coordinates?: unknown | null
+          created_at?: string | null
+          id?: string
+          location?: string | null
+          name: string
+          site_type?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          coordinates?: unknown | null
+          created_at?: string | null
+          id?: string
+          location?: string | null
+          name?: string
+          site_type?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       staff_logs: {
         Row: {
           activity_description: string
@@ -2589,6 +2625,54 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      telecom_reports: {
+        Row: {
+          created_at: string | null
+          equipment_status: string | null
+          id: string
+          issues_reported: string | null
+          maintenance_required: boolean | null
+          network_status: string | null
+          photos: string[] | null
+          recommendations: string | null
+          report_date: string | null
+          reporter_id: string
+          signal_strength: number | null
+          site_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          equipment_status?: string | null
+          id?: string
+          issues_reported?: string | null
+          maintenance_required?: boolean | null
+          network_status?: string | null
+          photos?: string[] | null
+          recommendations?: string | null
+          report_date?: string | null
+          reporter_id: string
+          signal_strength?: number | null
+          site_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          equipment_status?: string | null
+          id?: string
+          issues_reported?: string | null
+          maintenance_required?: boolean | null
+          network_status?: string | null
+          photos?: string[] | null
+          recommendations?: string | null
+          report_date?: string | null
+          reporter_id?: string
+          signal_strength?: number | null
+          site_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       telecom_sites: {
         Row: {
