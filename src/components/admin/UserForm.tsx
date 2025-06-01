@@ -90,11 +90,12 @@ export const UserForm = ({ defaultValues, onSubmit }: UserFormProps) => {
         </div>
         <div className="space-y-2">
           <Label htmlFor="department" className="text-sm font-medium text-red-700">Department</Label>
-          <Select name="department" defaultValue={defaultValues?.department || ""}>
+          <Select name="department" defaultValue={defaultValues?.department || "none"}>
             <SelectTrigger className="rounded-[30px] border-red-300 focus:border-red-500">
               <SelectValue placeholder="Select department" />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="none">No department assigned</SelectItem>
               {isLoading ? (
                 <SelectItem value="loading" disabled>Loading departments...</SelectItem>
               ) : departments.length > 0 ? (
