@@ -1,122 +1,139 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useManagerOperations } from "@/hooks/manager/useManagerOperations";
-import { Users, Building2 } from "lucide-react";
+import { Users, Building2, UserCheck, Clock } from "lucide-react";
 
-export const TeamOverview = () => {
-  const { managedDepartments, teamMembers, isLoadingTeam } = useManagerOperations();
+interface TeamOverviewProps {
+  teamMembers?: any[];
+  departments?: any[];
+}
 
-  if (isLoadingTeam) {
-    return (
-      <div className="flex justify-center p-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
-      </div>
-    );
-  }
+export const TeamOverview = ({ teamMembers = [], departments = [] }: TeamOverviewProps) => {
+  const activeMembers = teamMembers.filter(member => member.status === 'active');
+  const totalDepartments = departments.length;
 
   return (
     <div className="space-y-6">
-      {/* Department Overview */}
-      <Card className="rounded-3xl border border-red-600/20">
-        <CardHeader className="bg-gradient-to-r from-red-600/10 to-red-500/10 rounded-t-3xl">
-          <CardTitle className="flex items-center gap-2 text-red-700">
-            <Building2 className="h-5 w-5" />
-            Managed Departments
-          </CardTitle>
+      {/* Stats Cards */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card className="rounded-3xl border-red-600/20">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Team Members</CardTitle>
+            <Users className="h-4 w-4 text-red-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{teamMembers.length}</div>
+            <p className="text-xs text-muted-foreground">
+              Active members
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="rounded-3xl border-red-600/20">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Managed Departments</CardTitle>
+            <Building2 className="h-4 w-4 text-red-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{totalDepartments}</div>
+            <p className="text-xs text-muted-foreground">
+              Under management
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="rounded-3xl border-red-600/20">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Active Members</CardTitle>
+            <UserCheck className="h-4 w-4 text-red-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{activeMembers.length}</div>
+            <p className="text-xs text-muted-foreground">
+              Currently active
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="rounded-3xl border-red-600/20">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Avg Response Time</CardTitle>
+            <Clock className="h-4 w-4 text-red-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">2.4h</div>
+            <p className="text-xs text-muted-foreground">
+              Team response time
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Team Members List */}
+      <Card className="rounded-3xl border-red-600/20">
+        <CardHeader>
+          <CardTitle className="text-red-700">Team Members</CardTitle>
         </CardHeader>
-        <CardContent className="pt-6">
-          {managedDepartments && managedDepartments.length > 0 ? (
-            <div className="grid gap-4">
-              {managedDepartments.map((dept) => (
-                <div key={dept.id} className="p-4 border rounded-lg">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h3 className="font-medium">{dept.name}</h3>
-                      <p className="text-sm text-muted-foreground mt-1">{dept.description}</p>
-                    </div>
-                    <Badge variant="outline">
-                      {dept.employee_count || 0} employees
-                    </Badge>
+        <CardContent>
+          <div className="space-y-4">
+            {teamMembers.map((member) => (
+              <div key={member.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                <div className="flex items-center space-x-4">
+                  <div className="w-10 h-10 bg-red-600 rounded-full flex items-center justify-center text-white font-semibold">
+                    {member.full_name?.charAt(0) || 'U'}
+                  </div>
+                  <div>
+                    <h3 className="font-medium">{member.full_name || 'Unknown User'}</h3>
+                    <p className="text-sm text-muted-foreground">{member.email}</p>
                   </div>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-muted-foreground text-center py-4">
-              No departments assigned to manage yet.
-            </p>
-          )}
+                <div className="flex items-center space-x-2">
+                  <Badge variant={member.status === 'active' ? 'default' : 'secondary'}>
+                    {member.status || 'active'}
+                  </Badge>
+                  <Badge variant="outline">
+                    {member.role || 'staff'}
+                  </Badge>
+                </div>
+              </div>
+            ))}
+            {teamMembers.length === 0 && (
+              <div className="text-center py-8 text-muted-foreground">
+                <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p>No team members found</p>
+              </div>
+            )}
+          </div>
         </CardContent>
       </Card>
 
-      {/* Team Members */}
-      <Card className="rounded-3xl border border-red-600/20">
-        <CardHeader className="bg-gradient-to-r from-red-600/10 to-red-500/10 rounded-t-3xl">
-          <CardTitle className="flex items-center gap-2 text-red-700">
-            <Users className="h-5 w-5" />
-            Team Members
-          </CardTitle>
+      {/* Departments */}
+      <Card className="rounded-3xl border-red-600/20">
+        <CardHeader>
+          <CardTitle className="text-red-700">Managed Departments</CardTitle>
         </CardHeader>
-        <CardContent className="pt-6">
-          {teamMembers && teamMembers.length > 0 ? (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Member</TableHead>
-                  <TableHead>Role</TableHead>
-                  <TableHead>Department</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Joined</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {teamMembers.map((member) => (
-                  <TableRow key={member.id}>
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <Avatar className="h-8 w-8">
-                          <AvatarFallback>
-                            {member.full_name?.charAt(0) || "U"}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <div className="font-medium">{member.full_name}</div>
-                          <div className="text-sm text-muted-foreground">{member.email}</div>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className="capitalize">
-                        {member.role}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      {managedDepartments?.find(d => d.id === member.department_id)?.name || "Not assigned"}
-                    </TableCell>
-                    <TableCell>
-                      <Badge 
-                        variant={member.status === "active" ? "default" : "secondary"}
-                        className={member.status === "active" ? "bg-green-100 text-green-800" : ""}
-                      >
-                        {member.status || "active"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      {member.created_at ? new Date(member.created_at).toLocaleDateString() : "N/A"}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          ) : (
-            <div className="text-center py-8 text-muted-foreground">
-              <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>No team members found in your managed departments.</p>
-            </div>
-          )}
+        <CardContent>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {departments.map((department) => (
+              <div key={department.id} className="p-4 bg-gray-50 rounded-lg">
+                <h3 className="font-medium">{department.name}</h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {department.description || 'No description'}
+                </p>
+                <div className="mt-2">
+                  <Badge variant="outline">
+                    {department.employee_count || 0} members
+                  </Badge>
+                </div>
+              </div>
+            ))}
+            {departments.length === 0 && (
+              <div className="col-span-full text-center py-8 text-muted-foreground">
+                <Building2 className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p>No departments assigned</p>
+              </div>
+            )}
+          </div>
         </CardContent>
       </Card>
     </div>
