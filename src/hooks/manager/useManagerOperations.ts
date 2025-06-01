@@ -315,6 +315,7 @@ export const useManagerOperations = () => {
     projects,
     tasks,
     isLoadingDepartments,
+    isLoadingTeam, // Keep original property name for existing components
     isLoadingTeamMembers: isLoadingTeam, // Alias for backward compatibility
     isLoadingProjects,
     isLoadingTasks,
