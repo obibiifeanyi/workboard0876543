@@ -26,23 +26,22 @@ import {
 interface Department {
   id: string;
   name: string;
-  description: string | null;
+  description: string;
   manager_id: string | null;
-  employee_count: number | null;
+  employee_count: number;
   created_at: string;
   updated_at: string;
 }
 
-interface Profile {
+interface Manager {
   id: string;
   full_name: string;
-  email: string;
   role: string;
 }
 
 export const DepartmentManagement = () => {
   const [departments, setDepartments] = useState<Department[]>([]);
-  const [managers, setManagers] = useState<Profile[]>([]);
+  const [managers, setManagers] = useState<Manager[]>([]);
   const [loading, setLoading] = useState(true);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingDepartment, setEditingDepartment] = useState<Department | null>(null);
@@ -84,7 +83,7 @@ export const DepartmentManagement = () => {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, full_name, email, role')
+        .select('id, full_name, role')
         .in('role', ['admin', 'manager'])
         .order('full_name', { ascending: true });
 
@@ -102,8 +101,8 @@ export const DepartmentManagement = () => {
     try {
       const departmentData = {
         name: formData.name,
-        description: formData.description || null,
-        manager_id: formData.manager_id || null,
+        description: formData.description,
+        manager_id: formData.manager_id === "none" ? null : formData.manager_id,
       };
 
       if (editingDepartment) {
@@ -173,7 +172,11 @@ export const DepartmentManagement = () => {
   };
 
   const resetForm = () => {
-    setFormData({ name: "", description: "", manager_id: "" });
+    setFormData({
+      name: "",
+      description: "",
+      manager_id: "",
+    });
     setEditingDepartment(null);
     setIsCreateOpen(false);
   };
@@ -181,8 +184,8 @@ export const DepartmentManagement = () => {
   const openEditDialog = (department: Department) => {
     setFormData({
       name: department.name,
-      description: department.description || "",
-      manager_id: department.manager_id || "",
+      description: department.description,
+      manager_id: department.manager_id || "none",
     });
     setEditingDepartment(department);
     setIsCreateOpen(true);
@@ -212,7 +215,7 @@ export const DepartmentManagement = () => {
               Add Department
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="max-w-2xl">
             <DialogHeader>
               <DialogTitle>
                 {editingDepartment ? "Edit Department" : "Create Department"}
@@ -228,6 +231,7 @@ export const DepartmentManagement = () => {
                   required
                 />
               </div>
+
               <div>
                 <Label htmlFor="description">Description</Label>
                 <Textarea
@@ -236,17 +240,18 @@ export const DepartmentManagement = () => {
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 />
               </div>
+
               <div>
-                <Label htmlFor="manager">Manager</Label>
+                <Label htmlFor="manager">Department Manager</Label>
                 <Select
                   value={formData.manager_id}
                   onValueChange={(value) => setFormData({ ...formData, manager_id: value })}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select a manager" />
+                    <SelectValue placeholder="Select manager" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">No manager assigned</SelectItem>
+                    <SelectItem value="none">No manager assigned</SelectItem>
                     {managers.map((manager) => (
                       <SelectItem key={manager.id} value={manager.id}>
                         {manager.full_name} ({manager.role})
@@ -255,6 +260,7 @@ export const DepartmentManagement = () => {
                   </SelectContent>
                 </Select>
               </div>
+
               <div className="flex justify-end gap-2">
                 <Button type="button" variant="outline" onClick={resetForm}>
                   Cancel
@@ -273,7 +279,7 @@ export const DepartmentManagement = () => {
           <Card key={department.id}>
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
-                <span>{department.name}</span>
+                <span className="truncate">{department.name}</span>
                 <div className="flex gap-2">
                   <Button
                     variant="ghost"
@@ -293,16 +299,16 @@ export const DepartmentManagement = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-2">
-                {department.description && (
-                  <p className="text-sm text-muted-foreground">
-                    {department.description}
-                  </p>
-                )}
+              <div className="space-y-3">
+                <p className="text-sm text-muted-foreground line-clamp-2">
+                  {department.description}
+                </p>
+
                 <div className="flex items-center gap-2 text-sm">
                   <Users className="h-4 w-4" />
-                  <span>{department.employee_count || 0} employees</span>
+                  <span>{department.employee_count} employees</span>
                 </div>
+
                 {department.manager_id && (
                   <div className="text-sm">
                     <span className="font-medium">Manager: </span>
