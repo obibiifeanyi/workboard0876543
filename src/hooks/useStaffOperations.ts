@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -17,7 +16,7 @@ export const useStaffOperations = () => {
           .from('sites')
           .select('*')
           .order('created_at', { ascending: false });
-
+        
         if (error) throw error;
         return data as Site[];
       },
@@ -27,7 +26,7 @@ export const useStaffOperations = () => {
   // Weekly Reports
   const useWeeklyReports = () => {
     return useQuery({
-      queryKey: ['weekly-reports'],
+      queryKey: ['weekly_reports'],
       queryFn: async () => {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) throw new Error('Not authenticated');
@@ -36,180 +35,161 @@ export const useStaffOperations = () => {
           .from('weekly_reports')
           .select(`
             *,
-            reviewer:profiles!weekly_reports_reviewed_by_fkey(full_name)
+            reviewer:reviewed_by(full_name)
           `)
           .eq('user_id', user.id)
           .order('created_at', { ascending: false });
-
+        
         if (error) throw error;
-        return data as WeeklyReport[];
+        return (data || []).map(report => ({
+          ...report,
+          reviewer: report.reviewer && typeof report.reviewer === 'object' ? report.reviewer : null
+        })) as WeeklyReport[];
       },
     });
   };
 
   const createWeeklyReport = useMutation({
-    mutationFn: async (report: Omit<WeeklyReport, 'id' | 'user_id' | 'created_at' | 'updated_at' | 'reviewer'>) => {
+    mutationFn: async (reportData: Omit<WeeklyReport, 'id' | 'created_at' | 'updated_at' | 'user_id' | 'reviewer'>) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('weekly_reports')
         .insert({
-          ...report,
           user_id: user.id,
-        })
-        .select()
-        .single();
+          week_start_date: reportData.week_start_date,
+          week_end_date: reportData.week_end_date,
+          accomplishments: reportData.accomplishments,
+          challenges: reportData.challenges,
+          next_week_goals: reportData.next_week_goals,
+          hours_worked: reportData.hours_worked,
+          projects_worked_on: reportData.projects_worked_on,
+          status: reportData.status
+        });
 
       if (error) throw error;
-      return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['weekly-reports'] });
-      toast({
-        title: "Success",
-        description: "Weekly report created successfully",
-      });
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: `Failed to create report: ${error.message}`,
-        variant: "destructive",
-      });
-    },
-  });
-
-  const updateWeeklyReport = useMutation({
-    mutationFn: async ({ id, ...updates }: Partial<WeeklyReport> & { id: string }) => {
-      const { data, error } = await supabase
-        .from('weekly_reports')
-        .update(updates)
-        .eq('id', id)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['weekly-reports'] });
-      toast({
-        title: "Success",
-        description: "Weekly report updated successfully",
-      });
+      queryClient.invalidateQueries({ queryKey: ['weekly_reports'] });
     },
   });
 
   // Battery Reports
   const useBatteryReports = () => {
     return useQuery({
-      queryKey: ['battery-reports'],
+      queryKey: ['battery_reports'],
       queryFn: async () => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error('Not authenticated');
+
         const { data, error } = await supabase
           .from('battery_reports')
           .select(`
             *,
-            reporter:profiles!battery_reports_reporter_id_fkey(full_name)
+            reporter:reporter_id(full_name)
           `)
+          .eq('reporter_id', user.id)
           .order('created_at', { ascending: false });
-
+        
         if (error) throw error;
-        return data as BatteryReportDb[];
+        return (data || []).map(report => ({
+          ...report,
+          reporter: report.reporter && typeof report.reporter === 'object' ? report.reporter : null
+        })) as BatteryReportDb[];
       },
     });
   };
 
   const createBatteryReport = useMutation({
-    mutationFn: async (report: Omit<BatteryReportDb, 'id' | 'reporter_id' | 'created_at' | 'updated_at' | 'reporter'>) => {
+    mutationFn: async (reportData: Omit<BatteryReportDb, 'id' | 'created_at' | 'updated_at' | 'reporter_id' | 'reporter'>) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('battery_reports')
         .insert({
-          ...report,
           reporter_id: user.id,
-        })
-        .select()
-        .single();
+          site_name: reportData.site_name,
+          battery_voltage: reportData.battery_voltage,
+          current_capacity: reportData.current_capacity,
+          temperature: reportData.temperature,
+          charging_status: reportData.charging_status,
+          health_status: reportData.health_status,
+          runtime_hours: reportData.runtime_hours,
+          load_current: reportData.load_current,
+          backup_time_remaining: reportData.backup_time_remaining,
+          maintenance_required: reportData.maintenance_required,
+          issues_reported: reportData.issues_reported,
+          recommendations: reportData.recommendations,
+          report_date: reportData.report_date
+        });
 
       if (error) throw error;
-      return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['battery-reports'] });
-      toast({
-        title: "Success",
-        description: "Battery report created successfully",
-      });
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: `Failed to create battery report: ${error.message}`,
-        variant: "destructive",
-      });
+      queryClient.invalidateQueries({ queryKey: ['battery_reports'] });
     },
   });
 
   // Telecom Reports
   const useTelecomReports = () => {
     return useQuery({
-      queryKey: ['telecom-reports'],
+      queryKey: ['telecom_reports'],
       queryFn: async () => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error('Not authenticated');
+
         const { data, error } = await supabase
           .from('telecom_reports')
           .select(`
             *,
-            site:sites(name),
-            reporter:profiles!telecom_reports_reporter_id_fkey(full_name)
+            site:site_id(name),
+            reporter:reporter_id(full_name)
           `)
+          .eq('reporter_id', user.id)
           .order('created_at', { ascending: false });
-
+        
         if (error) throw error;
-        return data as TelecomReport[];
+        return (data || []).map(report => ({
+          ...report,
+          site: report.site && typeof report.site === 'object' ? report.site : null,
+          reporter: report.reporter && typeof report.reporter === 'object' ? report.reporter : null
+        })) as TelecomReport[];
       },
     });
   };
 
   const createTelecomReport = useMutation({
-    mutationFn: async (report: Omit<TelecomReport, 'id' | 'reporter_id' | 'created_at' | 'updated_at' | 'site' | 'reporter'>) => {
+    mutationFn: async (reportData: Omit<TelecomReport, 'id' | 'created_at' | 'updated_at' | 'reporter_id' | 'reporter' | 'site'>) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('telecom_reports')
         .insert({
-          ...report,
           reporter_id: user.id,
-        })
-        .select()
-        .single();
+          site_id: reportData.site_id,
+          signal_strength: reportData.signal_strength,
+          network_status: reportData.network_status,
+          equipment_status: reportData.equipment_status,
+          issues_reported: reportData.issues_reported,
+          maintenance_required: reportData.maintenance_required,
+          recommendations: reportData.recommendations,
+          report_date: reportData.report_date
+        });
 
       if (error) throw error;
-      return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['telecom-reports'] });
-      toast({
-        title: "Success",
-        description: "Telecom report created successfully",
-      });
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: `Failed to create telecom report: ${error.message}`,
-        variant: "destructive",
-      });
+      queryClient.invalidateQueries({ queryKey: ['telecom_reports'] });
     },
   });
 
-  // Staff Memos
-  const useStaffMemos = () => {
+  // Memos
+  const useMemos = () => {
     return useQuery({
-      queryKey: ['staff-memos'],
+      queryKey: ['staff_memos'],
       queryFn: async () => {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) throw new Error('Not authenticated');
@@ -218,68 +198,44 @@ export const useStaffOperations = () => {
           .from('staff_memos')
           .select(`
             *,
-            sender:profiles!staff_memos_sender_id_fkey(full_name),
-            recipient:profiles!staff_memos_recipient_id_fkey(full_name)
+            sender:sender_id(full_name),
+            recipient:recipient_id(full_name)
           `)
           .or(`sender_id.eq.${user.id},recipient_id.eq.${user.id}`)
           .order('created_at', { ascending: false });
-
+        
         if (error) throw error;
-        return data as StaffMemo[];
+        return (data || []).map(memo => ({
+          ...memo,
+          sender: memo.sender && typeof memo.sender === 'object' ? memo.sender : null,
+          recipient: memo.recipient && typeof memo.recipient === 'object' ? memo.recipient : null
+        })) as StaffMemo[];
       },
     });
   };
 
-  const createStaffMemo = useMutation({
-    mutationFn: async (memo: Omit<StaffMemo, 'id' | 'sender_id' | 'created_at' | 'updated_at' | 'sender' | 'recipient'>) => {
+  const createMemo = useMutation({
+    mutationFn: async (memoData: Omit<StaffMemo, 'id' | 'created_at' | 'updated_at' | 'sender_id' | 'sender' | 'recipient'>) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('staff_memos')
         .insert({
-          ...memo,
           sender_id: user.id,
-        })
-        .select()
-        .single();
+          recipient_id: memoData.recipient_id,
+          subject: memoData.subject,
+          content: memoData.content,
+          memo_type: memoData.memo_type,
+          priority: memoData.priority,
+          status: memoData.status,
+          is_read: memoData.is_read
+        });
 
       if (error) throw error;
-      return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['staff-memos'] });
-      toast({
-        title: "Success",
-        description: "Memo sent successfully",
-      });
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: `Failed to send memo: ${error.message}`,
-        variant: "destructive",
-      });
-    },
-  });
-
-  const markMemoAsRead = useMutation({
-    mutationFn: async (memoId: string) => {
-      const { data, error } = await supabase
-        .from('staff_memos')
-        .update({ 
-          is_read: true, 
-          read_at: new Date().toISOString() 
-        })
-        .eq('id', memoId)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['staff-memos'] });
+      queryClient.invalidateQueries({ queryKey: ['staff_memos'] });
     },
   });
 
@@ -292,119 +248,88 @@ export const useStaffOperations = () => {
           .from('meetings')
           .select(`
             *,
-            organizer:profiles!meetings_organizer_id_fkey(full_name)
+            organizer:organizer_id(full_name)
           `)
           .order('start_time', { ascending: true });
-
+        
         if (error) throw error;
-        return data as Meeting[];
+        return (data || []).map(meeting => ({
+          ...meeting,
+          organizer: meeting.organizer && typeof meeting.organizer === 'object' ? meeting.organizer : null
+        })) as Meeting[];
       },
     });
   };
 
   const createMeeting = useMutation({
-    mutationFn: async (meeting: Omit<Meeting, 'id' | 'organizer_id' | 'created_at' | 'updated_at' | 'organizer'>) => {
+    mutationFn: async (meetingData: Omit<Meeting, 'id' | 'created_at' | 'updated_at' | 'organizer_id' | 'organizer'>) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('meetings')
         .insert({
-          ...meeting,
           organizer_id: user.id,
-        })
-        .select()
-        .single();
+          title: meetingData.title,
+          description: meetingData.description,
+          meeting_type: meetingData.meeting_type,
+          location: meetingData.location,
+          meeting_url: meetingData.meeting_url,
+          start_time: meetingData.start_time,
+          end_time: meetingData.end_time,
+          agenda: meetingData.agenda,
+          status: meetingData.status
+        });
 
       if (error) throw error;
-      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['meetings'] });
-      toast({
-        title: "Success",
-        description: "Meeting scheduled successfully",
-      });
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: `Failed to schedule meeting: ${error.message}`,
-        variant: "destructive",
-      });
     },
   });
 
-  // Time Logs
-  const createTimeLog = useMutation({
-    mutationFn: async (timeLog: { clock_in?: string; clock_out?: string; description?: string }) => {
+  // Time Logging
+  const logTime = useMutation({
+    mutationFn: async (timeData: { clock_in?: string; clock_out?: string; description?: string }) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('time_logs')
         .insert({
-          ...timeLog,
           user_id: user.id,
-        })
-        .select()
-        .single();
+          clock_in: timeData.clock_in || new Date().toISOString(),
+          notes: timeData.description
+        });
 
       if (error) throw error;
-      return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['time-logs'] });
-      toast({
-        title: "Success",
-        description: "Time logged successfully",
-      });
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: `Failed to log time: ${error.message}`,
-        variant: "destructive",
-      });
+      queryClient.invalidateQueries({ queryKey: ['time_logs'] });
     },
   });
 
   // Leave Requests
   const createLeaveRequest = useMutation({
-    mutationFn: async (leaveRequest: { 
-      leave_type: string; 
-      start_date: string; 
-      end_date: string; 
-      reason?: string 
-    }) => {
+    mutationFn: async (leaveData: { start_date: string; end_date: string; leave_type: string; reason: string }) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('leave_requests')
         .insert({
-          ...leaveRequest,
           user_id: user.id,
-        })
-        .select()
-        .single();
+          start_date: leaveData.start_date,
+          end_date: leaveData.end_date,
+          leave_type: leaveData.leave_type,
+          reason: leaveData.reason,
+          status: 'pending'
+        });
 
       if (error) throw error;
-      return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['leave-requests'] });
-      toast({
-        title: "Success",
-        description: "Leave request submitted successfully",
-      });
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: `Failed to submit leave request: ${error.message}`,
-        variant: "destructive",
-      });
+      queryClient.invalidateQueries({ queryKey: ['leave_requests'] });
     },
   });
 
@@ -412,17 +337,15 @@ export const useStaffOperations = () => {
     useSites,
     useWeeklyReports,
     createWeeklyReport,
-    updateWeeklyReport,
     useBatteryReports,
     createBatteryReport,
     useTelecomReports,
     createTelecomReport,
-    useStaffMemos,
-    createStaffMemo,
-    markMemoAsRead,
+    useMemos,
+    createMemo,
     useMeetings,
     createMeeting,
-    createTimeLog,
+    logTime,
     createLeaveRequest,
   };
 };

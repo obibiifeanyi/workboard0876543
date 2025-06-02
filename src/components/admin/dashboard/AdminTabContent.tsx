@@ -11,6 +11,7 @@ import { StaffMemoManagement } from "../StaffMemoManagement";
 import { FleetManagement } from "../FleetManagement";
 import { CommunicationCenter } from "../CommunicationCenter";
 import { AdminDashboardModule } from "./AdminDashboardModule";
+import { SettingsPage } from "@/components/settings/SettingsPage";
 import { Loader } from "lucide-react";
 
 interface AdminTabContentProps {
@@ -20,8 +21,7 @@ interface AdminTabContentProps {
 export const AdminTabContent = ({ activeTab }: AdminTabContentProps) => {
   const adminOps = useAdminOperations();
   
-  // Check if adminOps has the expected structure
-  const isLoading = false; // Simplified for now
+  const isLoading = false;
 
   if (isLoading) {
     return (
@@ -56,7 +56,7 @@ export const AdminTabContent = ({ activeTab }: AdminTabContentProps) => {
       case "analytics":
         return <AdminDashboardModule activeTab={activeTab} />;
       case "settings":
-        return <div>Settings content coming soon...</div>;
+        return <SettingsPage />;
       default:
         return <AdminOverview />;
     }

@@ -8,6 +8,7 @@ import { MemoApproval } from "./MemoApproval";
 import { AccountSettings } from "./AccountSettings";
 import { FleetAccountingManagement } from "./FleetAccountingManagement";
 import { ExpenseManagementSystem } from "@/components/expenses/ExpenseManagementSystem";
+import { SettingsPage } from "@/components/settings/SettingsPage";
 
 export const AccountantTabContent = () => {
   return (
@@ -44,7 +45,7 @@ export const AccountantTabContent = () => {
       </TabsContent>
 
       <TabsContent value="settings" className="space-y-6 mt-0">
-        <AccountSettings />
+        <SettingsPage />
       </TabsContent>
     </>
   );

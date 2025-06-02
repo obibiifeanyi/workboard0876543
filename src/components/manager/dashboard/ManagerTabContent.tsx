@@ -5,6 +5,7 @@ import { ProjectManagement } from "../ProjectManagement";
 import { TeamOverview } from "../TeamOverview";
 import { DepartmentManagement } from "../DepartmentManagement";
 import { AnalyticsDashboard } from "../AnalyticsDashboard";
+import { SettingsPage } from "@/components/settings/SettingsPage";
 import { Loader } from "lucide-react";
 
 interface ManagerTabContentProps {
@@ -45,6 +46,8 @@ export const ManagerTabContent = ({ activeTab }: ManagerTabContentProps) => {
         return <DepartmentManagement />;
       case "analytics":
         return <AnalyticsDashboard />;
+      case "settings":
+        return <SettingsPage />;
       default:
         return <TeamOverview teamMembers={teamMembers} departments={managedDepartments} />;
     }
