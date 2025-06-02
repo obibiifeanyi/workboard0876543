@@ -13,12 +13,12 @@ export const NotificationSettings = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [settings, setSettings] = useState({
-    email_notifications: true,
-    push_notifications: true,
+    email_enabled: true,
+    push_enabled: true,
     memo_notifications: true,
     task_notifications: true,
-    meeting_notifications: true,
-    report_notifications: true
+    leave_notifications: true,
+    document_notifications: true
   });
 
   const { data: preferences, isLoading } = useQuery({
@@ -41,12 +41,12 @@ export const NotificationSettings = () => {
   useEffect(() => {
     if (preferences) {
       setSettings({
-        email_notifications: preferences.email_notifications ?? true,
-        push_notifications: preferences.push_notifications ?? true,
+        email_enabled: preferences.email_enabled ?? true,
+        push_enabled: preferences.push_enabled ?? true,
         memo_notifications: preferences.memo_notifications ?? true,
         task_notifications: preferences.task_notifications ?? true,
-        meeting_notifications: preferences.meeting_notifications ?? true,
-        report_notifications: preferences.report_notifications ?? true
+        leave_notifications: preferences.leave_notifications ?? true,
+        document_notifications: preferences.document_notifications ?? true
       });
     }
   }, [preferences]);
@@ -116,9 +116,9 @@ export const NotificationSettings = () => {
               </p>
             </div>
             <Switch
-              checked={settings.email_notifications}
+              checked={settings.email_enabled}
               onCheckedChange={(checked) => 
-                setSettings(prev => ({ ...prev, email_notifications: checked }))
+                setSettings(prev => ({ ...prev, email_enabled: checked }))
               }
             />
           </div>
@@ -134,9 +134,9 @@ export const NotificationSettings = () => {
               </p>
             </div>
             <Switch
-              checked={settings.push_notifications}
+              checked={settings.push_enabled}
               onCheckedChange={(checked) => 
-                setSettings(prev => ({ ...prev, push_notifications: checked }))
+                setSettings(prev => ({ ...prev, push_enabled: checked }))
               }
             />
           </div>
@@ -176,30 +176,30 @@ export const NotificationSettings = () => {
 
           <div className="flex items-center justify-between">
             <div className="space-y-1">
-              <Label>Meeting Notifications</Label>
+              <Label>Leave Notifications</Label>
               <p className="text-sm text-muted-foreground">
-                Get notified about upcoming meetings
+                Get notified about leave request updates
               </p>
             </div>
             <Switch
-              checked={settings.meeting_notifications}
+              checked={settings.leave_notifications}
               onCheckedChange={(checked) => 
-                setSettings(prev => ({ ...prev, meeting_notifications: checked }))
+                setSettings(prev => ({ ...prev, leave_notifications: checked }))
               }
             />
           </div>
 
           <div className="flex items-center justify-between">
             <div className="space-y-1">
-              <Label>Report Notifications</Label>
+              <Label>Document Notifications</Label>
               <p className="text-sm text-muted-foreground">
-                Get notified about report submissions and approvals
+                Get notified about document submissions and approvals
               </p>
             </div>
             <Switch
-              checked={settings.report_notifications}
+              checked={settings.document_notifications}
               onCheckedChange={(checked) => 
-                setSettings(prev => ({ ...prev, report_notifications: checked }))
+                setSettings(prev => ({ ...prev, document_notifications: checked }))
               }
             />
           </div>
