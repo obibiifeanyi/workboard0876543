@@ -2,7 +2,6 @@
 import { ClockInButton } from "@/components/ClockInButton";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 import { Card } from "@/components/ui/card";
-import { NeuralNetwork } from "@/components/NeuralNetwork";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Loader } from "lucide-react";
@@ -54,16 +53,12 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-background text-foreground relative overflow-hidden">
-      <div className="absolute inset-0 z-0">
-        <NeuralNetwork />
-      </div>
-
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-gray-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900 text-foreground">
       <div className="fixed top-4 right-4 z-50">
         <ThemeSwitcher />
       </div>
 
-      <Card className="w-full max-w-4xl mx-auto p-6 sm:p-8 animate-fade-in glass relative z-10 
+      <Card className="w-full max-w-4xl mx-auto p-6 sm:p-8 animate-fade-in glass relative
                       bg-background/80 backdrop-blur-xl border-primary/20 hover:border-primary/40
                       transition-all duration-300">
         <div className="space-y-6 sm:space-y-8">
