@@ -6,7 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { RememberMeCheckbox } from "./RememberMeCheckbox";
-import { ForgotPasswordButton } from "./ForgotPasswordButton";
+import { ForgotPasswordDialog } from "./ForgotPasswordDialog";
 import { SubmitButton } from "./SubmitButton";
 
 interface LoginFormProps {
@@ -112,31 +112,6 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
     }
   };
 
-  const handleForgotPassword = async () => {
-    if (!email) {
-      setError("Please enter your email address first");
-      return;
-    }
-
-    try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
-      });
-      
-      if (error) {
-        setError(error.message);
-      } else {
-        toast({
-          title: "Password Reset Link Sent",
-          description: "Please check your email for further instructions",
-        });
-      }
-    } catch (error) {
-      console.error('Password reset error:', error);
-      setError("Failed to send password reset email");
-    }
-  };
-
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {error && (
@@ -176,10 +151,7 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
           onCheckedChange={(checked) => setRememberMe(checked)}
           disabled={loading}
         />
-        <ForgotPasswordButton
-          onClick={handleForgotPassword}
-          disabled={loading}
-        />
+        <ForgotPasswordDialog defaultEmail={email} />
       </div>
       <SubmitButton loading={loading} />
     </form>
