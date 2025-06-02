@@ -87,13 +87,20 @@ export const ProjectTracking = () => {
         validProjects.map(async (projectMember) => {
           const { data: sites } = await supabase
             .from('construction_sites')
-            .select('id, site_name as name, location')
+            .select('id, site_name, location')
             .eq('project_id', projectMember.project_id);
+
+          // Map site_name to name to match the interface
+          const mappedSites = (sites || []).map(site => ({
+            id: site.id,
+            name: site.site_name,
+            location: site.location
+          }));
 
           return {
             ...projectMember.projects,
             role: projectMember.role,
-            sites: sites || [],
+            sites: mappedSites,
           };
         })
       );
