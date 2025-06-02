@@ -9,113 +9,113 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
+import { Radio, Send } from "lucide-react";
+import { TelecomSiteSelector } from "./TelecomSiteSelector";
 
-const telecomReportSchema = z.object({
-  site_id: z.string().optional(),
-  report_category: z.enum(["power", "customer_complaint", "security", "uncategorized", "general"]),
-  signal_strength: z.number().optional(),
-  network_status: z.string(),
-  equipment_status: z.string(),
+const reportSchema = z.object({
+  site_id: z.string().min(1, "Site selection is required"),
+  report_type: z.enum(["maintenance", "inspection", "incident", "performance", "power", "battery"]),
+  signal_strength: z.string().optional(),
+  network_status: z.enum(["operational", "degraded", "down", "maintenance"]),
+  equipment_status: z.enum(["good", "fair", "poor", "needs_repair", "out_of_service"]),
   issues_reported: z.string().optional(),
   maintenance_required: z.boolean().default(false),
   recommendations: z.string().optional(),
-  priority_level: z.enum(["low", "normal", "high", "critical"]).default("normal"),
-  
-  // Power category fields
-  generator_runtime: z.number().optional(),
-  diesel_level: z.number().optional(),
-  power_status: z.string().optional(),
-  
-  // Customer complaint fields
-  customer_complaint_details: z.string().optional(),
-  
-  // Security fields
-  security_incident_type: z.string().optional(),
-  security_details: z.string().optional(),
-  
-  // Uncategorized fields
-  uncategorized_type: z.string().optional(),
+  power_reading: z.string().optional(),
+  battery_status: z.string().optional(),
+  diesel_level: z.string().optional(),
+  generator_runtime: z.string().optional(),
+  comments: z.string().optional(),
 });
 
-type TelecomReportFormData = z.infer<typeof telecomReportSchema>;
+type ReportFormData = z.infer<typeof reportSchema>;
 
-interface TelecomReportFormProps {
-  siteId?: string;
-  onSuccess?: () => void;
-}
-
-export const TelecomReportForm = ({ siteId, onSuccess }: TelecomReportFormProps) => {
+export const TelecomReportForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
-  const { user } = useAuth();
 
-  const form = useForm<TelecomReportFormData>({
-    resolver: zodResolver(telecomReportSchema),
+  const form = useForm<ReportFormData>({
+    resolver: zodResolver(reportSchema),
     defaultValues: {
-      site_id: siteId || '',
-      report_category: "general",
-      network_status: '',
-      equipment_status: '',
+      site_id: "",
+      report_type: "maintenance",
+      network_status: "operational",
+      equipment_status: "good",
       maintenance_required: false,
-      priority_level: "normal",
     },
   });
 
-  const watchedCategory = form.watch("report_category");
-
-  const onSubmit = async (data: TelecomReportFormData) => {
-    if (!user) {
-      toast({
-        title: "Error",
-        description: "You must be logged in to submit a report",
-        variant: "destructive",
-      });
-      return;
-    }
-
+  const onSubmit = async (data: ReportFormData) => {
     setIsSubmitting(true);
     try {
-      const { error } = await supabase
-        .from('telecom_reports')
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      console.log('Submitting telecom report:', data);
+
+      // Create CT Power Report entry
+      const { error: powerReportError } = await supabase
+        .from('ct_power_reports')
         .insert({
-          site_id: data.site_id || null,
-          reporter_id: user.id,
-          report_date: new Date().toISOString().split('T')[0],
-          report_category: data.report_category,
-          signal_strength: data.signal_strength,
-          network_status: data.network_status,
-          equipment_status: data.equipment_status,
-          issues_reported: data.issues_reported,
-          maintenance_required: data.maintenance_required,
-          recommendations: data.recommendations,
-          priority_level: data.priority_level,
-          generator_runtime: data.generator_runtime,
-          diesel_level: data.diesel_level,
-          power_status: data.power_status,
-          customer_complaint_details: data.customer_complaint_details,
-          security_incident_type: data.security_incident_type,
-          security_details: data.security_details,
-          uncategorized_type: data.uncategorized_type,
+          site_id: data.site_id,
+          report_datetime: new Date().toISOString(),
+          power_reading: data.power_reading ? parseFloat(data.power_reading) : null,
+          battery_status: data.battery_status,
+          diesel_level: data.diesel_level ? parseFloat(data.diesel_level) : null,
+          generator_runtime: data.generator_runtime ? parseFloat(data.generator_runtime) : null,
+          comments: data.comments,
+          status: data.network_status,
+          created_by: user.id,
         });
 
-      if (error) throw error;
+      if (powerReportError) {
+        console.error('Error creating power report:', powerReportError);
+        throw powerReportError;
+      }
+
+      // Create Site Report entry
+      const { error: siteReportError } = await supabase
+        .from('site_reports')
+        .insert({
+          site_id: data.site_id,
+          report_type: data.report_type,
+          title: `${data.report_type} Report - ${new Date().toLocaleDateString()}`,
+          description: data.comments || `${data.report_type} report for telecom site`,
+          data: {
+            signal_strength: data.signal_strength,
+            network_status: data.network_status,
+            equipment_status: data.equipment_status,
+            power_reading: data.power_reading,
+            battery_status: data.battery_status,
+            diesel_level: data.diesel_level,
+            generator_runtime: data.generator_runtime,
+            maintenance_required: data.maintenance_required,
+          },
+          reported_by: user.id,
+          report_date: new Date().toISOString(),
+          status: 'submitted',
+        });
+
+      if (siteReportError) {
+        console.error('Error creating site report:', siteReportError);
+        throw siteReportError;
+      }
+
+      console.log('Telecom report submitted successfully');
 
       toast({
-        title: "Success",
-        description: "Telecom report submitted successfully",
+        title: "Report Submitted",
+        description: "Your telecom site report has been submitted successfully",
       });
 
       form.reset();
-      onSuccess?.();
     } catch (error) {
-      console.error('Error creating telecom report:', error);
+      console.error('Error submitting report:', error);
       toast({
         title: "Error",
-        description: "Failed to submit telecom report",
+        description: `Failed to submit report: ${error.message}`,
         variant: "destructive",
       });
     } finally {
@@ -124,46 +124,53 @@ export const TelecomReportForm = ({ siteId, onSuccess }: TelecomReportFormProps)
   };
 
   return (
-    <Card>
+    <Card className="bg-black/10 dark:bg-white/5 backdrop-blur-lg border-none">
       <CardHeader>
-        <CardTitle>Telecom Site Report</CardTitle>
+        <CardTitle className="flex items-center gap-2 text-lg font-medium">
+          <Radio className="h-5 w-5 text-primary" />
+          Telecom Site Report
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <FormField
+              control={form.control}
+              name="site_id"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Select Site *</FormLabel>
+                  <FormControl>
+                    <TelecomSiteSelector
+                      selectedSiteId={field.value}
+                      onSiteSelect={field.onChange}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
-                name="site_id"
+                name="report_type"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Site ID</FormLabel>
-                    <FormControl>
-                      <Input {...field} placeholder="Enter Site ID" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="report_category"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Report Category</FormLabel>
+                    <FormLabel>Report Type</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select report category" />
+                        <SelectTrigger className="rounded-[30px]">
+                          <SelectValue placeholder="Select report type" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="general">General</SelectItem>
+                        <SelectItem value="maintenance">Maintenance</SelectItem>
+                        <SelectItem value="inspection">Inspection</SelectItem>
+                        <SelectItem value="incident">Incident</SelectItem>
+                        <SelectItem value="performance">Performance</SelectItem>
                         <SelectItem value="power">Power</SelectItem>
-                        <SelectItem value="customer_complaint">Customer Complaint</SelectItem>
-                        <SelectItem value="security">Security</SelectItem>
-                        <SelectItem value="uncategorized">Uncategorized</SelectItem>
+                        <SelectItem value="battery">Battery</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -173,21 +180,21 @@ export const TelecomReportForm = ({ siteId, onSuccess }: TelecomReportFormProps)
 
               <FormField
                 control={form.control}
-                name="priority_level"
+                name="network_status"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Priority Level</FormLabel>
+                    <FormLabel>Network Status</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select priority" />
+                        <SelectTrigger className="rounded-[30px]">
+                          <SelectValue placeholder="Select network status" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="low">Low</SelectItem>
-                        <SelectItem value="normal">Normal</SelectItem>
-                        <SelectItem value="high">High</SelectItem>
-                        <SelectItem value="critical">Critical</SelectItem>
+                        <SelectItem value="operational">Operational</SelectItem>
+                        <SelectItem value="degraded">Degraded</SelectItem>
+                        <SelectItem value="down">Down</SelectItem>
+                        <SelectItem value="maintenance">Maintenance</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -196,236 +203,27 @@ export const TelecomReportForm = ({ siteId, onSuccess }: TelecomReportFormProps)
               />
             </div>
 
-            <Tabs value={watchedCategory} className="w-full">
-              <TabsList className="grid w-full grid-cols-5">
-                <TabsTrigger value="general">General</TabsTrigger>
-                <TabsTrigger value="power">Power</TabsTrigger>
-                <TabsTrigger value="customer_complaint">Customer</TabsTrigger>
-                <TabsTrigger value="security">Security</TabsTrigger>
-                <TabsTrigger value="uncategorized">Other</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="general" className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="signal_strength"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Signal Strength (dBm)</FormLabel>
-                        <FormControl>
-                          <Input 
-                            type="number" 
-                            {...field} 
-                            onChange={(e) => field.onChange(parseFloat(e.target.value) || undefined)}
-                            placeholder="e.g. -75" 
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="network_status"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Network Status</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select network status" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="excellent">Excellent</SelectItem>
-                            <SelectItem value="good">Good</SelectItem>
-                            <SelectItem value="average">Average</SelectItem>
-                            <SelectItem value="poor">Poor</SelectItem>
-                            <SelectItem value="no_signal">No Signal</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <FormField
-                  control={form.control}
-                  name="equipment_status"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Equipment Status</FormLabel>
-                      <FormControl>
-                        <Textarea {...field} placeholder="Describe equipment condition and status" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </TabsContent>
-
-              <TabsContent value="power" className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="generator_runtime"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Generator Runtime (hours)</FormLabel>
-                        <FormControl>
-                          <Input 
-                            type="number" 
-                            {...field} 
-                            onChange={(e) => field.onChange(parseFloat(e.target.value) || undefined)}
-                            placeholder="Enter runtime hours" 
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="diesel_level"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Diesel Level (%)</FormLabel>
-                        <FormControl>
-                          <Input 
-                            type="number" 
-                            {...field} 
-                            onChange={(e) => field.onChange(parseFloat(e.target.value) || undefined)}
-                            placeholder="Enter diesel level percentage" 
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <FormField
-                  control={form.control}
-                  name="power_status"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Power Status</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value || ''}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select power status" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="grid_power">Grid Power</SelectItem>
-                          <SelectItem value="generator_power">Generator Power</SelectItem>
-                          <SelectItem value="battery_backup">Battery Backup</SelectItem>
-                          <SelectItem value="no_power">No Power</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </TabsContent>
-
-              <TabsContent value="customer_complaint" className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="customer_complaint_details"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Customer Complaint Details</FormLabel>
-                      <FormControl>
-                        <Textarea 
-                          {...field} 
-                          placeholder="Describe the customer complaint in detail" 
-                          rows={6}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </TabsContent>
-
-              <TabsContent value="security" className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="security_incident_type"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Security Incident Type</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value || ''}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select incident type" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="theft">Theft</SelectItem>
-                          <SelectItem value="vandalism">Vandalism</SelectItem>
-                          <SelectItem value="unauthorized_access">Unauthorized Access</SelectItem>
-                          <SelectItem value="equipment_damage">Equipment Damage</SelectItem>
-                          <SelectItem value="suspicious_activity">Suspicious Activity</SelectItem>
-                          <SelectItem value="other">Other</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="security_details"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Security Details</FormLabel>
-                      <FormControl>
-                        <Textarea 
-                          {...field} 
-                          placeholder="Provide detailed information about the security incident" 
-                          rows={6}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </TabsContent>
-
-              <TabsContent value="uncategorized" className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="uncategorized_type"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Report Type</FormLabel>
-                      <FormControl>
-                        <Input {...field} placeholder="Specify the type of report" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </TabsContent>
-            </Tabs>
-
-            <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
-                name="issues_reported"
+                name="equipment_status"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Issues Reported</FormLabel>
-                    <FormControl>
-                      <Textarea {...field} placeholder="Describe any issues encountered" />
-                    </FormControl>
+                    <FormLabel>Equipment Status</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger className="rounded-[30px]">
+                          <SelectValue placeholder="Select equipment status" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="good">Good</SelectItem>
+                        <SelectItem value="fair">Fair</SelectItem>
+                        <SelectItem value="poor">Poor</SelectItem>
+                        <SelectItem value="needs_repair">Needs Repair</SelectItem>
+                        <SelectItem value="out_of_service">Out of Service</SelectItem>
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -433,12 +231,12 @@ export const TelecomReportForm = ({ siteId, onSuccess }: TelecomReportFormProps)
 
               <FormField
                 control={form.control}
-                name="recommendations"
+                name="signal_strength"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Recommendations</FormLabel>
+                    <FormLabel>Signal Strength (dBm)</FormLabel>
                     <FormControl>
-                      <Textarea {...field} placeholder="Provide recommendations for improvement" />
+                      <Input {...field} className="rounded-[30px]" placeholder="e.g. -75" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -446,8 +244,115 @@ export const TelecomReportForm = ({ siteId, onSuccess }: TelecomReportFormProps)
               />
             </div>
 
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
-              {isSubmitting ? "Submitting Report..." : "Submit Telecom Report"}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="power_reading"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Power Reading (kW)</FormLabel>
+                    <FormControl>
+                      <Input {...field} className="rounded-[30px]" placeholder="e.g. 15.5" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="battery_status"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Battery Status</FormLabel>
+                    <FormControl>
+                      <Input {...field} className="rounded-[30px]" placeholder="e.g. Good, 85%" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="diesel_level"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Diesel Level (%)</FormLabel>
+                    <FormControl>
+                      <Input {...field} className="rounded-[30px]" placeholder="e.g. 75" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="generator_runtime"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Generator Runtime (hours)</FormLabel>
+                    <FormControl>
+                      <Input {...field} className="rounded-[30px]" placeholder="e.g. 2.5" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <FormField
+              control={form.control}
+              name="issues_reported"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Issues Reported</FormLabel>
+                  <FormControl>
+                    <Textarea {...field} className="rounded-[30px]" placeholder="Describe any issues found..." />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="recommendations"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Recommendations</FormLabel>
+                  <FormControl>
+                    <Textarea {...field} className="rounded-[30px]" placeholder="Provide recommendations..." />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="comments"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Additional Comments</FormLabel>
+                  <FormControl>
+                    <Textarea {...field} className="rounded-[30px]" placeholder="Any additional comments..." />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <Button 
+              type="submit" 
+              className="w-full rounded-[30px]" 
+              disabled={isSubmitting}
+            >
+              <Send className="h-4 w-4 mr-2" />
+              {isSubmitting ? "Submitting Report..." : "Submit Report"}
             </Button>
           </form>
         </Form>

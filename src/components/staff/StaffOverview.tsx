@@ -2,11 +2,13 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Clock, Calendar as CalendarIcon, CheckCircle, Bell } from "lucide-react";
+import { Clock, Calendar as CalendarIcon, CheckCircle, Bell, Target, Radio } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { TaskList } from "@/components/staff/TaskList";
 import { LeaveApplication } from "@/components/staff/LeaveApplication";
 import { ProfileSection } from "@/components/staff/ProfileSection";
+import { ProjectTracking } from "@/components/staff/ProjectTracking";
+import { TelecomReports } from "@/components/staff/TelecomReports";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -14,7 +16,7 @@ export const StaffOverview = () => {
   const [date, setDate] = useState<Date | undefined>(new Date());
   const { toast } = useToast();
 
-  // Fetch real data from Supabase
+  // Fetch real data from Supabase instead of using mock data
   const { data: statsData } = useQuery({
     queryKey: ['staff-stats'],
     queryFn: async () => {
@@ -40,7 +42,7 @@ export const StaffOverview = () => {
         .eq('status', 'completed')
         .gte('updated_at', weekStart.toISOString());
 
-      // Get leave balance
+      // Get leave balance (assuming 25 days annual leave minus used days)
       const { data: leaveRequests } = await supabase
         .from('leave_requests')
         .select('*')
@@ -132,19 +134,53 @@ export const StaffOverview = () => {
         </div>
       </div>
 
-      <Tabs defaultValue="tasks" className="space-y-4">
-        <TabsList className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-          <TabsTrigger value="tasks">My Tasks</TabsTrigger>
-          <TabsTrigger value="leave">Leave Application</TabsTrigger>
+      <Tabs defaultValue="overview" className="space-y-4">
+        <TabsList className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="projects">Projects</TabsTrigger>
+          <TabsTrigger value="tasks">Tasks</TabsTrigger>
+          <TabsTrigger value="telecom">Telecom</TabsTrigger>
           <TabsTrigger value="profile">Profile</TabsTrigger>
         </TabsList>
 
         <div className="mt-6 bg-black/5 dark:bg-black/20 rounded-3xl p-4 md:p-6">
+          <TabsContent value="overview" className="space-y-4 mt-0">
+            <div className="grid gap-6 md:grid-cols-2">
+              <Card className="border-none shadow-lg">
+                <CardHeader>
+                  <CardTitle className="text-xl md:text-2xl flex items-center gap-2">
+                    <Target className="h-5 w-5" />
+                    Current Projects
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ProjectTracking />
+                </CardContent>
+              </Card>
+
+              <Card className="border-none shadow-lg">
+                <CardHeader>
+                  <CardTitle className="text-xl md:text-2xl flex items-center gap-2">
+                    <CheckCircle className="h-5 w-5" />
+                    Recent Tasks
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <TaskList />
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="projects" className="space-y-4 mt-0">
+            <ProjectTracking />
+          </TabsContent>
+
           <TabsContent value="tasks" className="space-y-4 mt-0">
             <Card className="border-none shadow-lg">
               <CardHeader>
                 <CardTitle className="text-xl md:text-2xl">
-                  Current Tasks
+                  My Tasks
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -153,17 +189,8 @@ export const StaffOverview = () => {
             </Card>
           </TabsContent>
 
-          <TabsContent value="leave" className="space-y-4 mt-0">
-            <LeaveApplication
-              date={date}
-              onDateSelect={setDate}
-              onLeaveRequest={() => {
-                toast({
-                  title: "Leave Request Submitted",
-                  description: `Your leave request for ${date?.toLocaleDateString()} has been submitted.`,
-                });
-              }}
-            />
+          <TabsContent value="telecom" className="space-y-4 mt-0">
+            <TelecomReports />
           </TabsContent>
 
           <TabsContent value="profile" className="space-y-4 mt-0">
