@@ -26,12 +26,12 @@ interface VehicleMaintenance {
   vehicle_id: string;
   maintenance_type: string;
   description: string | null;
-  scheduled_date: string | null;
-  completed_date: string | null;
   cost: number | null;
-  technician: string | null;
   status: string;
-  notes: string | null;
+  mileage_at_service: number | null;
+  next_service_date: string | null;
+  next_service_mileage: number | null;
+  created_by: string | null;
   vehicle?: Vehicle;
   created_at: string;
   updated_at: string;
@@ -85,12 +85,12 @@ export const useFleetOperations = () => {
             vehicle_id,
             maintenance_type,
             description,
-            scheduled_date,
-            completed_date,
             cost,
-            technician,
             status,
-            notes,
+            mileage_at_service,
+            next_service_date,
+            next_service_mileage,
+            created_by,
             created_at,
             updated_at,
             vehicle:fleet_vehicles(*)

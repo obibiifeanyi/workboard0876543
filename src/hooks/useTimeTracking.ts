@@ -9,8 +9,10 @@ interface TimeLog {
   user_id: string;
   clock_in: string;
   clock_out: string | null;
-  location_latitude: number | null;
-  location_longitude: number | null;
+  notes: string | null;
+  project_id: string | null;
+  task_id: string | null;
+  total_hours: number | null;
   created_at: string;
   updated_at: string;
 }
@@ -27,7 +29,7 @@ export const useTimeTracking = () => {
 
       const { data, error } = await supabase
         .from('time_logs')
-        .select('id, user_id, clock_in, clock_out, location_latitude, location_longitude, created_at, updated_at')
+        .select('id, user_id, clock_in, clock_out, notes, project_id, task_id, total_hours, created_at, updated_at')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
@@ -49,8 +51,7 @@ export const useTimeTracking = () => {
         .insert({
           user_id: user.id,
           clock_in: new Date().toISOString(),
-          location_latitude: latitude,
-          location_longitude: longitude,
+          notes: latitude && longitude ? `Location: ${latitude}, ${longitude}` : null,
         })
         .select()
         .single();
@@ -76,9 +77,28 @@ export const useTimeTracking = () => {
 
   const clockOutMutation = useMutation({
     mutationFn: async (timeLogId: string) => {
+      const clockOutTime = new Date().toISOString();
+      
+      // Get the existing time log to calculate total hours
+      const { data: existingLog } = await supabase
+        .from('time_logs')
+        .select('clock_in')
+        .eq('id', timeLogId)
+        .single();
+
+      let totalHours = null;
+      if (existingLog) {
+        const clockInTime = new Date(existingLog.clock_in);
+        const clockOutDate = new Date(clockOutTime);
+        totalHours = (clockOutDate.getTime() - clockInTime.getTime()) / (1000 * 60 * 60);
+      }
+
       const { data, error } = await supabase
         .from('time_logs')
-        .update({ clock_out: new Date().toISOString() })
+        .update({ 
+          clock_out: clockOutTime,
+          total_hours: totalHours
+        })
         .eq('id', timeLogId)
         .select()
         .single();

@@ -10,8 +10,10 @@ interface TimeLogWithProfile {
   user_id: string;
   clock_in: string;
   clock_out: string | null;
-  location_latitude: number | null;
-  location_longitude: number | null;
+  notes: string | null;
+  project_id: string | null;
+  task_id: string | null;
+  total_hours: number | null;
   created_at: string;
   profile: {
     full_name: string | null;
@@ -29,8 +31,10 @@ export const TimeManagement = () => {
           user_id,
           clock_in,
           clock_out,
-          location_latitude,
-          location_longitude,
+          notes,
+          project_id,
+          task_id,
+          total_hours,
           created_at,
           profile:profiles(full_name)
         `)
@@ -51,8 +55,8 @@ export const TimeManagement = () => {
     clockIn: log.clock_in,
     clockOut: log.clock_out,
     location: {
-      latitude: log.location_latitude || 0,
-      longitude: log.location_longitude || 0,
+      latitude: 0, // Default since location data is stored in notes
+      longitude: 0,
     },
   }));
 
