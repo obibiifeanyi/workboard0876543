@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -88,7 +87,7 @@ export const ProjectTracking = () => {
         validProjects.map(async (projectMember) => {
           const { data: sites } = await supabase
             .from('construction_sites')
-            .select('id, site_name, location')
+            .select('id, site_name as name, location')
             .eq('project_id', projectMember.project_id);
 
           return {
