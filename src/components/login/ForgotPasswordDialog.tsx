@@ -34,7 +34,7 @@ export const ForgotPasswordDialog = ({ defaultEmail = "" }: ForgotPasswordDialog
 
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-        redirectTo: `${window.location.origin}/reset-password`,
+        redirectTo: `https://ai.ctnigeria.com/reset-password`,
       });
       
       if (error) {
