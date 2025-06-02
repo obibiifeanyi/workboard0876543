@@ -1,13 +1,28 @@
+
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { Loader } from "lucide-react";
 
 interface SignupFormProps {
-  onSignup: (email: string, password: string, fullName: string, role: string, accountType: string, phone?: string) => Promise<void>;
+  onSignup: (
+    email: string, 
+    password: string, 
+    profileData: {
+      fullName: string;
+      role: string;
+      accountType: string;
+      phone?: string;
+      position?: string;
+      department?: string;
+      location?: string;
+      bio?: string;
+    }
+  ) => Promise<void>;
   error: string | null;
 }
 
@@ -17,6 +32,10 @@ export const SignupForm = ({ onSignup, error }: SignupFormProps) => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
+  const [position, setPosition] = useState("");
+  const [department, setDepartment] = useState("");
+  const [location, setLocation] = useState("");
+  const [bio, setBio] = useState("");
   const [role, setRole] = useState("staff");
   const [loading, setLoading] = useState(false);
   const [formErrors, setFormErrors] = useState<string[]>([]);
@@ -54,8 +73,16 @@ export const SignupForm = ({ onSignup, error }: SignupFormProps) => {
 
     setLoading(true);
     try {
-      // Account type automatically matches the selected role
-      await onSignup(email, password, fullName, role, role, phone || undefined);
+      await onSignup(email, password, {
+        fullName,
+        role,
+        accountType: role, // Account type matches the selected role
+        phone: phone || undefined,
+        position: position || undefined,
+        department: department || undefined,
+        location: location || undefined,
+        bio: bio || undefined,
+      });
     } finally {
       setLoading(false);
     }
@@ -97,94 +124,163 @@ export const SignupForm = ({ onSignup, error }: SignupFormProps) => {
         </Alert>
       )}
 
-      <div className="space-y-2 text-left">
-        <Label htmlFor="fullName">Full Name *</Label>
-        <Input
-          id="fullName"
-          type="text"
-          placeholder="Enter your full name"
-          value={fullName}
-          onChange={(e) => setFullName(e.target.value)}
-          required
-          className="bg-black/5 dark:bg-white/5 border-none placeholder:text-muted-foreground/50"
-          disabled={loading}
-        />
+      {/* Required Fields Section */}
+      <div className="space-y-4">
+        <h3 className="text-sm font-medium text-muted-foreground">Required Information</h3>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2 text-left">
+            <Label htmlFor="fullName">Full Name *</Label>
+            <Input
+              id="fullName"
+              type="text"
+              placeholder="Enter your full name"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              required
+              className="bg-black/5 dark:bg-white/5 border-none placeholder:text-muted-foreground/50"
+              disabled={loading}
+            />
+          </div>
+
+          <div className="space-y-2 text-left">
+            <Label htmlFor="email">Email *</Label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="bg-black/5 dark:bg-white/5 border-none placeholder:text-muted-foreground/50"
+              disabled={loading}
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2 text-left">
+            <Label htmlFor="password">Password *</Label>
+            <Input
+              id="password"
+              type="password"
+              placeholder="Enter your password (min 6 characters)"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              minLength={6}
+              className="bg-black/5 dark:bg-white/5 border-none placeholder:text-muted-foreground/50"
+              disabled={loading}
+            />
+          </div>
+
+          <div className="space-y-2 text-left">
+            <Label htmlFor="confirmPassword">Confirm Password *</Label>
+            <Input
+              id="confirmPassword"
+              type="password"
+              placeholder="Confirm your password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+              className="bg-black/5 dark:bg-white/5 border-none placeholder:text-muted-foreground/50"
+              disabled={loading}
+            />
+          </div>
+        </div>
+
+        <div className="space-y-2 text-left">
+          <Label htmlFor="role">Role *</Label>
+          <Select value={role} onValueChange={setRole} disabled={loading}>
+            <SelectTrigger className="bg-black/5 dark:bg-white/5 border-none">
+              <SelectValue placeholder="Select your role" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="staff">Staff</SelectItem>
+              <SelectItem value="manager">Manager</SelectItem>
+              <SelectItem value="admin">Admin</SelectItem>
+              <SelectItem value="accountant">Accountant</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
-      <div className="space-y-2 text-left">
-        <Label htmlFor="email">Email *</Label>
-        <Input
-          id="email"
-          type="email"
-          placeholder="Enter your email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          className="bg-black/5 dark:bg-white/5 border-none placeholder:text-muted-foreground/50"
-          disabled={loading}
-        />
-      </div>
+      {/* Optional Fields Section */}
+      <div className="space-y-4 pt-4 border-t border-border/50">
+        <h3 className="text-sm font-medium text-muted-foreground">Additional Information (Optional)</h3>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2 text-left">
+            <Label htmlFor="phone">Phone Number</Label>
+            <Input
+              id="phone"
+              type="tel"
+              placeholder="Enter your phone number"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              className="bg-black/5 dark:bg-white/5 border-none placeholder:text-muted-foreground/50"
+              disabled={loading}
+            />
+          </div>
 
-      <div className="space-y-2 text-left">
-        <Label htmlFor="phone">Phone Number</Label>
-        <Input
-          id="phone"
-          type="tel"
-          placeholder="Enter your phone number"
-          value={phone}
-          onChange={(e) => setPhone(e.target.value)}
-          className="bg-black/5 dark:bg-white/5 border-none placeholder:text-muted-foreground/50"
-          disabled={loading}
-        />
-      </div>
+          <div className="space-y-2 text-left">
+            <Label htmlFor="position">Position</Label>
+            <Input
+              id="position"
+              type="text"
+              placeholder="Your job title/position"
+              value={position}
+              onChange={(e) => setPosition(e.target.value)}
+              className="bg-black/5 dark:bg-white/5 border-none placeholder:text-muted-foreground/50"
+              disabled={loading}
+            />
+          </div>
+        </div>
 
-      <div className="space-y-2 text-left">
-        <Label htmlFor="role">Role *</Label>
-        <Select value={role} onValueChange={setRole} disabled={loading}>
-          <SelectTrigger className="bg-black/5 dark:bg-white/5 border-none">
-            <SelectValue placeholder="Select your role" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="staff">Staff</SelectItem>
-            <SelectItem value="manager">Manager</SelectItem>
-            <SelectItem value="admin">Admin</SelectItem>
-            <SelectItem value="accountant">Accountant</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2 text-left">
+            <Label htmlFor="department">Department</Label>
+            <Input
+              id="department"
+              type="text"
+              placeholder="Your department"
+              value={department}
+              onChange={(e) => setDepartment(e.target.value)}
+              className="bg-black/5 dark:bg-white/5 border-none placeholder:text-muted-foreground/50"
+              disabled={loading}
+            />
+          </div>
 
-      <div className="space-y-2 text-left">
-        <Label htmlFor="password">Password *</Label>
-        <Input
-          id="password"
-          type="password"
-          placeholder="Enter your password (min 6 characters)"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          minLength={6}
-          className="bg-black/5 dark:bg-white/5 border-none placeholder:text-muted-foreground/50"
-          disabled={loading}
-        />
-      </div>
+          <div className="space-y-2 text-left">
+            <Label htmlFor="location">Location</Label>
+            <Input
+              id="location"
+              type="text"
+              placeholder="Your work location"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              className="bg-black/5 dark:bg-white/5 border-none placeholder:text-muted-foreground/50"
+              disabled={loading}
+            />
+          </div>
+        </div>
 
-      <div className="space-y-2 text-left">
-        <Label htmlFor="confirmPassword">Confirm Password *</Label>
-        <Input
-          id="confirmPassword"
-          type="password"
-          placeholder="Confirm your password"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          required
-          className="bg-black/5 dark:bg-white/5 border-none placeholder:text-muted-foreground/50"
-          disabled={loading}
-        />
+        <div className="space-y-2 text-left">
+          <Label htmlFor="bio">Bio</Label>
+          <Textarea
+            id="bio"
+            placeholder="Tell us about yourself (optional)"
+            value={bio}
+            onChange={(e) => setBio(e.target.value)}
+            className="bg-black/5 dark:bg-white/5 border-none placeholder:text-muted-foreground/50 min-h-[80px]"
+            disabled={loading}
+          />
+        </div>
       </div>
 
       <Button 
         type="submit" 
-        className="w-full" 
+        className="w-full mt-6" 
         disabled={loading || !email || !password || !fullName}
       >
         {loading ? (

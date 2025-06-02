@@ -16,25 +16,35 @@ const Signup = () => {
   const handleSignup = async (
     email: string,
     password: string,
-    fullName: string,
-    role: string,
-    accountType: string,
-    phone?: string
+    profileData: {
+      fullName: string;
+      role: string;
+      accountType: string;
+      phone?: string;
+      position?: string;
+      department?: string;
+      location?: string;
+      bio?: string;
+    }
   ) => {
     setError(null);
     
     try {
-      console.log('Starting signup process with:', { email, fullName, role, accountType, phone });
+      console.log('Starting signup process with:', { email, profileData });
       
       const { data, error: signupError } = await supabase.auth.signUp({
         email: email.trim(),
         password: password.trim(),
         options: {
           data: {
-            full_name: fullName.trim(),
-            role: role,
-            account_type: accountType,
-            phone: phone?.trim() || null,
+            full_name: profileData.fullName.trim(),
+            role: profileData.role,
+            account_type: profileData.accountType,
+            phone: profileData.phone?.trim() || null,
+            position: profileData.position?.trim() || null,
+            department: profileData.department?.trim() || null,
+            location: profileData.location?.trim() || null,
+            bio: profileData.bio?.trim() || null,
           },
         },
       });
@@ -67,8 +77,8 @@ const Signup = () => {
         console.log('User created successfully:', data.user.id);
         
         // Store role and account type in localStorage for immediate use
-        localStorage.setItem('userRole', role);
-        localStorage.setItem('accountType', accountType);
+        localStorage.setItem('userRole', profileData.role);
+        localStorage.setItem('accountType', profileData.accountType);
         
         toast({
           title: "Account Created Successfully!",
@@ -76,10 +86,10 @@ const Signup = () => {
         });
         
         // Redirect based on role immediately after signup
-        if (accountType === 'accountant') {
+        if (profileData.accountType === 'accountant') {
           navigate('/accountant');
         } else {
-          switch (role) {
+          switch (profileData.role) {
             case 'admin':
               navigate('/admin');
               break;
@@ -116,7 +126,7 @@ const Signup = () => {
           <ThemeSwitcher />
         </div>
         
-        <div className="w-full max-w-[450px] glass-card relative z-10 
+        <div className="w-full max-w-[600px] glass-card relative z-10 
           border border-white/10 dark:border-white/5 
           shadow-2xl hover:shadow-primary/5 transition-all duration-300
           bg-white/10 dark:bg-black/20 backdrop-blur-xl rounded-xl p-6">

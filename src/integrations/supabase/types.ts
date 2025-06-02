@@ -1912,18 +1912,25 @@ export type Database = {
           avatar_url: string | null
           bio: string | null
           created_at: string
+          date_of_birth: string | null
           department: string | null
           department_id: string | null
           email: string | null
+          emergency_contact_name: string | null
+          emergency_contact_phone: string | null
+          employee_id: string | null
           full_name: string | null
+          hire_date: string | null
           id: string
           location: string | null
           new_id: string | null
           phone: string | null
           phone_number: string | null
+          phone_verified: boolean | null
           position: string | null
           role: string | null
           role_id: string | null
+          salary: number | null
           settings: Json | null
           status: string | null
           updated_at: string
@@ -1933,18 +1940,25 @@ export type Database = {
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
+          date_of_birth?: string | null
           department?: string | null
           department_id?: string | null
           email?: string | null
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          employee_id?: string | null
           full_name?: string | null
+          hire_date?: string | null
           id: string
           location?: string | null
           new_id?: string | null
           phone?: string | null
           phone_number?: string | null
+          phone_verified?: boolean | null
           position?: string | null
           role?: string | null
           role_id?: string | null
+          salary?: number | null
           settings?: Json | null
           status?: string | null
           updated_at?: string
@@ -1954,18 +1968,25 @@ export type Database = {
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
+          date_of_birth?: string | null
           department?: string | null
           department_id?: string | null
           email?: string | null
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          employee_id?: string | null
           full_name?: string | null
+          hire_date?: string | null
           id?: string
           location?: string | null
           new_id?: string | null
           phone?: string | null
           phone_number?: string | null
+          phone_verified?: boolean | null
           position?: string | null
           role?: string | null
           role_id?: string | null
+          salary?: number | null
           settings?: Json | null
           status?: string | null
           updated_at?: string
