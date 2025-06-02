@@ -31,7 +31,7 @@ export const useTimeTracking = () => {
 
       const { data, error } = await supabase
         .from('time_logs')
-        .select('id, user_id, clock_in, clock_out, notes, project_id, task_id, total_hours, location_latitude, location_longitude, created_at, updated_at')
+        .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
@@ -48,15 +48,19 @@ export const useTimeTracking = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
+      const insertData: any = {
+        user_id: user.id,
+        clock_in: new Date().toISOString(),
+        notes: latitude && longitude ? `Location: ${latitude}, ${longitude}` : null,
+      };
+
+      // Only add location columns if they exist in the database
+      if (latitude !== undefined) insertData.location_latitude = latitude;
+      if (longitude !== undefined) insertData.location_longitude = longitude;
+
       const { data, error } = await supabase
         .from('time_logs')
-        .insert({
-          user_id: user.id,
-          clock_in: new Date().toISOString(),
-          location_latitude: latitude || null,
-          location_longitude: longitude || null,
-          notes: latitude && longitude ? `Location: ${latitude}, ${longitude}` : null,
-        })
+        .insert(insertData)
         .select()
         .single();
 

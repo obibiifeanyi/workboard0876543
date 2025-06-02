@@ -14,8 +14,8 @@ interface TimeLogWithProfile {
   project_id: string | null;
   task_id: string | null;
   total_hours: number | null;
-  location_latitude: number | null;
-  location_longitude: number | null;
+  location_latitude?: number | null;
+  location_longitude?: number | null;
   created_at: string;
   profile: {
     full_name: string | null;
@@ -29,17 +29,7 @@ export const TimeManagement = () => {
       const { data, error } = await supabase
         .from('time_logs')
         .select(`
-          id,
-          user_id,
-          clock_in,
-          clock_out,
-          notes,
-          project_id,
-          task_id,
-          total_hours,
-          location_latitude,
-          location_longitude,
-          created_at,
+          *,
           profile:profiles(full_name)
         `)
         .order('created_at', { ascending: false })

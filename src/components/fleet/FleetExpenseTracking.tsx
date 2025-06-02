@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Download, TrendingUp, TrendingDown } from "lucide-react";
@@ -24,7 +25,7 @@ export const FleetExpenseTracking = () => {
     const data = [
       ...maintenanceRecords.map(record => ({
         type: 'Maintenance',
-        date: record.scheduled_date,
+        date: record.scheduled_date || record.created_at,
         description: record.maintenance_type,
         cost: record.cost,
         vehicle: record.vehicle?.vehicle_number,
@@ -118,7 +119,7 @@ export const FleetExpenseTracking = () => {
                   <div>
                     <p className="font-medium">{record.maintenance_type}</p>
                     <p className="text-sm text-muted-foreground">
-                      {record.vehicle?.vehicle_number} - {format(new Date(record.scheduled_date), 'MMM dd, yyyy')}
+                      {record.vehicle?.vehicle_number} - {record.scheduled_date ? format(new Date(record.scheduled_date), 'MMM dd, yyyy') : 'No date'}
                     </p>
                   </div>
                   <div className="text-right">
