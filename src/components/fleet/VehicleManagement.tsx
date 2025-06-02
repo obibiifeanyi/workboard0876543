@@ -37,6 +37,7 @@ export const VehicleManagement = () => {
       fuel_type: "gasoline",
       current_mileage: 0,
       status: "active" as const,
+      assigned_driver_id: null,
     };
     
     createVehicle.mutate(newVehicle);

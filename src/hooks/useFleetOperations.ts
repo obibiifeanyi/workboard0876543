@@ -129,7 +129,7 @@ export const useFleetOperations = () => {
   };
 
   const createVehicle = useMutation({
-    mutationFn: async (vehicle: Omit<Vehicle, 'id' | 'created_at' | 'updated_at'>) => {
+    mutationFn: async (vehicle: Omit<Vehicle, 'id' | 'created_at' | 'updated_at' | 'assigned_driver'>) => {
       const { data, error } = await supabase
         .from('fleet_vehicles')
         .insert(vehicle)
