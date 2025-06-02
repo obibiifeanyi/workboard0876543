@@ -1695,8 +1695,10 @@ export type Database = {
           email_enabled: boolean | null
           id: string
           leave_notifications: boolean | null
+          meeting_notifications: boolean | null
           memo_notifications: boolean | null
           push_enabled: boolean | null
+          report_notifications: boolean | null
           task_notifications: boolean | null
           updated_at: string | null
           user_id: string | null
@@ -1707,8 +1709,10 @@ export type Database = {
           email_enabled?: boolean | null
           id?: string
           leave_notifications?: boolean | null
+          meeting_notifications?: boolean | null
           memo_notifications?: boolean | null
           push_enabled?: boolean | null
+          report_notifications?: boolean | null
           task_notifications?: boolean | null
           updated_at?: string | null
           user_id?: string | null
@@ -1719,8 +1723,10 @@ export type Database = {
           email_enabled?: boolean | null
           id?: string
           leave_notifications?: boolean | null
+          meeting_notifications?: boolean | null
           memo_notifications?: boolean | null
           push_enabled?: boolean | null
+          report_notifications?: boolean | null
           task_notifications?: boolean | null
           updated_at?: string | null
           user_id?: string | null

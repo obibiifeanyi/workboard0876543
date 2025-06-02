@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Bell, Mail, MessageSquare, Save } from "lucide-react";
+import { Bell, Mail, MessageSquare, Save, Calendar, FileText } from "lucide-react";
 
 export const NotificationSettings = () => {
   const { toast } = useToast();
@@ -18,7 +18,9 @@ export const NotificationSettings = () => {
     memo_notifications: true,
     task_notifications: true,
     leave_notifications: true,
-    document_notifications: true
+    document_notifications: true,
+    meeting_notifications: true,
+    report_notifications: true
   });
 
   const { data: preferences, isLoading } = useQuery({
@@ -46,7 +48,9 @@ export const NotificationSettings = () => {
         memo_notifications: preferences.memo_notifications ?? true,
         task_notifications: preferences.task_notifications ?? true,
         leave_notifications: preferences.leave_notifications ?? true,
-        document_notifications: preferences.document_notifications ?? true
+        document_notifications: preferences.document_notifications ?? true,
+        meeting_notifications: preferences.meeting_notifications ?? true,
+        report_notifications: preferences.report_notifications ?? true
       });
     }
   }, [preferences]);
@@ -200,6 +204,42 @@ export const NotificationSettings = () => {
               checked={settings.document_notifications}
               onCheckedChange={(checked) => 
                 setSettings(prev => ({ ...prev, document_notifications: checked }))
+              }
+            />
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <Label className="flex items-center gap-2">
+                <Calendar className="h-4 w-4" />
+                Meeting Notifications
+              </Label>
+              <p className="text-sm text-muted-foreground">
+                Get notified about upcoming meetings and invitations
+              </p>
+            </div>
+            <Switch
+              checked={settings.meeting_notifications}
+              onCheckedChange={(checked) => 
+                setSettings(prev => ({ ...prev, meeting_notifications: checked }))
+              }
+            />
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <Label className="flex items-center gap-2">
+                <FileText className="h-4 w-4" />
+                Report Notifications
+              </Label>
+              <p className="text-sm text-muted-foreground">
+                Get notified about report submissions and approvals
+              </p>
+            </div>
+            <Switch
+              checked={settings.report_notifications}
+              onCheckedChange={(checked) => 
+                setSettings(prev => ({ ...prev, report_notifications: checked }))
               }
             />
           </div>
