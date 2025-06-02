@@ -44,10 +44,20 @@ export const CTPowerReportForm = ({ onSuccess }: CTPowerReportFormProps) => {
   const onSubmit = async (data: CTPowerReportFormData) => {
     setIsSubmitting(true);
     try {
-      const result = await ApiService.createCTPowerReport({
-        ...data,
+      // Ensure site_id is properly typed as required
+      const reportData = {
+        site_id: data.site_id, // This is guaranteed to be a string due to validation
         report_datetime: new Date().toISOString(),
-      });
+        diesel_level: data.diesel_level,
+        generator_runtime: data.generator_runtime,
+        power_reading: data.power_reading,
+        battery_status: data.battery_status,
+        comments: data.comments,
+        status: data.status,
+        report_number: data.report_number,
+      };
+
+      const result = await ApiService.createCTPowerReport(reportData);
 
       if (result.success) {
         toast({
