@@ -13,6 +13,8 @@ interface TimeLog {
   project_id: string | null;
   task_id: string | null;
   total_hours: number | null;
+  location_latitude: number | null;
+  location_longitude: number | null;
   created_at: string;
   updated_at: string;
 }
@@ -29,7 +31,7 @@ export const useTimeTracking = () => {
 
       const { data, error } = await supabase
         .from('time_logs')
-        .select('id, user_id, clock_in, clock_out, notes, project_id, task_id, total_hours, created_at, updated_at')
+        .select('id, user_id, clock_in, clock_out, notes, project_id, task_id, total_hours, location_latitude, location_longitude, created_at, updated_at')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
@@ -51,6 +53,8 @@ export const useTimeTracking = () => {
         .insert({
           user_id: user.id,
           clock_in: new Date().toISOString(),
+          location_latitude: latitude || null,
+          location_longitude: longitude || null,
           notes: latitude && longitude ? `Location: ${latitude}, ${longitude}` : null,
         })
         .select()

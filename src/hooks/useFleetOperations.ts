@@ -26,11 +26,15 @@ interface VehicleMaintenance {
   vehicle_id: string;
   maintenance_type: string;
   description: string | null;
+  scheduled_date: string;
+  completed_date: string | null;
   cost: number | null;
+  technician: string | null;
   status: string;
   mileage_at_service: number | null;
   next_service_date: string | null;
   next_service_mileage: number | null;
+  notes: string | null;
   created_by: string | null;
   vehicle?: Vehicle;
   created_at: string;
@@ -85,11 +89,15 @@ export const useFleetOperations = () => {
             vehicle_id,
             maintenance_type,
             description,
+            scheduled_date,
+            completed_date,
             cost,
+            technician,
             status,
             mileage_at_service,
             next_service_date,
             next_service_mileage,
+            notes,
             created_by,
             created_at,
             updated_at,
@@ -98,7 +106,7 @@ export const useFleetOperations = () => {
           .order('created_at', { ascending: false });
 
         if (error) {
-          console.warn('Vehicle maintenance table not found, returning empty array');
+          console.warn('Vehicle maintenance query error:', error);
           return [];
         }
         return data as VehicleMaintenance[];
