@@ -81,7 +81,18 @@ export const useFleetOperations = () => {
         const { data, error } = await supabase
           .from('vehicle_maintenance')
           .select(`
-            *,
+            id,
+            vehicle_id,
+            maintenance_type,
+            description,
+            scheduled_date,
+            completed_date,
+            cost,
+            technician,
+            status,
+            notes,
+            created_at,
+            updated_at,
             vehicle:fleet_vehicles(*)
           `)
           .order('created_at', { ascending: false });

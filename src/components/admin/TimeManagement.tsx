@@ -25,13 +25,22 @@ export const TimeManagement = () => {
       const { data, error } = await supabase
         .from('time_logs')
         .select(`
-          *,
+          id,
+          user_id,
+          clock_in,
+          clock_out,
+          location_latitude,
+          location_longitude,
+          created_at,
           profile:profiles(full_name)
         `)
         .order('created_at', { ascending: false })
         .limit(50);
 
-      if (error) throw error;
+      if (error) {
+        console.warn('Time logs query error:', error);
+        return [];
+      }
       return data as TimeLogWithProfile[];
     },
   });

@@ -27,11 +27,14 @@ export const useTimeTracking = () => {
 
       const { data, error } = await supabase
         .from('time_logs')
-        .select('*')
+        .select('id, user_id, clock_in, clock_out, location_latitude, location_longitude, created_at, updated_at')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.warn('Time logs query error:', error);
+        return [];
+      }
       return data as TimeLog[];
     },
   });
