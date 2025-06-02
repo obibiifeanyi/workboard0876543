@@ -725,37 +725,46 @@ export type Database = {
       }
       ct_power_reports: {
         Row: {
+          battery_status: string | null
           comments: string | null
           created_at: string
           created_by: string | null
           diesel_level: number
           generator_runtime: number
           id: string
+          power_reading: number | null
           report_datetime: string
+          report_number: string | null
           site_id: string
           status: string | null
           updated_at: string
         }
         Insert: {
+          battery_status?: string | null
           comments?: string | null
           created_at?: string
           created_by?: string | null
           diesel_level: number
           generator_runtime: number
           id?: string
+          power_reading?: number | null
           report_datetime: string
+          report_number?: string | null
           site_id: string
           status?: string | null
           updated_at?: string
         }
         Update: {
+          battery_status?: string | null
           comments?: string | null
           created_at?: string
           created_by?: string | null
           diesel_level?: number
           generator_runtime?: number
           id?: string
+          power_reading?: number | null
           report_datetime?: string
+          report_number?: string | null
           site_id?: string
           status?: string | null
           updated_at?: string
@@ -2634,51 +2643,92 @@ export type Database = {
       }
       telecom_reports: {
         Row: {
+          assigned_to: string | null
           created_at: string | null
+          customer_complaint_details: string | null
+          diesel_level: number | null
           equipment_status: string | null
+          generator_runtime: number | null
           id: string
           issues_reported: string | null
           maintenance_required: boolean | null
           network_status: string | null
           photos: string[] | null
+          power_status: string | null
+          priority_level: string | null
           recommendations: string | null
+          report_category: string | null
           report_date: string | null
           reporter_id: string
+          resolution_status: string | null
+          security_details: string | null
+          security_incident_type: string | null
           signal_strength: number | null
           site_id: string | null
+          uncategorized_type: string | null
           updated_at: string | null
         }
         Insert: {
+          assigned_to?: string | null
           created_at?: string | null
+          customer_complaint_details?: string | null
+          diesel_level?: number | null
           equipment_status?: string | null
+          generator_runtime?: number | null
           id?: string
           issues_reported?: string | null
           maintenance_required?: boolean | null
           network_status?: string | null
           photos?: string[] | null
+          power_status?: string | null
+          priority_level?: string | null
           recommendations?: string | null
+          report_category?: string | null
           report_date?: string | null
           reporter_id: string
+          resolution_status?: string | null
+          security_details?: string | null
+          security_incident_type?: string | null
           signal_strength?: number | null
           site_id?: string | null
+          uncategorized_type?: string | null
           updated_at?: string | null
         }
         Update: {
+          assigned_to?: string | null
           created_at?: string | null
+          customer_complaint_details?: string | null
+          diesel_level?: number | null
           equipment_status?: string | null
+          generator_runtime?: number | null
           id?: string
           issues_reported?: string | null
           maintenance_required?: boolean | null
           network_status?: string | null
           photos?: string[] | null
+          power_status?: string | null
+          priority_level?: string | null
           recommendations?: string | null
+          report_category?: string | null
           report_date?: string | null
           reporter_id?: string
+          resolution_status?: string | null
+          security_details?: string | null
+          security_incident_type?: string | null
           signal_strength?: number | null
           site_id?: string | null
+          uncategorized_type?: string | null
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_telecom_reports_assigned_to"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       telecom_sites: {
         Row: {

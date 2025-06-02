@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -467,40 +466,138 @@ export class ApiService {
   }
 
   // Telecom Reports
-  static async getTelecomReports(): Promise<ApiResponse> {
+  static async getTelecomReports(userId?: string): Promise<ApiResponse<any[]>> {
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('telecom_reports')
         .select(`
           *,
-          reporter:profiles!telecom_reports_reporter_id_fkey(full_name),
-          site:sites!telecom_reports_site_id_fkey(name)
+          site:site_id(name),
+          reporter:reporter_id(full_name),
+          assigned_user:assigned_to(full_name)
         `)
-        .order('report_date', { ascending: false });
+        .order('created_at', { ascending: false });
 
+      if (userId) {
+        query = query.or(`reporter_id.eq.${userId},assigned_to.eq.${userId}`);
+      }
+
+      const { data, error } = await query;
       if (error) throw error;
-      return { success: true, data };
+
+      return { success: true, data: data || [] };
     } catch (error: any) {
       console.error('Get telecom reports error:', error);
       return { success: false, error: error.message };
     }
   }
 
-  static async createTelecomReport(report: any): Promise<ApiResponse> {
+  static async createTelecomReport(reportData: {
+    site_id?: string;
+    report_category: string;
+    signal_strength?: number;
+    network_status: string;
+    equipment_status: string;
+    issues_reported?: string;
+    maintenance_required: boolean;
+    recommendations?: string;
+    priority_level?: string;
+    generator_runtime?: number;
+    diesel_level?: number;
+    power_status?: string;
+    customer_complaint_details?: string;
+    security_incident_type?: string;
+    security_details?: string;
+    uncategorized_type?: string;
+    report_date: string;
+  }): Promise<ApiResponse<any>> {
     try {
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) throw new Error('Not authenticated');
+
       const { data, error } = await supabase
         .from('telecom_reports')
-        .insert(report)
+        .insert({
+          ...reportData,
+          reporter_id: user.user.id
+        })
         .select()
         .single();
 
       if (error) throw error;
-
-      toast.success('Telecom report created successfully');
       return { success: true, data };
     } catch (error: any) {
       console.error('Create telecom report error:', error);
-      toast.error('Failed to create telecom report');
+      return { success: false, error: error.message };
+    }
+  }
+
+  static async updateTelecomReport(id: string, reportData: Partial<{
+    resolution_status: string;
+    assigned_to: string;
+    recommendations: string;
+    issues_reported: string;
+  }>): Promise<ApiResponse<any>> {
+    try {
+      const { data, error } = await supabase
+        .from('telecom_reports')
+        .update(reportData)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return { success: true, data };
+    } catch (error: any) {
+      console.error('Update telecom report error:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // CT Power Reports
+  static async getCTPowerReports(): Promise<ApiResponse<any[]>> {
+    try {
+      const { data, error } = await supabase
+        .from('ct_power_reports')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return { success: true, data: data || [] };
+    } catch (error: any) {
+      console.error('Get CT power reports error:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  static async createCTPowerReport(reportData: {
+    site_id: string;
+    report_datetime: string;
+    diesel_level: number;
+    generator_runtime: number;
+    power_reading?: number;
+    battery_status?: string;
+    comments?: string;
+    status?: string;
+    report_number?: string;
+  }): Promise<ApiResponse<any>> {
+    try {
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) throw new Error('Not authenticated');
+
+      const { data, error } = await supabase
+        .from('ct_power_reports')
+        .insert({
+          ...reportData,
+          created_by: user.user.id
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return { success: true, data };
+    } catch (error: any) {
+      console.error('Create CT power report error:', error);
       return { success: false, error: error.message };
     }
   }

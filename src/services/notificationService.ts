@@ -69,7 +69,13 @@ export class NotificationService {
     try {
       const { data, error } = await supabase
         .from('notifications')
-        .insert(notification)
+        .insert({
+          user_id: notification.user_id,
+          title: notification.title,
+          message: notification.message,
+          type: notification.type || 'general',
+          metadata: notification.metadata
+        })
         .select()
         .single();
 
