@@ -2,131 +2,130 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
-export interface FinancialMetrics {
+interface FinancialMetrics {
   totalRevenue: number;
-  pendingInvoices: number;
-  monthlyExpenses: number;
-  profitMargin: number;
   revenueGrowth: number;
-  expenseGrowth: number;
+  pendingInvoices: number;
   invoiceGrowth: number;
+  monthlyExpenses: number;
+  expenseGrowth: number;
+  profitMargin: number;
   profitGrowth: number;
 }
 
 export const useFinancialData = () => {
-  // Fetch total revenue from invoices
-  const { data: revenueData } = useQuery({
-    queryKey: ['total_revenue'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('invoices')
-        .select('total_amount')
-        .eq('status', 'paid');
-      
-      if (error) throw error;
-      
-      const total = data?.reduce((sum, invoice) => sum + Number(invoice.total_amount || 0), 0) || 0;
-      return total;
-    },
-  });
+  const { data: metrics, isLoading } = useQuery({
+    queryKey: ['financial-metrics'],
+    queryFn: async (): Promise<FinancialMetrics> => {
+      // Get current month's data
+      const currentMonth = new Date();
+      const lastMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1);
+      const currentMonthStart = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
 
-  // Fetch pending invoices count
-  const { data: pendingInvoicesData } = useQuery({
-    queryKey: ['pending_invoices'],
-    queryFn: async () => {
-      const { data, error } = await supabase
+      // Fetch invoices
+      const { data: invoices } = await supabase
         .from('invoices')
-        .select('id')
-        .eq('status', 'pending');
-      
-      if (error) throw error;
-      return data?.length || 0;
-    },
-  });
+        .select('total_amount, status, created_at');
 
-  // Fetch monthly expenses
-  const { data: expensesData } = useQuery({
-    queryKey: ['monthly_expenses'],
-    queryFn: async () => {
-      const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM format
-      const { data, error } = await supabase
+      // Fetch expenses
+      const { data: expenses } = await supabase
         .from('expenses')
-        .select('amount')
-        .gte('expense_date', `${currentMonth}-01`)
-        .lt('expense_date', `${currentMonth}-32`);
-      
-      if (error) throw error;
-      
-      const total = data?.reduce((sum, expense) => sum + Number(expense.amount || 0), 0) || 0;
-      return total;
-    },
-  });
+        .select('amount, status, created_at');
 
-  // Fetch previous month data for growth calculations
-  const { data: previousMonthData } = useQuery({
-    queryKey: ['previous_month_data'],
-    queryFn: async () => {
-      const currentDate = new Date();
-      const previousMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
-      const previousMonthStr = previousMonth.toISOString().slice(0, 7);
+      // Calculate revenue metrics
+      const currentMonthInvoices = invoices?.filter(invoice => 
+        new Date(invoice.created_at) >= currentMonthStart
+      ) || [];
       
-      // Previous month revenue
-      const { data: prevRevenue, error: revenueError } = await supabase
-        .from('invoices')
-        .select('total_amount')
-        .eq('status', 'paid')
-        .gte('created_at', `${previousMonthStr}-01`)
-        .lt('created_at', `${previousMonthStr}-32`);
+      const lastMonthInvoices = invoices?.filter(invoice => {
+        const invoiceDate = new Date(invoice.created_at);
+        return invoiceDate >= lastMonth && invoiceDate < currentMonthStart;
+      }) || [];
+
+      const totalRevenue = currentMonthInvoices.reduce((sum, invoice) => 
+        sum + Number(invoice.total_amount || 0), 0
+      );
       
-      if (revenueError) throw revenueError;
+      const lastMonthRevenue = lastMonthInvoices.reduce((sum, invoice) => 
+        sum + Number(invoice.total_amount || 0), 0
+      );
+
+      const revenueGrowth = lastMonthRevenue > 0 
+        ? ((totalRevenue - lastMonthRevenue) / lastMonthRevenue) * 100 
+        : 0;
+
+      // Calculate pending invoices
+      const pendingInvoices = invoices?.filter(invoice => 
+        invoice.status === 'draft' || invoice.status === 'sent'
+      ).length || 0;
+
+      const lastMonthPending = invoices?.filter(invoice => {
+        const invoiceDate = new Date(invoice.created_at);
+        return (invoice.status === 'draft' || invoice.status === 'sent') &&
+               invoiceDate >= lastMonth && invoiceDate < currentMonthStart;
+      }).length || 0;
+
+      const invoiceGrowth = lastMonthPending > 0 
+        ? ((pendingInvoices - lastMonthPending) / lastMonthPending) * 100 
+        : 0;
+
+      // Calculate expenses
+      const currentMonthExpenses = expenses?.filter(expense => 
+        new Date(expense.created_at) >= currentMonthStart
+      ) || [];
       
-      // Previous month expenses
-      const { data: prevExpenses, error: expensesError } = await supabase
-        .from('expenses')
-        .select('amount')
-        .gte('expense_date', `${previousMonthStr}-01`)
-        .lt('expense_date', `${previousMonthStr}-32`);
+      const lastMonthExpensesData = expenses?.filter(expense => {
+        const expenseDate = new Date(expense.created_at);
+        return expenseDate >= lastMonth && expenseDate < currentMonthStart;
+      }) || [];
+
+      const monthlyExpenses = currentMonthExpenses.reduce((sum, expense) => 
+        sum + Number(expense.amount || 0), 0
+      );
       
-      if (expensesError) throw expensesError;
+      const lastMonthExpensesTotal = lastMonthExpensesData.reduce((sum, expense) => 
+        sum + Number(expense.amount || 0), 0
+      );
+
+      const expenseGrowth = lastMonthExpensesTotal > 0 
+        ? ((monthlyExpenses - lastMonthExpensesTotal) / lastMonthExpensesTotal) * 100 
+        : 0;
+
+      // Calculate profit margin
+      const profit = totalRevenue - monthlyExpenses;
+      const profitMargin = totalRevenue > 0 ? (profit / totalRevenue) * 100 : 0;
       
-      const prevRevenueTotal = prevRevenue?.reduce((sum, invoice) => sum + Number(invoice.total_amount || 0), 0) || 0;
-      const prevExpensesTotal = prevExpenses?.reduce((sum, expense) => sum + Number(expense.amount || 0), 0) || 0;
+      const lastMonthProfit = lastMonthRevenue - lastMonthExpensesTotal;
+      const lastMonthProfitMargin = lastMonthRevenue > 0 ? (lastMonthProfit / lastMonthRevenue) * 100 : 0;
       
+      const profitGrowth = lastMonthProfitMargin > 0 
+        ? ((profitMargin - lastMonthProfitMargin) / lastMonthProfitMargin) * 100 
+        : 0;
+
       return {
-        revenue: prevRevenueTotal,
-        expenses: prevExpensesTotal,
+        totalRevenue,
+        revenueGrowth,
+        pendingInvoices,
+        invoiceGrowth,
+        monthlyExpenses,
+        expenseGrowth,
+        profitMargin,
+        profitGrowth,
       };
     },
   });
 
-  // Calculate metrics
-  const totalRevenue = revenueData || 0;
-  const pendingInvoices = pendingInvoicesData || 0;
-  const monthlyExpenses = expensesData || 0;
-  const profitMargin = totalRevenue > 0 ? ((totalRevenue - monthlyExpenses) / totalRevenue) * 100 : 0;
-
-  // Calculate growth percentages
-  const revenueGrowth = previousMonthData?.revenue 
-    ? ((totalRevenue - previousMonthData.revenue) / previousMonthData.revenue) * 100 
-    : 0;
-  
-  const expenseGrowth = previousMonthData?.expenses 
-    ? ((monthlyExpenses - previousMonthData.expenses) / previousMonthData.expenses) * 100 
-    : 0;
-
-  const metrics: FinancialMetrics = {
-    totalRevenue,
-    pendingInvoices,
-    monthlyExpenses,
-    profitMargin,
-    revenueGrowth,
-    expenseGrowth,
-    invoiceGrowth: revenueGrowth, // Simplified for now
-    profitGrowth: revenueGrowth - expenseGrowth,
-  };
-
   return {
-    metrics,
-    isLoading: !revenueData && !pendingInvoicesData && !expensesData,
+    metrics: metrics || {
+      totalRevenue: 0,
+      revenueGrowth: 0,
+      pendingInvoices: 0,
+      invoiceGrowth: 0,
+      monthlyExpenses: 0,
+      expenseGrowth: 0,
+      profitMargin: 0,
+      profitGrowth: 0,
+    },
+    isLoading,
   };
 };

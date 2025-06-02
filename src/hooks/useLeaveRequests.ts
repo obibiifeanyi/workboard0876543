@@ -1,29 +1,28 @@
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
-export interface LeaveRequest {
+interface LeaveRequest {
   id: string;
   user_id: string;
+  leave_type: string;
   start_date: string;
   end_date: string;
-  leave_type: string;
-  reason: string;
-  status: 'pending' | 'approved' | 'rejected';
+  reason: string | null;
+  status: string;
+  approved_by: string | null;
+  approved_at: string | null;
+  rejection_reason: string | null;
   created_at: string;
   updated_at: string;
-  approved_by?: string;
-  approved_at?: string;
-  rejection_reason?: string;
 }
 
 export const useLeaveRequests = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Fetch all leave requests (for managers/admins)
-  const { data: leaveRequests, isLoading } = useQuery({
+  const { data: leaveRequests = [], isLoading } = useQuery({
     queryKey: ['leave-requests'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -31,82 +30,44 @@ export const useLeaveRequests = () => {
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('Error fetching leave requests:', error);
-        throw error;
-      }
-
+      if (error) throw error;
       return data as LeaveRequest[];
     },
   });
 
-  // Fetch current user's leave requests
-  const { data: myLeaveRequests, isLoading: isLoadingMyRequests } = useQuery({
-    queryKey: ['my-leave-requests'],
-    queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('User not authenticated');
-
-      const { data, error } = await supabase
-        .from('leave_requests')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Error fetching user leave requests:', error);
-        throw error;
-      }
-
-      return data as LeaveRequest[];
-    },
-  });
-
-  const submitLeaveRequest = useMutation({
-    mutationFn: async (requestData: {
+  const createLeaveRequest = useMutation({
+    mutationFn: async (request: {
+      leave_type: string;
       start_date: string;
       end_date: string;
-      leave_type: string;
-      reason: string;
+      reason?: string;
     }) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
       const { data, error } = await supabase
         .from('leave_requests')
-        .insert([
-          {
-            user_id: user.id,
-            start_date: requestData.start_date,
-            end_date: requestData.end_date,
-            leave_type: requestData.leave_type,
-            reason: requestData.reason,
-            status: 'pending'
-          }
-        ])
+        .insert({
+          user_id: user.id,
+          ...request,
+        })
         .select()
         .single();
 
-      if (error) {
-        console.error('Error submitting leave request:', error);
-        throw error;
-      }
-
+      if (error) throw error;
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['leave-requests'] });
-      queryClient.invalidateQueries({ queryKey: ['my-leave-requests'] });
       toast({
         title: "Leave Request Submitted",
-        description: "Your leave request has been submitted for approval.",
+        description: "Your leave request has been submitted successfully.",
       });
     },
     onError: (error) => {
-      console.error('Submit leave request error:', error);
       toast({
-        title: "Error",
-        description: "Failed to submit leave request. Please try again.",
+        title: "Failed to Submit Request",
+        description: error.message,
         variant: "destructive",
       });
     },
@@ -128,25 +89,20 @@ export const useLeaveRequests = () => {
         .select()
         .single();
 
-      if (error) {
-        console.error('Error approving leave request:', error);
-        throw error;
-      }
-
+      if (error) throw error;
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['leave-requests'] });
       toast({
-        title: "Leave Approved",
+        title: "Leave Request Approved",
         description: "The leave request has been approved.",
       });
     },
     onError: (error) => {
-      console.error('Approve leave request error:', error);
       toast({
-        title: "Error",
-        description: "Failed to approve leave request. Please try again.",
+        title: "Failed to Approve Request",
+        description: error.message,
         variant: "destructive",
       });
     },
@@ -169,25 +125,20 @@ export const useLeaveRequests = () => {
         .select()
         .single();
 
-      if (error) {
-        console.error('Error rejecting leave request:', error);
-        throw error;
-      }
-
+      if (error) throw error;
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['leave-requests'] });
       toast({
-        title: "Leave Rejected",
+        title: "Leave Request Rejected",
         description: "The leave request has been rejected.",
       });
     },
     onError: (error) => {
-      console.error('Reject leave request error:', error);
       toast({
-        title: "Error",
-        description: "Failed to reject leave request. Please try again.",
+        title: "Failed to Reject Request",
+        description: error.message,
         variant: "destructive",
       });
     },
@@ -195,10 +146,8 @@ export const useLeaveRequests = () => {
 
   return {
     leaveRequests,
-    myLeaveRequests,
     isLoading,
-    isLoadingMyRequests,
-    submitLeaveRequest,
+    createLeaveRequest,
     approveLeaveRequest,
     rejectLeaveRequest,
   };

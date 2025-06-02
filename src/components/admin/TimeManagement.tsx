@@ -1,31 +1,68 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TimeLogTable } from "@/components/shared/TimeLogTable";
-import { Clock } from "lucide-react";
+import { Clock, Loader } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
-const mockLogs = [
-  {
-    id: 1,
-    employeeName: "John Doe",
-    clockIn: "2024-03-20T09:00:00",
-    clockOut: "2024-03-20T17:00:00",
-    location: {
-      latitude: 40.7128,
-      longitude: -74.0060,
-    },
-  },
-  {
-    id: 2,
-    employeeName: "Jane Smith",
-    clockIn: "2024-03-20T08:45:00",
-    clockOut: null,
-    location: {
-      latitude: 40.7128,
-      longitude: -74.0060,
-    },
-  },
-];
+interface TimeLogWithProfile {
+  id: string;
+  user_id: string;
+  clock_in: string;
+  clock_out: string | null;
+  location_latitude: number | null;
+  location_longitude: number | null;
+  created_at: string;
+  profile: {
+    full_name: string | null;
+  } | null;
+}
 
 export const TimeManagement = () => {
+  const { data: timeLogs = [], isLoading } = useQuery({
+    queryKey: ['admin-time-logs'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('time_logs')
+        .select(`
+          *,
+          profile:profiles(full_name)
+        `)
+        .order('created_at', { ascending: false })
+        .limit(50);
+
+      if (error) throw error;
+      return data as TimeLogWithProfile[];
+    },
+  });
+
+  const formattedLogs = timeLogs.map(log => ({
+    id: parseInt(log.id),
+    employeeName: log.profile?.full_name || 'Unknown Employee',
+    clockIn: log.clock_in,
+    clockOut: log.clock_out,
+    location: {
+      latitude: log.location_latitude || 0,
+      longitude: log.location_longitude || 0,
+    },
+  }));
+
+  if (isLoading) {
+    return (
+      <Card className="col-span-2">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Clock className="h-5 w-5" />
+            Time & Location Logs
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="flex items-center justify-center h-32">
+          <Loader className="h-6 w-6 animate-spin" />
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card className="col-span-2">
       <CardHeader>
@@ -35,7 +72,7 @@ export const TimeManagement = () => {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <TimeLogTable logs={mockLogs} />
+        <TimeLogTable logs={formattedLogs} />
       </CardContent>
     </Card>
   );
