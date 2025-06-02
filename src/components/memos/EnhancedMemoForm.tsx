@@ -69,6 +69,8 @@ export const EnhancedMemoForm = ({ onMemoSent, type = 'individual' }: EnhancedMe
         return;
       }
 
+      console.log('Sending memo:', { subject, content, recipientId, department, priority, type });
+
       if (type === 'individual') {
         // Send individual memo
         const { error } = await supabase
@@ -81,7 +83,10 @@ export const EnhancedMemoForm = ({ onMemoSent, type = 'individual' }: EnhancedMe
             is_read: false,
           });
 
-        if (error) throw error;
+        if (error) {
+          console.error('Error sending individual memo:', error);
+          throw error;
+        }
       } else {
         // Send department memo
         const { error } = await supabase
@@ -94,7 +99,10 @@ export const EnhancedMemoForm = ({ onMemoSent, type = 'individual' }: EnhancedMe
             created_by: user.id,
           });
 
-        if (error) throw error;
+        if (error) {
+          console.error('Error sending department memo:', error);
+          throw error;
+        }
       }
 
       toast({
@@ -152,7 +160,10 @@ export const EnhancedMemoForm = ({ onMemoSent, type = 'individual' }: EnhancedMe
               <Label>Recipient *</Label>
               <UserSelector
                 selectedUserId={recipientId}
-                onUserSelect={setRecipientId}
+                onUserSelect={(userId) => {
+                  console.log('Selected user ID:', userId);
+                  setRecipientId(userId);
+                }}
                 includeAdmins={true}
               />
             </div>

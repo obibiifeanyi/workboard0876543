@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
-import { Users, Building } from "lucide-react";
+import { Users, Building, Loader } from "lucide-react";
 
 interface User {
   id: string;
@@ -28,7 +28,7 @@ export const UserSelector = ({
 }: UserSelectorProps) => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
-  const [departments, setDepartments] = useState<string[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchUsers();
@@ -36,9 +36,17 @@ export const UserSelector = ({
 
   const fetchUsers = async () => {
     try {
+      setLoading(true);
+      setError(null);
+      
       const { data: { user: currentUser } } = await supabase.auth.getUser();
       
-      if (!currentUser) return;
+      if (!currentUser) {
+        setError('User not authenticated');
+        return;
+      }
+
+      console.log('Fetching users for memo recipient selection...');
 
       let query = supabase
         .from('profiles')
@@ -50,10 +58,11 @@ export const UserSelector = ({
         query = query.eq('department', filterByDepartment);
       }
 
-      const { data, error } = await query;
+      const { data, error: fetchError } = await query;
 
-      if (error) {
-        console.error('Error fetching users:', error);
+      if (fetchError) {
+        console.error('Error fetching users:', fetchError);
+        setError('Failed to load users');
         return;
       }
 
@@ -65,14 +74,12 @@ export const UserSelector = ({
         );
       }
 
+      console.log('Users fetched successfully:', filteredUsers);
       setUsers(filteredUsers);
-
-      // Extract unique departments
-      const uniqueDepartments = [...new Set(filteredUsers.map(user => user.department).filter(Boolean))];
-      setDepartments(uniqueDepartments);
 
     } catch (error) {
       console.error('Error fetching users:', error);
+      setError('An unexpected error occurred');
     } finally {
       setLoading(false);
     }
@@ -85,27 +92,47 @@ export const UserSelector = ({
     return acc;
   }, {} as Record<string, User[]>);
 
+  const selectedUser = users.find(user => user.id === selectedUserId);
+
   return (
     <div className="space-y-2">
       <Select value={selectedUserId} onValueChange={onUserSelect}>
         <SelectTrigger className="bg-white/5 border-white/10 rounded-[30px]">
-          <SelectValue placeholder="Select recipient..." />
+          <SelectValue placeholder="Select recipient...">
+            {selectedUser && (
+              <div className="flex items-center gap-2">
+                <Users className="h-4 w-4" />
+                <span>{selectedUser.full_name || selectedUser.email}</span>
+              </div>
+            )}
+          </SelectValue>
         </SelectTrigger>
-        <SelectContent className="bg-white/95 dark:bg-black/95 backdrop-blur-lg border-white/10">
+        <SelectContent className="bg-white/95 dark:bg-black/95 backdrop-blur-lg border-white/10 max-h-[300px]">
           {loading ? (
-            <SelectItem value="loading" disabled>Loading users...</SelectItem>
+            <div className="flex items-center justify-center p-4">
+              <Loader className="h-4 w-4 animate-spin mr-2" />
+              Loading users...
+            </div>
+          ) : error ? (
+            <div className="p-4 text-center text-red-500">
+              {error}
+            </div>
+          ) : users.length === 0 ? (
+            <div className="p-4 text-center text-muted-foreground">
+              No users found
+            </div>
           ) : (
             Object.entries(groupedUsers).map(([department, departmentUsers]) => (
               <div key={department}>
-                <div className="px-2 py-1 text-xs font-semibold text-muted-foreground flex items-center gap-1">
+                <div className="px-2 py-1 text-xs font-semibold text-muted-foreground flex items-center gap-1 sticky top-0 bg-white/95 dark:bg-black/95">
                   <Building className="h-3 w-3" />
                   {department}
                 </div>
                 {departmentUsers.map((user) => (
                   <SelectItem key={user.id} value={user.id}>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 w-full">
                       <Users className="h-4 w-4" />
-                      <div>
+                      <div className="flex-1">
                         <div className="font-medium">{user.full_name || user.email}</div>
                         <div className="text-xs text-muted-foreground">
                           {user.role} • {user.account_type}
@@ -119,6 +146,15 @@ export const UserSelector = ({
           )}
         </SelectContent>
       </Select>
+      
+      {error && (
+        <button 
+          onClick={fetchUsers}
+          className="text-xs text-blue-500 hover:text-blue-700 underline"
+        >
+          Retry loading users
+        </button>
+      )}
     </div>
   );
 };
