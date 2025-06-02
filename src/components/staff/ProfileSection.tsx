@@ -26,11 +26,16 @@ export const ProfileSection = () => {
     location: '',
   });
 
-  // Fetch profile data with React Query
-  const { data: profile, isLoading, error } = useQuery({
-    queryKey: ['profile', user?.id],
+  // Fetch profile data with React Query using a consistent key
+  const { data: profile, isLoading, error, refetch } = useQuery({
+    queryKey: ['staff-profile', user?.id],
     queryFn: async () => {
-      if (!user?.id) throw new Error('No user ID');
+      if (!user?.id) {
+        console.log('No user ID available for profile fetch');
+        throw new Error('No user ID');
+      }
+      
+      console.log('Fetching profile for user:', user.id);
       
       const { data, error } = await supabase
         .from('profiles')
@@ -38,18 +43,26 @@ export const ProfileSection = () => {
         .eq('id', user.id)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Profile fetch error:', error);
+        throw error;
+      }
+      
+      console.log('Profile fetched successfully:', data);
       return data;
     },
     enabled: !!user?.id,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    cacheTime: 1000 * 60 * 10, // 10 minutes
   });
 
   // Update form data when profile data changes
   useEffect(() => {
     if (profile) {
+      console.log('Updating form data with profile:', profile);
       setFormData({
         full_name: profile.full_name || '',
-        email: profile.email || '',
+        email: profile.email || user?.email || '',
         phone: profile.phone || '',
         position: profile.position || '',
         department: profile.department || '',
@@ -57,7 +70,7 @@ export const ProfileSection = () => {
         location: profile.location || '',
       });
     }
-  }, [profile]);
+  }, [profile, user?.email]);
 
   const updateProfile = useMutation({
     mutationFn: async (updates: any) => {
@@ -86,10 +99,13 @@ export const ProfileSection = () => {
     onSuccess: (data) => {
       console.log('Update mutation successful:', data);
       
-      // Update the cache with new data
+      // Update all related query caches
+      queryClient.setQueryData(['staff-profile', user?.id], data);
       queryClient.setQueryData(['profile', user?.id], data);
+      queryClient.setQueryData(['user_profile'], data);
       
-      // Invalidate queries to refetch fresh data
+      // Invalidate all profile-related queries to ensure consistency
+      queryClient.invalidateQueries({ queryKey: ['staff-profile'] });
       queryClient.invalidateQueries({ queryKey: ['profile'] });
       queryClient.invalidateQueries({ queryKey: ['user_profile'] });
       
@@ -98,6 +114,9 @@ export const ProfileSection = () => {
         description: "Profile updated successfully",
       });
       setIsEditing(false);
+      
+      // Force a refetch to ensure we have the latest data
+      refetch();
     },
     onError: (error: any) => {
       console.error('Profile update failed:', error);
@@ -116,9 +135,10 @@ export const ProfileSection = () => {
 
   const handleCancel = () => {
     if (profile) {
+      console.log('Canceling edit, reverting to:', profile);
       setFormData({
         full_name: profile.full_name || '',
-        email: profile.email || '',
+        email: profile.email || user?.email || '',
         phone: profile.phone || '',
         position: profile.position || '',
         department: profile.department || '',
@@ -130,7 +150,7 @@ export const ProfileSection = () => {
   };
 
   const handleInputChange = (field: string, value: string) => {
-    console.log(`Updating ${field} to:`, value);
+    console.log(`Updating form field ${field} to:`, value);
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -148,10 +168,16 @@ export const ProfileSection = () => {
   }
 
   if (error) {
+    console.error('Profile loading error:', error);
     return (
       <Card className="bg-black/10 dark:bg-white/5 backdrop-blur-lg border-none">
         <CardContent className="p-6">
-          <div className="text-center text-red-500">Error loading profile: {error.message}</div>
+          <div className="text-center">
+            <div className="text-red-500 mb-2">Error loading profile: {error.message}</div>
+            <Button onClick={() => refetch()} variant="outline" size="sm">
+              Retry
+            </Button>
+          </div>
         </CardContent>
       </Card>
     );

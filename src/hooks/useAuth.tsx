@@ -27,13 +27,19 @@ export const useAuth = () => {
   useEffect(() => {
     // Get initial session
     const getInitialSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setUser(session?.user ?? null);
-      
-      if (session?.user) {
-        await fetchProfile(session.user.id);
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        console.log('Initial session:', session?.user?.id);
+        setUser(session?.user ?? null);
+        
+        if (session?.user) {
+          await fetchProfile(session.user.id);
+        }
+      } catch (error) {
+        console.error('Error getting initial session:', error);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     getInitialSession();
@@ -41,7 +47,7 @@ export const useAuth = () => {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth state change:', event);
+        console.log('Auth state change:', event, session?.user?.id);
         setUser(session?.user ?? null);
         
         if (session?.user) {
@@ -58,6 +64,7 @@ export const useAuth = () => {
 
   const fetchProfile = async (userId: string) => {
     try {
+      console.log('Fetching profile for user ID:', userId);
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
@@ -69,6 +76,7 @@ export const useAuth = () => {
         return;
       }
 
+      console.log('Profile fetched in useAuth:', data);
       setProfile(data);
     } catch (error) {
       console.error('Error fetching profile:', error);
@@ -79,11 +87,17 @@ export const useAuth = () => {
     await supabase.auth.signOut();
   };
 
+  const refetchProfile = () => {
+    if (user?.id) {
+      return fetchProfile(user.id);
+    }
+  };
+
   return {
     user,
     profile,
     loading,
     signOut,
-    refetchProfile: () => user?.id && fetchProfile(user.id)
+    refetchProfile
   };
 };
