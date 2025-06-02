@@ -25,11 +25,13 @@ export const UserSettings = () => {
     avatar_url: ''
   });
 
-  const { data: profile, isLoading } = useQuery({
+  const { data: profile, isLoading, error } = useQuery({
     queryKey: ['user_profile'],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
+
+      console.log('Fetching profile for user:', user.id);
 
       const { data, error } = await supabase
         .from('profiles')
@@ -37,13 +39,19 @@ export const UserSettings = () => {
         .eq('id', user.id)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Profile fetch error:', error);
+        throw error;
+      }
+      
+      console.log('Profile fetched:', data);
       return data;
     },
   });
 
   useEffect(() => {
     if (profile) {
+      console.log('Setting form data from profile:', profile);
       setFormData({
         full_name: profile.full_name || '',
         email: profile.email || '',
@@ -60,21 +68,44 @@ export const UserSettings = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
-      const { error } = await supabase
-        .from('profiles')
-        .update(data)
-        .eq('id', user.id);
+      console.log('Updating profile with data:', data);
 
-      if (error) throw error;
+      const { data: updatedProfile, error } = await supabase
+        .from('profiles')
+        .update({
+          ...data,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', user.id)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Profile update error:', error);
+        throw error;
+      }
+
+      console.log('Profile updated successfully:', updatedProfile);
+      return updatedProfile;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('Update mutation successful:', data);
+      
+      // Update both query caches
+      queryClient.setQueryData(['user_profile'], data);
+      queryClient.setQueryData(['profile', data.id], data);
+      
+      // Invalidate queries to ensure fresh data
       queryClient.invalidateQueries({ queryKey: ['user_profile'] });
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+      
       toast({
         title: "Success",
         description: "Profile updated successfully.",
       });
     },
     onError: (error) => {
+      console.error('Profile update failed:', error);
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "Failed to update profile",
@@ -85,7 +116,13 @@ export const UserSettings = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('Submitting profile update:', formData);
     updateProfileMutation.mutate(formData);
+  };
+
+  const handleInputChange = (field: string, value: string) => {
+    console.log(`Updating ${field} to:`, value);
+    setFormData(prev => ({ ...prev, [field]: value }));
   };
 
   if (isLoading) {
@@ -93,6 +130,16 @@ export const UserSettings = () => {
       <Card className="bg-black/10 dark:bg-white/5 backdrop-blur-lg border-none">
         <CardContent className="p-6">
           <div className="text-center">Loading profile...</div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card className="bg-black/10 dark:bg-white/5 backdrop-blur-lg border-none">
+        <CardContent className="p-6">
+          <div className="text-center text-red-500">Error loading profile: {error.message}</div>
         </CardContent>
       </Card>
     );
@@ -121,7 +168,7 @@ export const UserSettings = () => {
               <Input
                 id="avatar_url"
                 value={formData.avatar_url}
-                onChange={(e) => setFormData(prev => ({ ...prev, avatar_url: e.target.value }))}
+                onChange={(e) => handleInputChange('avatar_url', e.target.value)}
                 placeholder="https://example.com/avatar.jpg"
               />
             </div>
@@ -134,7 +181,7 @@ export const UserSettings = () => {
               <Input
                 id="full_name"
                 value={formData.full_name}
-                onChange={(e) => setFormData(prev => ({ ...prev, full_name: e.target.value }))}
+                onChange={(e) => handleInputChange('full_name', e.target.value)}
                 placeholder="Enter your full name"
               />
             </div>
@@ -145,9 +192,10 @@ export const UserSettings = () => {
                 id="email"
                 type="email"
                 value={formData.email}
-                onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                onChange={(e) => handleInputChange('email', e.target.value)}
                 placeholder="Enter your email"
                 disabled
+                className="bg-gray-100 dark:bg-gray-800"
               />
             </div>
 
@@ -156,7 +204,7 @@ export const UserSettings = () => {
               <Input
                 id="phone"
                 value={formData.phone}
-                onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                onChange={(e) => handleInputChange('phone', e.target.value)}
                 placeholder="+234 xxx xxx xxxx"
               />
             </div>
@@ -166,7 +214,7 @@ export const UserSettings = () => {
               <Input
                 id="position"
                 value={formData.position}
-                onChange={(e) => setFormData(prev => ({ ...prev, position: e.target.value }))}
+                onChange={(e) => handleInputChange('position', e.target.value)}
                 placeholder="Your job position"
               />
             </div>
@@ -178,7 +226,7 @@ export const UserSettings = () => {
             <Textarea
               id="bio"
               value={formData.bio}
-              onChange={(e) => setFormData(prev => ({ ...prev, bio: e.target.value }))}
+              onChange={(e) => handleInputChange('bio', e.target.value)}
               placeholder="Tell us about yourself..."
               rows={4}
             />

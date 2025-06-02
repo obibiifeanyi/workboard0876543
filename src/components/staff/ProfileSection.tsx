@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,44 +9,98 @@ import { User, Edit, Save, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 
 export const ProfileSection = () => {
-  const { profile } = useAuth();
+  const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
-    full_name: profile?.full_name || '',
-    email: profile?.email || '',
-    phone: (profile as any)?.phone || '',
-    position: (profile as any)?.position || '',
-    department: (profile as any)?.department || '',
-    bio: (profile as any)?.bio || '',
-    location: (profile as any)?.location || '',
+    full_name: '',
+    email: '',
+    phone: '',
+    position: '',
+    department: '',
+    bio: '',
+    location: '',
   });
 
-  const updateProfile = useMutation({
-    mutationFn: async (updates: any) => {
+  // Fetch profile data with React Query
+  const { data: profile, isLoading, error } = useQuery({
+    queryKey: ['profile', user?.id],
+    queryFn: async () => {
+      if (!user?.id) throw new Error('No user ID');
+      
       const { data, error } = await supabase
         .from('profiles')
-        .update(updates)
-        .eq('id', profile?.id)
-        .select()
+        .select('*')
+        .eq('id', user.id)
         .single();
 
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    enabled: !!user?.id,
+  });
+
+  // Update form data when profile data changes
+  useEffect(() => {
+    if (profile) {
+      setFormData({
+        full_name: profile.full_name || '',
+        email: profile.email || '',
+        phone: profile.phone || '',
+        position: profile.position || '',
+        department: profile.department || '',
+        bio: profile.bio || '',
+        location: profile.location || '',
+      });
+    }
+  }, [profile]);
+
+  const updateProfile = useMutation({
+    mutationFn: async (updates: any) => {
+      if (!user?.id) throw new Error('No user ID');
+
+      console.log('Updating profile with data:', updates);
+      
+      const { data, error } = await supabase
+        .from('profiles')
+        .update({
+          ...updates,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', user.id)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Profile update error:', error);
+        throw error;
+      }
+      
+      console.log('Profile updated successfully:', data);
+      return data;
+    },
+    onSuccess: (data) => {
+      console.log('Update mutation successful:', data);
+      
+      // Update the cache with new data
+      queryClient.setQueryData(['profile', user?.id], data);
+      
+      // Invalidate queries to refetch fresh data
       queryClient.invalidateQueries({ queryKey: ['profile'] });
+      queryClient.invalidateQueries({ queryKey: ['user_profile'] });
+      
       toast({
         title: "Success",
         description: "Profile updated successfully",
       });
       setIsEditing(false);
     },
-    onError: (error) => {
+    onError: (error: any) => {
+      console.error('Profile update failed:', error);
       toast({
         title: "Error",
         description: `Failed to update profile: ${error.message}`,
@@ -56,21 +110,52 @@ export const ProfileSection = () => {
   });
 
   const handleSave = () => {
+    console.log('Saving profile data:', formData);
     updateProfile.mutate(formData);
   };
 
   const handleCancel = () => {
-    setFormData({
-      full_name: profile?.full_name || '',
-      email: profile?.email || '',
-      phone: (profile as any)?.phone || '',
-      position: (profile as any)?.position || '',
-      department: (profile as any)?.department || '',
-      bio: (profile as any)?.bio || '',
-      location: (profile as any)?.location || '',
-    });
+    if (profile) {
+      setFormData({
+        full_name: profile.full_name || '',
+        email: profile.email || '',
+        phone: profile.phone || '',
+        position: profile.position || '',
+        department: profile.department || '',
+        bio: profile.bio || '',
+        location: profile.location || '',
+      });
+    }
     setIsEditing(false);
   };
+
+  const handleInputChange = (field: string, value: string) => {
+    console.log(`Updating ${field} to:`, value);
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  if (isLoading) {
+    return (
+      <Card className="bg-black/10 dark:bg-white/5 backdrop-blur-lg border-none">
+        <CardContent className="p-6">
+          <div className="text-center">Loading profile...</div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card className="bg-black/10 dark:bg-white/5 backdrop-blur-lg border-none">
+        <CardContent className="p-6">
+          <div className="text-center text-red-500">Error loading profile: {error.message}</div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="bg-black/10 dark:bg-white/5 backdrop-blur-lg border-none">
@@ -95,6 +180,7 @@ export const ProfileSection = () => {
                 variant="outline" 
                 size="sm"
                 onClick={handleCancel}
+                disabled={updateProfile.isPending}
               >
                 <X className="h-4 w-4 mr-2" />
                 Cancel
@@ -105,7 +191,7 @@ export const ProfileSection = () => {
                 disabled={updateProfile.isPending}
               >
                 <Save className="h-4 w-4 mr-2" />
-                Save
+                {updateProfile.isPending ? 'Saving...' : 'Save'}
               </Button>
             </div>
           )}
@@ -119,11 +205,11 @@ export const ProfileSection = () => {
               <Input
                 id="full_name"
                 value={formData.full_name}
-                onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+                onChange={(e) => handleInputChange('full_name', e.target.value)}
                 placeholder="Enter your full name"
               />
             ) : (
-              <p className="text-sm bg-white/5 p-2 rounded">{profile?.full_name || 'Not provided'}</p>
+              <p className="text-sm bg-white/5 p-2 rounded">{formData.full_name || 'Not provided'}</p>
             )}
           </div>
 
@@ -134,11 +220,13 @@ export const ProfileSection = () => {
                 id="email"
                 type="email"
                 value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                onChange={(e) => handleInputChange('email', e.target.value)}
                 placeholder="Enter your email"
+                disabled
+                className="bg-gray-100 dark:bg-gray-800"
               />
             ) : (
-              <p className="text-sm bg-white/5 p-2 rounded">{profile?.email || 'Not provided'}</p>
+              <p className="text-sm bg-white/5 p-2 rounded">{formData.email || 'Not provided'}</p>
             )}
           </div>
 
@@ -148,11 +236,11 @@ export const ProfileSection = () => {
               <Input
                 id="phone"
                 value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                onChange={(e) => handleInputChange('phone', e.target.value)}
                 placeholder="Enter your phone number"
               />
             ) : (
-              <p className="text-sm bg-white/5 p-2 rounded">{(profile as any)?.phone || 'Not provided'}</p>
+              <p className="text-sm bg-white/5 p-2 rounded">{formData.phone || 'Not provided'}</p>
             )}
           </div>
 
@@ -162,11 +250,11 @@ export const ProfileSection = () => {
               <Input
                 id="position"
                 value={formData.position}
-                onChange={(e) => setFormData({ ...formData, position: e.target.value })}
+                onChange={(e) => handleInputChange('position', e.target.value)}
                 placeholder="Enter your position"
               />
             ) : (
-              <p className="text-sm bg-white/5 p-2 rounded">{(profile as any)?.position || 'Not provided'}</p>
+              <p className="text-sm bg-white/5 p-2 rounded">{formData.position || 'Not provided'}</p>
             )}
           </div>
 
@@ -176,11 +264,11 @@ export const ProfileSection = () => {
               <Input
                 id="department"
                 value={formData.department}
-                onChange={(e) => setFormData({ ...formData, department: e.target.value })}
+                onChange={(e) => handleInputChange('department', e.target.value)}
                 placeholder="Enter your department"
               />
             ) : (
-              <p className="text-sm bg-white/5 p-2 rounded">{(profile as any)?.department || 'Not provided'}</p>
+              <p className="text-sm bg-white/5 p-2 rounded">{formData.department || 'Not provided'}</p>
             )}
           </div>
 
@@ -190,11 +278,11 @@ export const ProfileSection = () => {
               <Input
                 id="location"
                 value={formData.location}
-                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                onChange={(e) => handleInputChange('location', e.target.value)}
                 placeholder="Enter your location"
               />
             ) : (
-              <p className="text-sm bg-white/5 p-2 rounded">{(profile as any)?.location || 'Not provided'}</p>
+              <p className="text-sm bg-white/5 p-2 rounded">{formData.location || 'Not provided'}</p>
             )}
           </div>
         </div>
@@ -205,13 +293,13 @@ export const ProfileSection = () => {
             <Textarea
               id="bio"
               value={formData.bio}
-              onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+              onChange={(e) => handleInputChange('bio', e.target.value)}
               placeholder="Tell us about yourself..."
               className="min-h-[100px]"
             />
           ) : (
             <p className="text-sm bg-white/5 p-3 rounded min-h-[60px]">
-              {(profile as any)?.bio || 'No bio provided'}
+              {formData.bio || 'No bio provided'}
             </p>
           )}
         </div>
@@ -223,7 +311,7 @@ export const ProfileSection = () => {
           </div>
           <div>
             <p className="text-sm font-medium">Status</p>
-            <p className="text-sm text-muted-foreground capitalize">{(profile as any)?.status || 'active'}</p>
+            <p className="text-sm text-muted-foreground capitalize">{profile?.status || 'active'}</p>
           </div>
         </div>
       </CardContent>
