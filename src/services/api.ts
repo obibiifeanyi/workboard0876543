@@ -34,4 +34,199 @@ export class ApiService {
       return { success: false, error: error.message };
     }
   }
+
+  static async getDepartments() {
+    try {
+      const { data, error } = await supabase
+        .from('departments')
+        .select('*')
+        .order('name');
+
+      if (error) throw error;
+      return { success: true, data };
+    } catch (error) {
+      console.error('Error fetching departments:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  static async getProjects() {
+    try {
+      const { data, error } = await supabase
+        .from('projects')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return { success: true, data };
+    } catch (error) {
+      console.error('Error fetching projects:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  static async getSites() {
+    try {
+      const { data, error } = await supabase
+        .from('telecom_sites')
+        .select('*')
+        .order('name');
+
+      if (error) throw error;
+      return { success: true, data };
+    } catch (error) {
+      console.error('Error fetching sites:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  static async getWeeklyReports(userId?: string) {
+    try {
+      let query = supabase
+        .from('weekly_reports')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (userId) {
+        query = query.eq('created_by', userId);
+      }
+
+      const { data, error } = await query;
+      if (error) throw error;
+      return { success: true, data };
+    } catch (error) {
+      console.error('Error fetching weekly reports:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  static async getMemos(userId?: string) {
+    try {
+      let query = supabase
+        .from('memos')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (userId) {
+        query = query.eq('created_by', userId);
+      }
+
+      const { data, error } = await query;
+      if (error) throw error;
+      return { success: true, data };
+    } catch (error) {
+      console.error('Error fetching memos:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  static async getNotifications(userId: string) {
+    try {
+      const { data, error } = await supabase
+        .from('notifications')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return { success: true, data };
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  static async markNotificationAsRead(notificationId: string) {
+    try {
+      const { error } = await supabase
+        .from('notifications')
+        .update({ is_read: true })
+        .eq('id', notificationId);
+
+      if (error) throw error;
+      return { success: true };
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  static async getDocuments() {
+    try {
+      const { data, error } = await supabase
+        .from('documents')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return { success: true, data };
+    } catch (error) {
+      console.error('Error fetching documents:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  static async uploadDocument(file: File, documentData: any) {
+    try {
+      const { data, error } = await supabase
+        .from('documents')
+        .insert(documentData);
+
+      if (error) throw error;
+      return { success: true, data };
+    } catch (error) {
+      console.error('Error uploading document:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  static async getBatteryReports() {
+    try {
+      const { data, error } = await supabase
+        .from('battery_reports')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return { success: true, data };
+    } catch (error) {
+      console.error('Error fetching battery reports:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  static async getTelecomReports() {
+    try {
+      const { data, error } = await supabase
+        .from('site_reports')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return { success: true, data };
+    } catch (error) {
+      console.error('Error fetching telecom reports:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  static async getLeaveRequests(userId?: string) {
+    try {
+      let query = supabase
+        .from('leave_requests')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (userId) {
+        query = query.eq('user_id', userId);
+      }
+
+      const { data, error } = await query;
+      if (error) throw error;
+      return { success: true, data };
+    } catch (error) {
+      console.error('Error fetching leave requests:', error);
+      return { success: false, error: error.message };
+    }
+  }
 }

@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Radio, Search, Filter, Calendar, MapPin, Zap } from "lucide-react";
+import { TelecomReportWithSite, PowerReportWithSite } from "@/integrations/supabase/types/telecom";
 
 interface TelecomReport {
   id: string;
@@ -22,7 +23,7 @@ interface TelecomReport {
     name: string;
     location: string;
     site_number: string;
-  };
+  } | null;
 }
 
 interface PowerReport {
@@ -39,7 +40,7 @@ interface PowerReport {
     name: string;
     location: string;
     site_number: string;
-  };
+  } | null;
 }
 
 export const TelecomReportsDashboard = () => {
@@ -79,7 +80,23 @@ export const TelecomReportsDashboard = () => {
 
       if (siteError) {
         console.error('Error fetching site reports:', siteError);
-        throw siteError;
+        // Handle the error gracefully instead of throwing
+        setReports([]);
+      } else {
+        // Transform the data to match expected interface
+        const transformedReports: TelecomReport[] = (siteReportsData || []).map(report => ({
+          id: report.id,
+          site_id: report.site_id || '',
+          report_type: report.report_type,
+          title: report.title,
+          description: report.description || '',
+          status: report.status || 'draft',
+          data: report.data,
+          report_date: report.report_date,
+          created_at: report.created_at || '',
+          telecom_sites: Array.isArray(report.telecom_sites) ? null : report.telecom_sites
+        }));
+        setReports(transformedReports);
       }
 
       // Fetch power reports with proper join to telecom_sites
@@ -98,11 +115,23 @@ export const TelecomReportsDashboard = () => {
 
       if (powerError) {
         console.error('Error fetching power reports:', powerError);
-        throw powerError;
+        setPowerReports([]);
+      } else {
+        // Transform the data to match expected interface
+        const transformedPowerReports: PowerReport[] = (powerReportsData || []).map(report => ({
+          id: report.id,
+          site_id: report.site_id || '',
+          report_datetime: report.report_datetime || '',
+          power_reading: report.power_reading || 0,
+          battery_status: report.battery_status || '',
+          diesel_level: report.diesel_level || 0,
+          generator_runtime: report.generator_runtime || 0,
+          comments: report.comments || '',
+          status: report.status || 'operational',
+          telecom_sites: Array.isArray(report.telecom_sites) ? null : report.telecom_sites
+        }));
+        setPowerReports(transformedPowerReports);
       }
-
-      setReports(siteReportsData || []);
-      setPowerReports(powerReportsData || []);
       
       console.log('Reports fetched successfully:', { 
         siteReports: siteReportsData?.length || 0, 
