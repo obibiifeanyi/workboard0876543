@@ -29,7 +29,7 @@ export class ApiService {
       if (error) throw error;
 
       return { success: true };
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating CT power report:', error);
       return { success: false, error: error.message };
     }
@@ -44,7 +44,7 @@ export class ApiService {
 
       if (error) throw error;
       return { success: true, data };
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching departments:', error);
       return { success: false, error: error.message };
     }
@@ -59,7 +59,7 @@ export class ApiService {
 
       if (error) throw error;
       return { success: true, data };
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching projects:', error);
       return { success: false, error: error.message };
     }
@@ -74,7 +74,7 @@ export class ApiService {
 
       if (error) throw error;
       return { success: true, data };
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching sites:', error);
       return { success: false, error: error.message };
     }
@@ -94,7 +94,7 @@ export class ApiService {
       const { data, error } = await query;
       if (error) throw error;
       return { success: true, data };
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching weekly reports:', error);
       return { success: false, error: error.message };
     }
@@ -114,7 +114,7 @@ export class ApiService {
       const { data, error } = await query;
       if (error) throw error;
       return { success: true, data };
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching memos:', error);
       return { success: false, error: error.message };
     }
@@ -130,7 +130,7 @@ export class ApiService {
 
       if (error) throw error;
       return { success: true, data };
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching notifications:', error);
       return { success: false, error: error.message };
     }
@@ -145,7 +145,7 @@ export class ApiService {
 
       if (error) throw error;
       return { success: true };
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error marking notification as read:', error);
       return { success: false, error: error.message };
     }
@@ -160,7 +160,7 @@ export class ApiService {
 
       if (error) throw error;
       return { success: true, data };
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching documents:', error);
       return { success: false, error: error.message };
     }
@@ -174,7 +174,7 @@ export class ApiService {
 
       if (error) throw error;
       return { success: true, data };
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error uploading document:', error);
       return { success: false, error: error.message };
     }
@@ -189,7 +189,7 @@ export class ApiService {
 
       if (error) throw error;
       return { success: true, data };
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching battery reports:', error);
       return { success: false, error: error.message };
     }
@@ -204,7 +204,7 @@ export class ApiService {
 
       if (error) throw error;
       return { success: true, data };
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching telecom reports:', error);
       return { success: false, error: error.message };
     }
@@ -224,7 +224,7 @@ export class ApiService {
       const { data, error } = await query;
       if (error) throw error;
       return { success: true, data };
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching leave requests:', error);
       return { success: false, error: error.message };
     }

@@ -7,7 +7,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Radio, Search, Filter, Calendar, MapPin, Zap } from "lucide-react";
-import { TelecomReportWithSite, PowerReportWithSite } from "@/integrations/supabase/types/telecom";
+
+interface TelecomSite {
+  name: string;
+  location: string;
+  site_number: string;
+}
 
 interface TelecomReport {
   id: string;
@@ -19,11 +24,7 @@ interface TelecomReport {
   data: any;
   report_date: string;
   created_at: string;
-  telecom_sites?: {
-    name: string;
-    location: string;
-    site_number: string;
-  } | null;
+  telecom_sites?: TelecomSite | null;
 }
 
 interface PowerReport {
@@ -36,11 +37,7 @@ interface PowerReport {
   generator_runtime: number;
   comments: string;
   status: string;
-  telecom_sites?: {
-    name: string;
-    location: string;
-    site_number: string;
-  } | null;
+  telecom_sites?: TelecomSite | null;
 }
 
 export const TelecomReportsDashboard = () => {
@@ -64,12 +61,20 @@ export const TelecomReportsDashboard = () => {
 
       console.log('Fetching reports for user:', user.id);
 
-      // Fetch site reports with proper join to telecom_sites
+      // Fetch site reports with explicit foreign key specification
       const { data: siteReportsData, error: siteError } = await supabase
         .from('site_reports')
         .select(`
-          *,
-          telecom_sites (
+          id,
+          site_id,
+          report_type,
+          title,
+          description,
+          status,
+          data,
+          report_date,
+          created_at,
+          telecom_sites!site_reports_site_id_fkey (
             name,
             location,
             site_number
@@ -80,10 +85,8 @@ export const TelecomReportsDashboard = () => {
 
       if (siteError) {
         console.error('Error fetching site reports:', siteError);
-        // Handle the error gracefully instead of throwing
         setReports([]);
       } else {
-        // Transform the data to match expected interface
         const transformedReports: TelecomReport[] = (siteReportsData || []).map(report => ({
           id: report.id,
           site_id: report.site_id || '',
@@ -99,12 +102,20 @@ export const TelecomReportsDashboard = () => {
         setReports(transformedReports);
       }
 
-      // Fetch power reports with proper join to telecom_sites
+      // Fetch power reports with explicit foreign key specification
       const { data: powerReportsData, error: powerError } = await supabase
         .from('ct_power_reports')
         .select(`
-          *,
-          telecom_sites (
+          id,
+          site_id,
+          report_datetime,
+          power_reading,
+          battery_status,
+          diesel_level,
+          generator_runtime,
+          comments,
+          status,
+          telecom_sites!ct_power_reports_site_id_fkey (
             name,
             location,
             site_number
@@ -117,7 +128,6 @@ export const TelecomReportsDashboard = () => {
         console.error('Error fetching power reports:', powerError);
         setPowerReports([]);
       } else {
-        // Transform the data to match expected interface
         const transformedPowerReports: PowerReport[] = (powerReportsData || []).map(report => ({
           id: report.id,
           site_id: report.site_id || '',
