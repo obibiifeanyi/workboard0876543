@@ -27,7 +27,6 @@ export class ApiService {
         });
 
       if (error) throw error;
-
       return { success: true };
     } catch (error: any) {
       console.error('Error creating CT power report:', error);
