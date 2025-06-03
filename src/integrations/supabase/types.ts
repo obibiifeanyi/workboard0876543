@@ -777,6 +777,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "fk_ct_power_reports_site_id"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "telecom_sites"
+            referencedColumns: ["id"]
+          },
         ]
       }
       data_retention_policies: {
@@ -2340,6 +2347,13 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_site_reports_site_id"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "telecom_sites"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "site_reports_site_id_fkey"
             columns: ["site_id"]

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -36,6 +35,11 @@ interface PowerReport {
   generator_runtime: number;
   comments: string;
   status: string;
+  telecom_sites?: {
+    name: string;
+    location: string;
+    site_number: string;
+  };
 }
 
 export const TelecomReportsDashboard = () => {
@@ -57,7 +61,9 @@ export const TelecomReportsDashboard = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      // Fetch site reports
+      console.log('Fetching reports for user:', user.id);
+
+      // Fetch site reports with proper join to telecom_sites
       const { data: siteReportsData, error: siteError } = await supabase
         .from('site_reports')
         .select(`
@@ -71,21 +77,37 @@ export const TelecomReportsDashboard = () => {
         .eq('reported_by', user.id)
         .order('created_at', { ascending: false });
 
-      if (siteError) throw siteError;
+      if (siteError) {
+        console.error('Error fetching site reports:', siteError);
+        throw siteError;
+      }
 
-      // Fetch power reports
+      // Fetch power reports with proper join to telecom_sites
       const { data: powerReportsData, error: powerError } = await supabase
         .from('ct_power_reports')
-        .select('*')
+        .select(`
+          *,
+          telecom_sites (
+            name,
+            location,
+            site_number
+          )
+        `)
         .eq('created_by', user.id)
         .order('created_at', { ascending: false });
 
-      if (powerError) throw powerError;
+      if (powerError) {
+        console.error('Error fetching power reports:', powerError);
+        throw powerError;
+      }
 
       setReports(siteReportsData || []);
       setPowerReports(powerReportsData || []);
       
-      console.log('Reports fetched:', { siteReportsData, powerReportsData });
+      console.log('Reports fetched successfully:', { 
+        siteReports: siteReportsData?.length || 0, 
+        powerReports: powerReportsData?.length || 0 
+      });
     } catch (error) {
       console.error('Error fetching reports:', error);
       toast({
@@ -107,6 +129,15 @@ export const TelecomReportsDashboard = () => {
     const matchesType = typeFilter === "all" || report.report_type === typeFilter;
     
     return matchesSearch && matchesStatus && matchesType;
+  });
+
+  const filteredPowerReports = powerReports.filter(report => {
+    const matchesSearch = report.telecom_sites?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         report.telecom_sites?.location.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesStatus = statusFilter === "all" || report.status === statusFilter;
+    
+    return matchesSearch && matchesStatus;
   });
 
   const getStatusColor = (status: string) => {
@@ -166,6 +197,7 @@ export const TelecomReportsDashboard = () => {
                 <SelectItem value="reviewed">Reviewed</SelectItem>
                 <SelectItem value="approved">Approved</SelectItem>
                 <SelectItem value="rejected">Rejected</SelectItem>
+                <SelectItem value="operational">Operational</SelectItem>
               </SelectContent>
             </Select>
 
@@ -191,7 +223,7 @@ export const TelecomReportsDashboard = () => {
           </div>
 
           <div className="grid gap-4">
-            {filteredReports.length === 0 ? (
+            {filteredReports.length === 0 && filteredPowerReports.length === 0 ? (
               <div className="text-center py-12">
                 <Radio className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                 <h3 className="text-lg font-medium">No reports found</h3>
@@ -203,93 +235,106 @@ export const TelecomReportsDashboard = () => {
                 </p>
               </div>
             ) : (
-              filteredReports.map((report) => (
-                <Card key={report.id} className="hover:shadow-lg transition-shadow">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-2">
-                        <Radio className="h-5 w-5 text-primary" />
-                        <CardTitle className="text-lg">{report.title}</CardTitle>
-                      </div>
-                      <div className="flex gap-2">
-                        <Badge className={getTypeColor(report.report_type)}>
-                          {report.report_type}
-                        </Badge>
-                        <Badge className={`${getStatusColor(report.status)} text-white`}>
-                          {report.status}
-                        </Badge>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      <p className="text-sm text-muted-foreground">{report.description}</p>
-                      
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                        <div className="flex items-center gap-1">
-                          <MapPin className="h-4 w-4" />
-                          {report.telecom_sites?.name} - {report.telecom_sites?.location}
+              <>
+                {filteredReports.map((report) => (
+                  <Card key={report.id} className="hover:shadow-lg transition-shadow">
+                    <CardHeader className="pb-3">
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center gap-2">
+                          <Radio className="h-5 w-5 text-primary" />
+                          <CardTitle className="text-lg">{report.title}</CardTitle>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <Calendar className="h-4 w-4" />
-                          {new Date(report.report_date).toLocaleDateString()}
+                        <div className="flex gap-2">
+                          <Badge className={getTypeColor(report.report_type)}>
+                            {report.report_type}
+                          </Badge>
+                          <Badge className={`${getStatusColor(report.status)} text-white`}>
+                            {report.status}
+                          </Badge>
                         </div>
                       </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        <p className="text-sm text-muted-foreground">{report.description}</p>
+                        
+                        {report.telecom_sites && (
+                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                            <div className="flex items-center gap-1">
+                              <MapPin className="h-4 w-4" />
+                              {report.telecom_sites.name} - {report.telecom_sites.location}
+                              {report.telecom_sites.site_number && ` (#${report.telecom_sites.site_number})`}
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Calendar className="h-4 w-4" />
+                              {new Date(report.report_date).toLocaleDateString()}
+                            </div>
+                          </div>
+                        )}
 
-                      {report.data && Object.keys(report.data).length > 0 && (
-                        <div className="mt-3 p-3 bg-muted rounded-lg">
-                          <h4 className="text-sm font-medium mb-2">Report Data:</h4>
-                          <div className="grid grid-cols-2 gap-2 text-sm">
-                            {Object.entries(report.data).map(([key, value]) => (
-                              value && (
-                                <div key={key} className="flex justify-between">
-                                  <span className="text-muted-foreground capitalize">
-                                    {key.replace('_', ' ')}:
-                                  </span>
-                                  <span>{value as string}</span>
-                                </div>
-                              )
-                            ))}
+                        {report.data && Object.keys(report.data).length > 0 && (
+                          <div className="mt-3 p-3 bg-muted rounded-lg">
+                            <h4 className="text-sm font-medium mb-2">Report Data:</h4>
+                            <div className="grid grid-cols-2 gap-2 text-sm">
+                              {Object.entries(report.data).map(([key, value]) => (
+                                value && (
+                                  <div key={key} className="flex justify-between">
+                                    <span className="text-muted-foreground capitalize">
+                                      {key.replace('_', ' ')}:
+                                    </span>
+                                    <span>{value as string}</span>
+                                  </div>
+                                )
+                              ))}
+                            </div>
                           </div>
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))
-            )}
-          </div>
-
-          {powerReports.length > 0 && (
-            <div className="mt-8">
-              <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
-                <Zap className="h-5 w-5 text-primary" />
-                Recent Power Reports
-              </h3>
-              <div className="grid gap-4">
-                {powerReports.slice(0, 5).map((powerReport) => (
-                  <Card key={powerReport.id} className="hover:shadow-lg transition-shadow">
-                    <CardContent className="pt-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <div className="flex items-center gap-2 text-sm font-medium">
-                            <Zap className="h-4 w-4" />
-                            Power Report - {new Date(powerReport.report_datetime).toLocaleDateString()}
-                          </div>
-                          <div className="text-xs text-muted-foreground mt-1">
-                            Power: {powerReport.power_reading}kW • Battery: {powerReport.battery_status} • Diesel: {powerReport.diesel_level}%
-                          </div>
-                        </div>
-                        <Badge className={`${getStatusColor(powerReport.status)} text-white`}>
-                          {powerReport.status}
-                        </Badge>
+                        )}
                       </div>
                     </CardContent>
                   </Card>
                 ))}
-              </div>
-            </div>
-          )}
+
+                {filteredPowerReports.length > 0 && (
+                  <div className="mt-8">
+                    <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
+                      <Zap className="h-5 w-5 text-primary" />
+                      Power Reports ({filteredPowerReports.length})
+                    </h3>
+                    <div className="grid gap-4">
+                      {filteredPowerReports.map((powerReport) => (
+                        <Card key={powerReport.id} className="hover:shadow-lg transition-shadow">
+                          <CardContent className="pt-4">
+                            <div className="flex items-center justify-between">
+                              <div className="space-y-2">
+                                <div className="flex items-center gap-2 text-sm font-medium">
+                                  <Zap className="h-4 w-4" />
+                                  Power Report - {new Date(powerReport.report_datetime).toLocaleDateString()}
+                                </div>
+                                {powerReport.telecom_sites && (
+                                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                    <MapPin className="h-3 w-3" />
+                                    {powerReport.telecom_sites.name} - {powerReport.telecom_sites.location}
+                                  </div>
+                                )}
+                                <div className="text-xs text-muted-foreground">
+                                  Power: {powerReport.power_reading || 'N/A'}kW • 
+                                  Battery: {powerReport.battery_status || 'N/A'} • 
+                                  Diesel: {powerReport.diesel_level || 'N/A'}%
+                                </div>
+                              </div>
+                              <Badge className={`${getStatusColor(powerReport.status)} text-white`}>
+                                {powerReport.status}
+                              </Badge>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
         </CardContent>
       </Card>
     </div>
