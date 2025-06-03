@@ -61,7 +61,7 @@ export const TelecomReportsDashboard = () => {
 
       console.log('Fetching reports for user:', user.id);
 
-      // Fetch site reports with explicit foreign key specification
+      // Fetch site reports with proper foreign key specification
       const { data: siteReportsData, error: siteError } = await supabase
         .from('site_reports')
         .select(`
@@ -74,7 +74,7 @@ export const TelecomReportsDashboard = () => {
           data,
           report_date,
           created_at,
-          telecom_sites!site_reports_site_id_fkey (
+          telecom_sites!site_id (
             name,
             location,
             site_number
@@ -102,7 +102,7 @@ export const TelecomReportsDashboard = () => {
         setReports(transformedReports);
       }
 
-      // Fetch power reports with explicit foreign key specification
+      // Fetch power reports with proper foreign key specification
       const { data: powerReportsData, error: powerError } = await supabase
         .from('ct_power_reports')
         .select(`
@@ -115,7 +115,7 @@ export const TelecomReportsDashboard = () => {
           generator_runtime,
           comments,
           status,
-          telecom_sites!ct_power_reports_site_id_fkey (
+          telecom_sites!site_id (
             name,
             location,
             site_number
