@@ -13,8 +13,14 @@ export interface CTPowerReportData {
   report_number?: string;
 }
 
+type ApiResponse<T = any> = {
+  success: boolean;
+  data?: T;
+  error?: string;
+};
+
 export class ApiService {
-  static async createCTPowerReport(data: CTPowerReportData) {
+  static async createCTPowerReport(data: CTPowerReportData): Promise<ApiResponse> {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
@@ -34,7 +40,7 @@ export class ApiService {
     }
   }
 
-  static async getDepartments() {
+  static async getDepartments(): Promise<ApiResponse> {
     try {
       const { data, error } = await supabase
         .from('departments')
@@ -49,7 +55,7 @@ export class ApiService {
     }
   }
 
-  static async getProjects() {
+  static async getProjects(): Promise<ApiResponse> {
     try {
       const { data, error } = await supabase
         .from('projects')
@@ -64,7 +70,7 @@ export class ApiService {
     }
   }
 
-  static async getSites() {
+  static async getSites(): Promise<ApiResponse> {
     try {
       const { data, error } = await supabase
         .from('telecom_sites')
@@ -79,7 +85,7 @@ export class ApiService {
     }
   }
 
-  static async getWeeklyReports(userId?: string) {
+  static async getWeeklyReports(userId?: string): Promise<ApiResponse> {
     try {
       let query = supabase
         .from('weekly_reports')
@@ -99,7 +105,7 @@ export class ApiService {
     }
   }
 
-  static async getMemos(userId?: string) {
+  static async getMemos(userId?: string): Promise<ApiResponse> {
     try {
       let query = supabase
         .from('memos')
@@ -119,7 +125,7 @@ export class ApiService {
     }
   }
 
-  static async getNotifications(userId: string) {
+  static async getNotifications(userId: string): Promise<ApiResponse> {
     try {
       const { data, error } = await supabase
         .from('notifications')
@@ -135,7 +141,7 @@ export class ApiService {
     }
   }
 
-  static async markNotificationAsRead(notificationId: string) {
+  static async markNotificationAsRead(notificationId: string): Promise<ApiResponse> {
     try {
       const { error } = await supabase
         .from('notifications')
@@ -150,7 +156,7 @@ export class ApiService {
     }
   }
 
-  static async getDocuments() {
+  static async getDocuments(): Promise<ApiResponse> {
     try {
       const { data, error } = await supabase
         .from('documents')
@@ -165,7 +171,7 @@ export class ApiService {
     }
   }
 
-  static async uploadDocument(file: File, documentData: any) {
+  static async uploadDocument(file: File, documentData: any): Promise<ApiResponse> {
     try {
       const { data, error } = await supabase
         .from('documents')
@@ -179,7 +185,7 @@ export class ApiService {
     }
   }
 
-  static async getBatteryReports() {
+  static async getBatteryReports(): Promise<ApiResponse> {
     try {
       const { data, error } = await supabase
         .from('battery_reports')
@@ -194,7 +200,7 @@ export class ApiService {
     }
   }
 
-  static async getTelecomReports() {
+  static async getTelecomReports(): Promise<ApiResponse> {
     try {
       const { data, error } = await supabase
         .from('site_reports')
@@ -209,7 +215,7 @@ export class ApiService {
     }
   }
 
-  static async getLeaveRequests(userId?: string) {
+  static async getLeaveRequests(userId?: string): Promise<ApiResponse> {
     try {
       let query = supabase
         .from('leave_requests')
