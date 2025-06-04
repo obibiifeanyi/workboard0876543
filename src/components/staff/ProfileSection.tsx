@@ -1,3 +1,4 @@
+
 // @ts-ignore - Ignore missing type declarations
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -217,17 +218,17 @@ export const ProfileSection = () => {
                 variant="outline" 
                 className="ml-2"
                 onClick={handleSave}
-                disabled={updateProfile.isLoading}
+                disabled={updateProfile.isPending}
                 aria-label="Save profile changes"
               >
                 <Save className="w-4 h-4 mr-1" />
-                {updateProfile.isLoading ? 'Saving...' : 'Save'}
+                {updateProfile.isPending ? 'Saving...' : 'Save'}
               </Button>
               <Button 
                 variant="outline" 
                 size="sm"
                 onClick={handleCancel}
-                disabled={updateProfile.isLoading}
+                disabled={updateProfile.isPending}
               >
                 <X className="h-4 w-4 mr-2" />
                 Cancel
