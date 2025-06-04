@@ -1,19 +1,11 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { v4 as uuidv4 } from 'uuid';
+import { DocumentAnalysis as BaseDocumentAnalysis } from '@/types/ai';
 
-export interface DocumentAnalysis {
-  id: string;
-  file_name: string;
-  file_path?: string;
-  file_type?: string;
-  file_size?: number;
-  analysis_result: any;
-  status: string;
-  created_by: string;
-  created_at: string;
-  document_type?: string;
-  confidence_score?: number;
+// Use the base type and extend it if needed
+export type DocumentAnalysis = BaseDocumentAnalysis & {
+  status?: string;
   processing_time_ms?: number;
 }
 
