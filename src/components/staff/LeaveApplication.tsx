@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Calendar as CalendarIcon, Plus } from "lucide-react";
 import { useStaffOperations } from "@/hooks/useStaffOperations";
+import { useToast } from "@/hooks/use-toast";
 import {
   Select,
   SelectContent,
@@ -30,7 +31,10 @@ interface LeaveApplicationProps {
 
 export const LeaveApplication = ({ onLeaveRequest }: LeaveApplicationProps) => {
   const { createLeaveRequest } = useStaffOperations();
+  const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     leave_type: '',
     start_date: '',
@@ -39,22 +43,57 @@ export const LeaveApplication = ({ onLeaveRequest }: LeaveApplicationProps) => {
   });
 
   const handleSubmit = () => {
+    setErrorMessage(null);
+    setIsSubmitting(true);
+    
+    // Validate required fields
     if (!formData.leave_type || !formData.start_date || !formData.end_date) {
+      setErrorMessage('Please fill in all required fields');
+      setIsSubmitting(false);
+      toast({
+        title: 'Validation Error',
+        description: 'Please fill in all required fields.',
+        variant: 'destructive',
+      });
       return;
     }
-
-    createLeaveRequest.mutate(formData, {
-      onSuccess: () => {
-        setIsDialogOpen(false);
-        setFormData({
-          leave_type: '',
-          start_date: '',
-          end_date: '',
-          reason: '',
-        });
-        onLeaveRequest?.();
-      },
-    });
+    
+    try {
+      createLeaveRequest.mutate(formData, {
+        onSuccess: () => {
+          setIsSubmitting(false);
+          setIsDialogOpen(false);
+          setFormData({
+            leave_type: '',
+            start_date: '',
+            end_date: '',
+            reason: '',
+          });
+          toast({
+            title: "Success",
+            description: "Leave request submitted successfully.",
+          });
+          onLeaveRequest?.();
+        },
+        onError: (error: any) => {
+          setIsSubmitting(false);
+          setErrorMessage(error?.message || 'Failed to submit leave request');
+          toast({
+            title: 'Error',
+            description: error?.message || 'Failed to submit leave request.',
+            variant: 'destructive',
+          });
+        }
+      });
+    } catch (error: any) {
+      setIsSubmitting(false);
+      setErrorMessage(error?.message || 'Failed to submit leave request');
+      toast({
+        title: 'Error',
+        description: error?.message || 'Failed to submit leave request.',
+        variant: 'destructive',
+      });
+    }
   };
 
   return (
@@ -131,10 +170,13 @@ export const LeaveApplication = ({ onLeaveRequest }: LeaveApplicationProps) => {
                 <Button 
                   onClick={handleSubmit} 
                   className="w-full" 
-                  disabled={createLeaveRequest.isPending}
+                  disabled={isSubmitting}
                 >
-                  {createLeaveRequest.isPending ? "Submitting..." : "Submit Leave Request"}
+                  {isSubmitting ? "Submitting..." : "Submit Leave Request"}
                 </Button>
+                {errorMessage && (
+                  <p className="text-red-500 text-xs mt-2">{errorMessage}</p>
+                )}
               </div>
             </DialogContent>
           </Dialog>

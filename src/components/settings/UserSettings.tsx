@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,11 +10,17 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { User, Mail, Phone, MapPin, Save } from "lucide-react";
+import { User, Mail, Phone, MapPin, Save, AlertCircle, CheckCircle } from "lucide-react";
 
 export const UserSettings = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  
+  // Form submission states
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  
   const [formData, setFormData] = useState({
     full_name: '',
     email: '',
@@ -24,6 +29,19 @@ export const UserSettings = () => {
     bio: '',
     avatar_url: ''
   });
+  
+  // Reset success state after delay
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout | null = null;
+    if (isSuccess) {
+      timeoutId = setTimeout(() => {
+        setIsSuccess(false);
+      }, 3000);
+    }
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [isSuccess]);
 
   const { data: profile, isLoading, error } = useQuery({
     queryKey: ['user_profile'],
@@ -116,8 +134,56 @@ export const UserSettings = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
+    setErrorMessage(null);
+    
+    // Validate form fields
+    if (!formData.full_name.trim()) {
+      setErrorMessage('Full name is required');
+      setIsSubmitting(false);
+      toast({
+        title: 'Validation Error',
+        description: 'Full name is required.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    if (!formData.email.trim()) {
+      setErrorMessage('Email is required');
+      setIsSubmitting(false);
+      toast({
+        title: 'Validation Error',
+        description: 'Email is required.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      setErrorMessage('Please enter a valid email address');
+      setIsSubmitting(false);
+      toast({
+        title: 'Validation Error',
+        description: 'Please enter a valid email address.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
     console.log('Submitting profile update:', formData);
-    updateProfileMutation.mutate(formData);
+    updateProfileMutation.mutate(formData, {
+      onSuccess: () => {
+        setIsSuccess(true);
+        setIsSubmitting(false);
+      },
+      onError: (error: any) => {
+        setIsSubmitting(false);
+        setErrorMessage(error?.message || 'Failed to update profile');
+      }
+    });
   };
 
   const handleInputChange = (field: string, value: string) => {
@@ -232,15 +298,30 @@ export const UserSettings = () => {
             />
           </div>
 
+          {/* Form feedback messages */}
+          {errorMessage && (
+            <div className="flex items-center gap-2 text-red-500 text-sm">
+              <AlertCircle size={16} />
+              <span>{errorMessage}</span>
+            </div>
+          )}
+          
+          {isSuccess && (
+            <div className="flex items-center gap-2 text-green-500 text-sm">
+              <CheckCircle size={16} />
+              <span>Profile updated successfully!</span>
+            </div>
+          )}
+
           {/* Submit Button */}
           <div className="flex justify-end">
             <Button
               type="submit"
-              disabled={updateProfileMutation.isPending}
+              disabled={isSubmitting || updateProfileMutation.isPending}
               className="bg-gradient-to-r from-red-600 to-red-700 text-white hover:from-red-700 hover:to-red-800"
             >
               <Save className="h-4 w-4 mr-2" />
-              {updateProfileMutation.isPending ? 'Saving...' : 'Save Changes'}
+              {isSubmitting || updateProfileMutation.isPending ? 'Saving...' : 'Save Changes'}
             </Button>
           </div>
         </form>

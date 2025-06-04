@@ -1,12 +1,12 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { FileText, Send, Users } from "lucide-react";
+import { FileText, Send, Users, AlertCircle, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useMemoManagement } from "@/hooks/useMemoManagement";
 
@@ -17,13 +17,50 @@ export const MemoManagement = () => {
   const [content, setContent] = useState("");
   const [department, setDepartment] = useState("");
   const { toast } = useToast();
+  
+  // Form submission states
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  
+  // Reset success state after delay
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout | null = null;
+    if (isSuccess) {
+      timeoutId = setTimeout(() => {
+        setIsSuccess(false);
+      }, 3000);
+    }
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [isSuccess]);
+
+  const validateForm = () => {
+    const errors: string[] = [];
+    
+    if (!subject.trim()) {
+      errors.push("Subject is required");
+    }
+    
+    if (!content.trim()) {
+      errors.push("Content is required");
+    }
+    
+    setValidationErrors(errors);
+    return errors.length === 0;
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!subject || !content) {
+    setIsSubmitting(true);
+    setValidationErrors([]);
+    
+    if (!validateForm()) {
+      setIsSubmitting(false);
       toast({
-        title: "Missing Fields",
-        description: "Please fill in subject and content",
+        title: "Validation Error",
+        description: "Please fill in all required fields",
         variant: "destructive",
       });
       return;
@@ -37,17 +74,26 @@ export const MemoManagement = () => {
         status: "published",
       });
 
+      // Show success message
+      setIsSuccess(true);
+      toast({
+        title: "Success",
+        description: "Departmental memo created and published successfully",
+      });
+      
       // Reset form
       setSubject("");
       setRecipients("");
       setContent("");
       setDepartment("");
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "Failed to create departmental memo",
+        description: error?.message || "Failed to create departmental memo",
         variant: "destructive",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -112,13 +158,38 @@ export const MemoManagement = () => {
             />
           </div>
           
+          {/* Validation errors */}
+          {validationErrors.length > 0 && (
+            <div className="bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-300 p-3 rounded-md mb-4">
+              <div className="flex items-center gap-2 mb-2">
+                <AlertCircle size={16} className="text-red-600 dark:text-red-400" />
+                <span className="font-medium">Please fix the following errors:</span>
+              </div>
+              <ul className="list-disc list-inside space-y-1 pl-2">
+                {validationErrors.map((error, index) => (
+                  <li key={index} className="text-sm">{error}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+          
+          {/* Success message */}
+          {isSuccess && (
+            <div className="bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-300 p-3 rounded-md mb-4">
+              <div className="flex items-center gap-2">
+                <CheckCircle size={16} className="text-green-600 dark:text-green-400" />
+                <span>Memo created and published successfully!</span>
+              </div>
+            </div>
+          )}
+          
           <Button 
             type="submit" 
             className="w-full md:w-auto"
-            disabled={createMemo.isPending}
+            disabled={isSubmitting || createMemo.isPending}
           >
             <Send className="h-4 w-4 mr-2" />
-            {createMemo.isPending ? "Creating..." : "Create & Publish Memo"}
+            {isSubmitting || createMemo.isPending ? "Creating..." : "Create & Publish Memo"}
           </Button>
         </form>
       </CardContent>

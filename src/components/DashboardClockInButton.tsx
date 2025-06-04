@@ -1,20 +1,47 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Timer } from "lucide-react";
+import { Timer, CheckCircle, AlertCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
 export const DashboardClockInButton = () => {
-  const [loading, setLoading] = useState(false);
+  // Form submission states
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const { toast } = useToast();
   const { user } = useAuth();
+  
+  // Reset success state after delay
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout | null = null;
+    if (isSuccess) {
+      timeoutId = setTimeout(() => {
+        setIsSuccess(false);
+        setSuccessMessage(null);
+      }, 3000);
+    }
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [isSuccess]);
 
   const handleClockIn = async () => {
-    if (!user) return;
+    if (!user) {
+      toast({
+        title: "Authentication Error",
+        description: "You must be logged in to clock in/out",
+        variant: "destructive",
+      });
+      return;
+    }
 
-    setLoading(true);
+    setIsSubmitting(true);
+    setErrorMessage(null);
+    setSuccessMessage(null);
     try {
       if ("geolocation" in navigator) {
         navigator.geolocation.getCurrentPosition(
@@ -55,9 +82,13 @@ export const DashboardClockInButton = () => {
 
                 if (updateError) throw updateError;
 
+                const successMsg = `You worked ${totalHours.toFixed(2)} hours today.`;
+                setSuccessMessage(successMsg);
+                setIsSuccess(true);
+                
                 toast({
                   title: "Clock Out Successful",
-                  description: `You worked ${totalHours.toFixed(2)} hours today.`,
+                  description: successMsg,
                 });
               } else {
                 // Create new clock-in entry
@@ -71,25 +102,35 @@ export const DashboardClockInButton = () => {
 
                 if (insertError) throw insertError;
 
+                const successMsg = "Your location and time have been recorded.";
+                setSuccessMessage(successMsg);
+                setIsSuccess(true);
+                
                 toast({
                   title: "Clock In Successful",
-                  description: "Your location and time have been recorded.",
+                  description: successMsg,
                 });
               }
             } catch (dbError) {
               console.error("Database error:", dbError);
+              const errorMsg = "Failed to record time log. Please try again.";
+              setErrorMessage(errorMsg);
+              
               toast({
                 title: "Error",
-                description: "Failed to record time log. Please try again.",
+                description: errorMsg,
                 variant: "destructive",
               });
             }
           },
           (error) => {
             console.error("Geolocation error:", error);
+            const errorMsg = "Please enable location services to clock in.";
+            setErrorMessage(errorMsg);
+            
             toast({
               title: "Location Error",
-              description: "Please enable location services to clock in.",
+              description: errorMsg,
               variant: "destructive",
             });
           },
@@ -100,34 +141,58 @@ export const DashboardClockInButton = () => {
           }
         );
       } else {
+        const errorMsg = "Your browser doesn't support location services.";
+        setErrorMessage(errorMsg);
+        
         toast({
           title: "Location Not Supported",
-          description: "Your browser doesn't support location services.",
+          description: errorMsg,
           variant: "destructive",
         });
       }
     } catch (error) {
       console.error("Clock in error:", error);
+      const errorMsg = "Failed to clock in. Please try again.";
+      setErrorMessage(errorMsg);
+      
       toast({
         title: "Error",
-        description: "Failed to clock in. Please try again.",
+        description: errorMsg,
         variant: "destructive",
       });
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <Button
-      onClick={handleClockIn}
-      disabled={loading}
-      variant="outline"
-      size="sm"
-      className="flex items-center gap-2 bg-primary/10 hover:bg-primary/20 border-primary/20"
-    >
-      <Timer className="h-4 w-4" />
-      {loading ? "Processing..." : "Clock In/Out"}
-    </Button>
+    <div className="flex flex-col space-y-2">
+      <Button
+        onClick={handleClockIn}
+        disabled={isSubmitting}
+        variant="outline"
+        size="sm"
+        className="flex items-center gap-2 bg-primary/10 hover:bg-primary/20 border-primary/20"
+      >
+        <Timer className={`h-4 w-4 ${isSubmitting ? 'animate-spin' : ''}`} />
+        {isSubmitting ? "Processing..." : "Clock In/Out"}
+      </Button>
+      
+      {/* Success message */}
+      {isSuccess && successMessage && (
+        <div className="text-xs bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-300 p-2 rounded-md flex items-center gap-1.5">
+          <CheckCircle size={12} className="text-green-600 dark:text-green-400" />
+          <span>{successMessage}</span>
+        </div>
+      )}
+      
+      {/* Error message */}
+      {errorMessage && (
+        <div className="text-xs bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-300 p-2 rounded-md flex items-center gap-1.5">
+          <AlertCircle size={12} className="text-red-600 dark:text-red-400" />
+          <span>{errorMessage}</span>
+        </div>
+      )}
+    </div>
   );
 };

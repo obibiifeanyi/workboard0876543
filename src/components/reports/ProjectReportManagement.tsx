@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { FileText, Plus, TrendingUp } from "lucide-react";
+import { FileText, Plus, TrendingUp, AlertCircle, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -18,6 +18,12 @@ export const ProjectReportManagement = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  
+  // Form submission states
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  
   const [formData, setFormData] = useState({
     project_id: "none",
     report_title: "",
@@ -87,38 +93,94 @@ export const ProjectReportManagement = () => {
         }]);
 
       if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['project-reports'] });
-      setIsDialogOpen(false);
-      setFormData({
-        project_id: "none",
-        report_title: "",
-        report_type: "progress",
-        report_content: "",
-        progress_percentage: "",
-        budget_used: "",
-        budget_remaining: "",
-        issues_encountered: "",
-        next_steps: "",
-      });
-      toast({
-        title: "Success",
-        description: "Project report created successfully",
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to create project report",
-        variant: "destructive",
-      });
-    },
+    }
   });
 
+  // Reset success state after delay
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout | null = null;
+    if (isSuccess) {
+      timeoutId = setTimeout(() => {
+        setIsSuccess(false);
+      }, 3000);
+    }
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [isSuccess]);
+  
+  const validateForm = () => {
+    const errors: string[] = [];
+    
+    if (formData.project_id === "none") {
+      errors.push("Please select a project");
+    }
+    
+    if (!formData.report_title.trim()) {
+      errors.push("Report title is required");
+    }
+    
+    if (!formData.report_content.trim()) {
+      errors.push("Report content is required");
+    }
+    
+    if (formData.report_type === "progress" && !formData.progress_percentage) {
+      errors.push("Progress percentage is required for progress reports");
+    }
+    
+    setValidationErrors(errors);
+    return errors.length === 0;
+  };
+  
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    createReport.mutate(formData);
+    setIsSubmitting(true);
+    setValidationErrors([]);
+    
+    if (!validateForm()) {
+      setIsSubmitting(false);
+      
+      toast({
+        title: "Validation Error",
+        description: "Please fix the errors in the form",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    createReport.mutate(formData, {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['project-reports'] });
+        setIsDialogOpen(false);
+        setFormData({
+          project_id: "none",
+          report_title: "",
+          report_type: "progress",
+          report_content: "",
+          progress_percentage: "",
+          budget_used: "",
+          budget_remaining: "",
+          issues_encountered: "",
+          next_steps: "",
+        });
+        setIsSuccess(true);
+        setIsSubmitting(false);
+        
+        toast({
+          title: "Success",
+          description: "Project report created successfully",
+        });
+      },
+      onError: (error: any) => {
+        setIsSubmitting(false);
+        
+        toast({
+          title: "Error",
+          description: error?.message || "Failed to create project report",
+          variant: "destructive",
+        });
+      }
+    });
   };
 
   const getStatusBadge = (status: string) => {
@@ -261,8 +323,36 @@ export const ProjectReportManagement = () => {
                 />
               </div>
 
-              <Button type="submit" disabled={createReport.isPending}>
-                {createReport.isPending ? "Creating..." : "Create Report"}
+              {/* Validation errors */}
+              {validationErrors.length > 0 && (
+                <div className="bg-red-50 text-red-800 p-3 rounded-md mb-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <AlertCircle size={16} className="text-red-600" />
+                    <span className="font-medium">Please fix the following errors:</span>
+                  </div>
+                  <ul className="list-disc list-inside space-y-1 pl-2">
+                    {validationErrors.map((error, index) => (
+                      <li key={index} className="text-sm">{error}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              
+              {/* Success message */}
+              {isSuccess && (
+                <div className="bg-green-50 text-green-800 p-3 rounded-md mb-4">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle size={16} className="text-green-600" />
+                    <span>Report created successfully!</span>
+                  </div>
+                </div>
+              )}
+              
+              <Button 
+                type="submit" 
+                disabled={isSubmitting || createReport.isPending}
+              >
+                {isSubmitting || createReport.isPending ? "Creating..." : "Create Report"}
               </Button>
             </form>
           </DialogContent>

@@ -11,10 +11,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useMemoApprovalSystem } from "@/hooks/useMemoApprovalSystem";
+import { useToast } from "@/hooks/use-toast";
 import { FileText, Plus, Edit, Trash2, Send, Clock, CheckCircle, XCircle } from "lucide-react";
 import { format } from "date-fns";
 
 export const UserMemoManagement = () => {
+  const { toast } = useToast();
   const {
     userMemos,
     isLoadingUserMemos,
@@ -25,6 +27,9 @@ export const UserMemoManagement = () => {
 
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [editingMemo, setEditingMemo] = useState<any>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     title: '',
     content: '',
@@ -44,8 +49,18 @@ export const UserMemoManagement = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+    setIsSubmitting(true);
+    setErrorMessage(null);
+
+    // Validate form fields
     if (!formData.title.trim() || !formData.content.trim()) {
+      setErrorMessage('Please fill in all required fields');
+      setIsSubmitting(false);
+      toast({
+        title: 'Validation Error',
+        description: 'Please fill in title and content fields.',
+        variant: 'destructive',
+      });
       return;
     }
 
@@ -59,10 +74,28 @@ export const UserMemoManagement = () => {
         await createMemo.mutateAsync(formData);
       }
       
+      setIsSuccess(true);
+      setIsSubmitting(false);
+      toast({
+        title: 'Success',
+        description: editingMemo ? 'Memo updated successfully.' : 'Memo created successfully.',
+      });
       setIsCreateDialogOpen(false);
       resetForm();
-    } catch (error) {
+      
+      // Reset success state after a delay
+      setTimeout(() => {
+        setIsSuccess(false);
+      }, 3000);
+    } catch (error: any) {
+      setIsSubmitting(false);
+      setErrorMessage(error?.message || 'Error saving memo');
       console.error('Error saving memo:', error);
+      toast({
+        title: 'Error',
+        description: error?.message || 'Failed to save memo.',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -155,7 +188,7 @@ export const UserMemoManagement = () => {
                       <SelectValue placeholder="Select department" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All Departments</SelectItem>
+                      <SelectItem value="all">All Departments</SelectItem>
                       <SelectItem value="engineering">Engineering</SelectItem>
                       <SelectItem value="operations">Operations</SelectItem>
                       <SelectItem value="finance">Finance</SelectItem>
@@ -196,12 +229,16 @@ export const UserMemoManagement = () => {
                 <div className="flex gap-2 pt-4">
                   <Button 
                     type="submit" 
-                    disabled={createMemo.isPending || updateMemo.isPending}
-                    className="flex-1"
+                    disabled={isSubmitting}
                   >
-                    <Send className="h-4 w-4 mr-2" />
-                    {editingMemo ? 'Update Memo' : 'Create Memo'}
+                    {isSubmitting ? 'Saving...' : 'Save Memo'}
                   </Button>
+                  {errorMessage && (
+                    <p className="text-red-500 text-xs mt-2">{errorMessage}</p>
+                  )}
+                  {isSuccess && (
+                    <p className="text-green-600 text-xs mt-2">Memo saved successfully!</p>
+                  )}
                   <Button 
                     type="button" 
                     variant="outline" 

@@ -1,11 +1,12 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
+import { AlertCircle, CheckCircle } from "lucide-react";
 import { Loader } from "lucide-react";
 
 interface SignupFormProps {
@@ -27,6 +28,7 @@ interface SignupFormProps {
 }
 
 export const SignupForm = ({ onSignup, error }: SignupFormProps) => {
+  const { toast } = useToast();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -37,8 +39,24 @@ export const SignupForm = ({ onSignup, error }: SignupFormProps) => {
   const [location, setLocation] = useState("");
   const [bio, setBio] = useState("");
   const [role, setRole] = useState("staff");
-  const [loading, setLoading] = useState(false);
+  
+  // Form submission states
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
   const [formErrors, setFormErrors] = useState<string[]>([]);
+  
+  // Reset success state after delay
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout | null = null;
+    if (isSuccess) {
+      timeoutId = setTimeout(() => {
+        setIsSuccess(false);
+      }, 3000);
+    }
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [isSuccess]);
 
   const validateForm = () => {
     const errors: string[] = [];
@@ -66,12 +84,13 @@ export const SignupForm = ({ onSignup, error }: SignupFormProps) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormErrors([]);
+    setIsSubmitting(true);
     
     if (!validateForm()) {
+      setIsSubmitting(false);
       return;
     }
 
-    setLoading(true);
     try {
       await onSignup(email, password, {
         fullName,
@@ -83,9 +102,43 @@ export const SignupForm = ({ onSignup, error }: SignupFormProps) => {
         location: location || undefined,
         bio: bio || undefined,
       });
+      
+      // Show success message
+      setIsSuccess(true);
+      toast({
+        title: "Account Created",
+        description: "Your account has been created successfully. Please check your email for verification.",
+      });
+      
+      // Reset form on success
+      resetForm();
+      
+    } catch (error: any) {
+      // Handle error
+      const errorMessage = error?.message || "An error occurred during signup";
+      setFormErrors([errorMessage]);
+      
+      toast({
+        title: "Signup Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
+  };
+  
+  const resetForm = () => {
+    setEmail("");
+    setPassword("");
+    setConfirmPassword("");
+    setFullName("");
+    setPhone("");
+    setPosition("");
+    setDepartment("");
+    setLocation("");
+    setBio("");
+    setRole("staff");
   };
 
   // Display user-friendly error messages
@@ -123,6 +176,17 @@ export const SignupForm = ({ onSignup, error }: SignupFormProps) => {
           </AlertDescription>
         </Alert>
       )}
+      
+      {isSuccess && (
+        <Alert variant="default" className="mb-4 bg-green-50 text-green-800 border-green-200">
+          <div className="flex items-center gap-2">
+            <CheckCircle size={16} className="text-green-600" />
+            <AlertDescription className="text-green-800">
+              Account created successfully! Please check your email for verification.
+            </AlertDescription>
+          </div>
+        </Alert>
+      )}
 
       {/* Required Fields Section */}
       <div className="space-y-4">
@@ -139,7 +203,7 @@ export const SignupForm = ({ onSignup, error }: SignupFormProps) => {
               onChange={(e) => setFullName(e.target.value)}
               required
               className="bg-black/5 dark:bg-white/5 border-none placeholder:text-muted-foreground/50"
-              disabled={loading}
+              disabled={isSubmitting}
             />
           </div>
 
@@ -153,7 +217,7 @@ export const SignupForm = ({ onSignup, error }: SignupFormProps) => {
               onChange={(e) => setEmail(e.target.value)}
               required
               className="bg-black/5 dark:bg-white/5 border-none placeholder:text-muted-foreground/50"
-              disabled={loading}
+              disabled={isSubmitting}
             />
           </div>
         </div>
@@ -170,7 +234,7 @@ export const SignupForm = ({ onSignup, error }: SignupFormProps) => {
               required
               minLength={6}
               className="bg-black/5 dark:bg-white/5 border-none placeholder:text-muted-foreground/50"
-              disabled={loading}
+              disabled={isSubmitting}
             />
           </div>
 
@@ -184,14 +248,14 @@ export const SignupForm = ({ onSignup, error }: SignupFormProps) => {
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
               className="bg-black/5 dark:bg-white/5 border-none placeholder:text-muted-foreground/50"
-              disabled={loading}
+              disabled={isSubmitting}
             />
           </div>
         </div>
 
         <div className="space-y-2 text-left">
           <Label htmlFor="role">Role *</Label>
-          <Select value={role} onValueChange={setRole} disabled={loading}>
+          <Select value={role} onValueChange={setRole} disabled={isSubmitting}>
             <SelectTrigger className="bg-black/5 dark:bg-white/5 border-none">
               <SelectValue placeholder="Select your role" />
             </SelectTrigger>
@@ -219,7 +283,7 @@ export const SignupForm = ({ onSignup, error }: SignupFormProps) => {
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               className="bg-black/5 dark:bg-white/5 border-none placeholder:text-muted-foreground/50"
-              disabled={loading}
+              disabled={isSubmitting}
             />
           </div>
 
@@ -232,7 +296,7 @@ export const SignupForm = ({ onSignup, error }: SignupFormProps) => {
               value={position}
               onChange={(e) => setPosition(e.target.value)}
               className="bg-black/5 dark:bg-white/5 border-none placeholder:text-muted-foreground/50"
-              disabled={loading}
+              disabled={isSubmitting}
             />
           </div>
         </div>
@@ -247,7 +311,7 @@ export const SignupForm = ({ onSignup, error }: SignupFormProps) => {
               value={department}
               onChange={(e) => setDepartment(e.target.value)}
               className="bg-black/5 dark:bg-white/5 border-none placeholder:text-muted-foreground/50"
-              disabled={loading}
+              disabled={isSubmitting}
             />
           </div>
 
@@ -260,7 +324,7 @@ export const SignupForm = ({ onSignup, error }: SignupFormProps) => {
               value={location}
               onChange={(e) => setLocation(e.target.value)}
               className="bg-black/5 dark:bg-white/5 border-none placeholder:text-muted-foreground/50"
-              disabled={loading}
+              disabled={isSubmitting}
             />
           </div>
         </div>
@@ -273,7 +337,7 @@ export const SignupForm = ({ onSignup, error }: SignupFormProps) => {
             value={bio}
             onChange={(e) => setBio(e.target.value)}
             className="bg-black/5 dark:bg-white/5 border-none placeholder:text-muted-foreground/50 min-h-[80px]"
-            disabled={loading}
+            disabled={isSubmitting}
           />
         </div>
       </div>
@@ -281,9 +345,9 @@ export const SignupForm = ({ onSignup, error }: SignupFormProps) => {
       <Button 
         type="submit" 
         className="w-full mt-6" 
-        disabled={loading || !email || !password || !fullName}
+        disabled={isSubmitting || !email || !password || !fullName}
       >
-        {loading ? (
+        {isSubmitting ? (
           <>
             <Loader className="mr-2 h-4 w-4 animate-spin" />
             Creating Account...

@@ -26,6 +26,9 @@ interface BatteryReportForm {
 export const BatteryReport = () => {
   const { createBatteryReport } = useStaffOperations();
   const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [formData, setFormData] = useState<BatteryReportForm>({
     site_name: '',
     battery_voltage: 0,
@@ -43,6 +46,21 @@ export const BatteryReport = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
+    setErrorMessage(null);
+    
+    // Validate required fields
+    if (!formData.site_name || !formData.health_status) {
+      setErrorMessage('Please fill in all required fields');
+      setIsSubmitting(false);
+      toast({
+        title: 'Validation Error',
+        description: 'Please fill in all required fields.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
     createBatteryReport.mutate({
       site_name: formData.site_name,
       battery_voltage: formData.battery_voltage,
@@ -57,10 +75,45 @@ export const BatteryReport = () => {
       issues_reported: formData.issues_reported,
       recommendations: formData.recommendations,
       report_date: new Date().toISOString().split('T')[0] // Add current date
-    });
-    toast({
-      title: "Success",
-      description: "Battery report submitted successfully.",
+    }, {
+      onSuccess: () => {
+        setIsSuccess(true);
+        setIsSubmitting(false);
+        toast({
+          title: "Success",
+          description: "Battery report submitted successfully.",
+        });
+        
+        // Reset form after successful submission
+        setFormData({
+          site_name: '',
+          battery_voltage: 0,
+          current_capacity: 0,
+          temperature: 0,
+          charging_status: '',
+          health_status: '',
+          runtime_hours: 0,
+          load_current: 0,
+          backup_time_remaining: 0,
+          maintenance_required: false,
+          issues_reported: '',
+          recommendations: '',
+        });
+        
+        // Reset success state after a delay
+        setTimeout(() => {
+          setIsSuccess(false);
+        }, 3000);
+      },
+      onError: (error: any) => {
+        setIsSubmitting(false);
+        setErrorMessage(error?.message || 'Failed to submit report');
+        toast({
+          title: 'Error',
+          description: error?.message || 'Failed to submit battery report.',
+          variant: 'destructive',
+        });
+      }
     });
   };
 
@@ -205,7 +258,15 @@ export const BatteryReport = () => {
             />
           </div>
 
-          <Button type="submit">Submit Report</Button>
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? 'Submitting...' : 'Submit Report'}
+          </Button>
+          {errorMessage && (
+            <p className="text-red-500 text-xs mt-2">{errorMessage}</p>
+          )}
+          {isSuccess && (
+            <p className="text-green-600 text-xs mt-2">Report submitted successfully!</p>
+          )}
         </form>
       </CardContent>
     </Card>

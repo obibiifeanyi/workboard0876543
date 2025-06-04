@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,15 +6,34 @@ import { Label } from "@/components/ui/label";
 import { useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Shield, Key, Lock, Save } from "lucide-react";
+import { Key, Shield, LogOut, Save, AlertCircle, CheckCircle, Lock } from "lucide-react";
 
 export const SecuritySettings = () => {
   const { toast } = useToast();
+  
+  // Form submission states
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  
   const [passwordData, setPasswordData] = useState({
     currentPassword: '',
     newPassword: '',
     confirmPassword: ''
   });
+  
+  // Reset success state after delay
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout | null = null;
+    if (isSuccess) {
+      timeoutId = setTimeout(() => {
+        setIsSuccess(false);
+      }, 3000);
+    }
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [isSuccess]);
 
   const changePasswordMutation = useMutation({
     mutationFn: async (data: typeof passwordData) => {
@@ -51,7 +69,65 @@ export const SecuritySettings = () => {
 
   const handlePasswordSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    changePasswordMutation.mutate(passwordData);
+    setIsSubmitting(true);
+    setErrorMessage(null);
+    
+    // Validate password fields
+    if (!passwordData.currentPassword) {
+      setErrorMessage('Current password is required');
+      setIsSubmitting(false);
+      toast({
+        title: 'Validation Error',
+        description: 'Current password is required.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    if (!passwordData.newPassword) {
+      setErrorMessage('New password is required');
+      setIsSubmitting(false);
+      toast({
+        title: 'Validation Error',
+        description: 'New password is required.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    if (passwordData.newPassword.length < 6) {
+      setErrorMessage('New password must be at least 6 characters');
+      setIsSubmitting(false);
+      toast({
+        title: 'Validation Error',
+        description: 'New password must be at least 6 characters.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      setErrorMessage('New passwords do not match');
+      setIsSubmitting(false);
+      toast({
+        title: 'Validation Error',
+        description: 'New passwords do not match.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    changePasswordMutation.mutate(passwordData, {
+      onSuccess: () => {
+        setIsSuccess(true);
+        setIsSubmitting(false);
+        setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+      },
+      onError: (error: any) => {
+        setIsSubmitting(false);
+        setErrorMessage(error?.message || 'Failed to update password');
+      }
+    });
   };
 
   const signOutAllDevicesMutation = useMutation({
@@ -73,6 +149,14 @@ export const SecuritySettings = () => {
       });
     },
   });
+  
+  const handleSignOutAllDevices = () => {
+    setIsSubmitting(true);
+    signOutAllDevicesMutation.mutate(undefined, {
+      onSuccess: () => setIsSubmitting(false),
+      onError: () => setIsSubmitting(false)
+    });
+  };
 
   return (
     <div className="space-y-6">
@@ -119,13 +203,28 @@ export const SecuritySettings = () => {
               />
             </div>
 
+            {/* Form feedback messages */}
+            {errorMessage && (
+              <div className="flex items-center gap-2 text-red-500 text-sm">
+                <AlertCircle size={16} />
+                <span>{errorMessage}</span>
+              </div>
+            )}
+            
+            {isSuccess && (
+              <div className="flex items-center gap-2 text-green-500 text-sm">
+                <CheckCircle size={16} />
+                <span>Password updated successfully!</span>
+              </div>
+            )}
+            
             <Button
               type="submit"
-              disabled={changePasswordMutation.isPending}
+              disabled={isSubmitting || changePasswordMutation.isPending}
               className="bg-gradient-to-r from-red-600 to-red-700 text-white hover:from-red-700 hover:to-red-800"
             >
               <Save className="h-4 w-4 mr-2" />
-              {changePasswordMutation.isPending ? 'Updating...' : 'Update Password'}
+              {isSubmitting || changePasswordMutation.isPending ? 'Updating...' : 'Update Password'}
             </Button>
           </form>
         </CardContent>
@@ -146,11 +245,11 @@ export const SecuritySettings = () => {
               This will sign you out from all devices and sessions.
             </p>
             <Button
-              onClick={() => signOutAllDevicesMutation.mutate()}
-              disabled={signOutAllDevicesMutation.isPending}
+              onClick={handleSignOutAllDevices}
+              disabled={isSubmitting || signOutAllDevicesMutation.isPending}
               variant="destructive"
             >
-              <Lock className="h-4 w-4 mr-2" />
+              <LogOut className="h-4 w-4 mr-2" />
               {signOutAllDevicesMutation.isPending ? 'Signing Out...' : 'Sign Out All Devices'}
             </Button>
           </div>

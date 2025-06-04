@@ -24,6 +24,9 @@ import { ProjectManagement } from "./components/admin/ProjectManagement";
 import { TimeAttendanceManagement } from "./components/admin/TimeAttendanceManagement";
 import { LeaveManagement } from "./components/admin/LeaveManagement";
 import { CommunicationCenter } from "./components/admin/CommunicationCenter";
+
+// AI Document Analyzer
+import AIDocumentAnalyzerPage from "./app/dashboard/ai-document-analyzer/page";
 import { APIKeyManagement } from "./components/admin/APIKeyManagement";
 import { TelecomSiteManagement } from "./components/admin/TelecomSiteManagement";
 import { ActivityManagement } from "./components/admin/ActivityManagement";
@@ -167,6 +170,13 @@ function App() {
               <Route path="/documents" element={
                 <RoleBasedRoute allowedRoles={['staff', 'manager', 'admin', 'accountant', 'hr']}>
                   <DocumentsPage />
+                </RoleBasedRoute>
+              } />
+              
+              {/* AI Document Analyzer Page - accessible by all authenticated users */}
+              <Route path="/dashboard/ai-document-analyzer" element={
+                <RoleBasedRoute allowedRoles={['staff', 'manager', 'admin', 'accountant', 'hr']}>
+                  <AIDocumentAnalyzerPage />
                 </RoleBasedRoute>
               } />
             </Routes>

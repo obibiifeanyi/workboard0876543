@@ -1,5 +1,5 @@
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Brain, Upload, FileText, Loader, Check, AlertCircle, Download, BarChart3, PieChart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -35,7 +35,17 @@ interface AnalysisResult {
 
 const COLORS = ['#ff1c04', '#0FA0CE', '#10B981', '#F59E0B', '#8B5CF6'];
 
-export const AIDocumentAnalyzer = () => {
+interface AIDocumentAnalyzerProps {
+  onLoadingChange?: (isLoading: boolean) => void;
+}
+
+export const AIDocumentAnalyzer = ({ onLoadingChange }: AIDocumentAnalyzerProps = {}) => {
+  // Form submission states
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  
+  // Analysis states
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [textInput, setTextInput] = useState("");
@@ -46,9 +56,37 @@ export const AIDocumentAnalyzer = () => {
   const { toast } = useToast();
   const { user } = useAuth();
 
+  // Update parent component's loading state when our loading state changes
+  useEffect(() => {
+    if (onLoadingChange) {
+      onLoadingChange(isAnalyzing);
+    }
+  }, [isAnalyzing, onLoadingChange]);
+  
+  // Reset success state after 3 seconds
+  useEffect(() => {
+    let successTimer: NodeJS.Timeout;
+    
+    if (isSuccess) {
+      successTimer = setTimeout(() => {
+        setIsSuccess(false);
+      }, 3000);
+    }
+    
+    return () => {
+      if (successTimer) {
+        clearTimeout(successTimer);
+      }
+    };
+  }, [isSuccess]);
+
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      // Reset states
+      setValidationErrors([]);
+      setError(null);
+      
       // Validate file type
       const allowedTypes = [
         'application/pdf', 
@@ -61,13 +99,17 @@ export const AIDocumentAnalyzer = () => {
       ];
       
       if (!allowedTypes.includes(file.type)) {
-        setError("Invalid file type. Please select a PDF, Word document, Excel file, or text file.");
+        const errorMessage = "Invalid file type. Please select a PDF, Word document, Excel file, or text file.";
+        setValidationErrors(prev => [...prev, errorMessage]);
+        setError(errorMessage);
         return;
       }
 
       // Validate file size (25MB limit)
       if (file.size > 25 * 1024 * 1024) {
-        setError("File too large. Please select a file smaller than 25MB.");
+        const errorMessage = "File too large. Please select a file smaller than 25MB.";
+        setValidationErrors(prev => [...prev, errorMessage]);
+        setError(errorMessage);
         return;
       }
 
@@ -122,20 +164,43 @@ export const AIDocumentAnalyzer = () => {
     }
   };
 
-  const analyzeDocument = async () => {
+  const validateAnalysisInput = (): boolean => {
+    const errors: string[] = [];
+    
     if (!selectedFile && !textInput.trim()) {
-      setError("Please select a file or enter text to analyze.");
-      return;
+      errors.push("Please select a file or enter text to analyze.");
     }
-
+    
     if (!user) {
-      setError("Please log in to analyze documents.");
+      errors.push("Please log in to analyze documents.");
+    }
+    
+    if (errors.length > 0) {
+      setValidationErrors(errors);
+      setError(errors[0]);
+      return false;
+    }
+    
+    return true;
+  };
+  
+  const analyzeDocument = async () => {
+    // Validate inputs
+    if (!validateAnalysisInput()) {
       return;
     }
+    
+    // Reset states
+    setValidationErrors([]);
+    setIsSubmitting(true);
+    setIsSuccess(false);
 
     setIsAnalyzing(true);
     setError(null);
     setAnalysisProgress(0);
+    
+    // Track analysis start time
+    const startTime = Date.now();
     
     try {
       let content = "";
@@ -173,22 +238,31 @@ export const AIDocumentAnalyzer = () => {
 
       setAnalysisProgress(100);
       setAnalysisResult(analysisData.analysis);
+      setIsSuccess(true);
+      
+      // Calculate processing time
+      const processingTime = Date.now() - startTime;
+      const processingTimeSeconds = Math.round(processingTime / 100) / 10;
 
       toast({
         title: "Analysis Complete",
-        description: "Document has been successfully analyzed with AI.",
+        description: `Document analyzed in ${processingTimeSeconds}s with AI.`,
       });
 
     } catch (error: any) {
       console.error('Analysis error:', error);
-      setError(error.message || 'Failed to analyze document. Please try again.');
+      const errorMessage = error.message || 'Failed to analyze document. Please try again.';
+      setError(errorMessage);
+      setValidationErrors([errorMessage]);
+      
       toast({
         title: "Analysis Failed",
-        description: error.message || "Failed to analyze document. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
       setIsAnalyzing(false);
+      setIsSubmitting(false);
     }
   };
 

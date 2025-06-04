@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -17,12 +17,26 @@ export const StaffActivityLogs = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     activity_type: "",
     activity_description: "",
     duration_hours: "",
     location: "",
   });
+  
+  // Reset form data when success state changes
+  useEffect(() => {
+    if (isSuccess) {
+      // Reset success state after a delay
+      const timer = setTimeout(() => {
+        setIsSuccess(false);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [isSuccess]);
 
   const { data: activities, isLoading } = useQuery({
     queryKey: ['staff-logs'],
@@ -67,15 +81,19 @@ export const StaffActivityLogs = () => {
         duration_hours: "",
         location: "",
       });
+      setIsSuccess(true);
+      setIsSubmitting(false);
       toast({
         title: "Success",
         description: "Activity logged successfully",
       });
     },
-    onError: () => {
+    onError: (error: any) => {
+      setIsSubmitting(false);
+      setErrorMessage(error?.message || "Failed to log activity");
       toast({
         title: "Error",
-        description: "Failed to log activity",
+        description: error?.message || "Failed to log activity",
         variant: "destructive",
       });
     },
@@ -83,6 +101,22 @@ export const StaffActivityLogs = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
+    setErrorMessage(null);
+    
+    // Validate required fields
+    if (!formData.activity_type || !formData.activity_description) {
+      setErrorMessage("Activity type and description are required");
+      setIsSubmitting(false);
+      toast({
+        title: "Validation Error",
+        description: "Please fill in all required fields.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Call the mutation
     createActivity.mutate(formData);
   };
 
@@ -149,9 +183,15 @@ export const StaffActivityLogs = () => {
                     onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
                   />
                 </div>
-                <Button type="submit" disabled={createActivity.isPending}>
-                  {createActivity.isPending ? "Logging..." : "Log Activity"}
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? "Logging..." : "Log Activity"}
                 </Button>
+                {errorMessage && (
+                  <p className="text-red-500 text-xs mt-2">{errorMessage}</p>
+                )}
+                {isSuccess && (
+                  <p className="text-green-600 text-xs mt-2">Activity logged successfully!</p>
+                )}
               </form>
             </DialogContent>
           </Dialog>

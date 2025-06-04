@@ -23,6 +23,7 @@ import {
   Radio,
   Users,
   MessageSquare,
+  FileSearch,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -40,6 +41,7 @@ const StaffDashboard = () => {
     { to: "/staff/battery-reports", icon: Battery, label: "Battery Reports" },
     { to: "/staff/telecom-reports", icon: Radio, label: "Telecom Reports" },
     { to: "/staff/meetings", icon: Users, label: "Meetings" },
+    { to: "/dashboard/ai-document-analyzer", icon: FileSearch, label: "AI Document Analyzer" },
   ];
 
   const navigation = (

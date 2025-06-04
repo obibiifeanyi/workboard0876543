@@ -7,6 +7,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useStaffOperations } from "@/hooks/useStaffOperations";
+import { FormEvent } from "react";
+import { AlertCircle, CheckCircle } from "lucide-react";
 
 interface MeetingFormProps {
   onSubmit: (meetingData: {
@@ -27,6 +29,12 @@ export const MeetingCenter = () => {
   const { useMeetings, createMeeting } = useStaffOperations();
   const { data: meetings = [], isLoading } = useMeetings();
   const { toast } = useToast();
+  
+  // Form submission states
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -37,9 +45,55 @@ export const MeetingCenter = () => {
     end_time: new Date().toISOString().slice(0, 16),
     agenda: ''
   });
+  
+  // Reset success state after delay
+  if (isSuccess) {
+    setTimeout(() => {
+      setIsSuccess(false);
+    }, 3000);
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
+    setErrorMessage(null);
+    
+    // Validate form fields
+    if (!formData.title.trim()) {
+      setErrorMessage('Meeting title is required');
+      setIsSubmitting(false);
+      toast({
+        title: 'Validation Error',
+        description: 'Meeting title is required.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    if (!formData.start_time || !formData.end_time) {
+      setErrorMessage('Start and end times are required');
+      setIsSubmitting(false);
+      toast({
+        title: 'Validation Error',
+        description: 'Start and end times are required.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    // Validate end time is after start time
+    if (new Date(formData.end_time) <= new Date(formData.start_time)) {
+      setErrorMessage('End time must be after start time');
+      setIsSubmitting(false);
+      toast({
+        title: 'Validation Error',
+        description: 'End time must be after start time.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    // Call the mutation
     createMeeting.mutate({
       title: formData.title,
       description: formData.description,
@@ -50,6 +104,41 @@ export const MeetingCenter = () => {
       end_time: formData.end_time,
       agenda: formData.agenda,
       status: 'scheduled' // Add default status
+    }, {
+      onSuccess: () => {
+        setIsSuccess(true);
+        setIsSubmitting(false);
+        toast({
+          title: 'Meeting Scheduled',
+          description: 'Your meeting has been scheduled successfully.',
+        });
+        
+        // Reset form
+        setFormData({
+          title: '',
+          description: '',
+          meeting_type: 'general',
+          location: '',
+          meeting_url: '',
+          start_time: new Date().toISOString().slice(0, 16),
+          end_time: new Date().toISOString().slice(0, 16),
+          agenda: ''
+        });
+        
+        // Reset success state after a delay
+        setTimeout(() => {
+          setIsSuccess(false);
+        }, 3000);
+      },
+      onError: (error: any) => {
+        setIsSubmitting(false);
+        setErrorMessage(error?.message || 'Failed to schedule meeting');
+        toast({
+          title: 'Error',
+          description: error?.message || 'Failed to schedule meeting.',
+          variant: 'destructive',
+        });
+      }
     });
   };
 
@@ -154,8 +243,27 @@ export const MeetingCenter = () => {
             />
           </div>
 
-          <Button type="submit">
-            Schedule Meeting
+          {/* Form feedback messages */}
+          {errorMessage && (
+            <div className="flex items-center gap-2 text-red-500 text-sm">
+              <AlertCircle size={16} />
+              <span>{errorMessage}</span>
+            </div>
+          )}
+          
+          {isSuccess && (
+            <div className="flex items-center gap-2 text-green-500 text-sm">
+              <CheckCircle size={16} />
+              <span>Meeting scheduled successfully!</span>
+            </div>
+          )}
+          
+          <Button 
+            type="submit" 
+            disabled={isSubmitting}
+            className={isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}
+          >
+            {isSubmitting ? 'Scheduling...' : 'Schedule Meeting'}
           </Button>
         </form>
       </CardContent>
