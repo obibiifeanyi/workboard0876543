@@ -2,7 +2,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { DocumentAnalysis, analyzeDocument as aiAnalyzeDocument } from "@/lib/ai/documentAI";
-import { useAuth } from "@/hooks/useAuth";
 
 export class DocumentService {
   /**
@@ -98,14 +97,10 @@ export class DocumentService {
    * Analyzes a document using AI
    */
   static async analyzeDocument(file: File, userId: string): Promise<{ success: boolean; data?: DocumentAnalysis; error?: string }> {
-    let isSubmitting = true;
-    let validationErrors: string[] = [];
-    
     try {
       // Validate file
       const validation = this.validateFile(file);
       if (!validation.valid) {
-        validationErrors.push(validation.error || 'Invalid file');
         return { success: false, error: validation.error };
       }
       
@@ -137,48 +132,50 @@ export class DocumentService {
         duration: 5000
       });
       
-      validationErrors.push(error.message || 'Analysis failed');
       return { 
         success: false, 
         error: error.message 
       };
-    } finally {
-      isSubmitting = false;
     }
   }
   
   /**
-   * Gets document analyses for a user
+   * Gets document analyses for a user using existing tables
    */
   static async getDocumentAnalyses(userId: string): Promise<{ success: boolean; data?: DocumentAnalysis[]; error?: string }> {
     try {
-      // Check if document_analyses table exists
-      const { count, error: checkError } = await supabase
-        .from('document_analyses')
-        .select('id', { count: 'exact', head: true });
+      // Try to check if document_analysis table exists first
+      let data: DocumentAnalysis[] = [];
       
-      let data;
-      
-      if (!checkError && count !== null) {
-        // Use dedicated document_analyses table
-        const { data: analysesData, error } = await supabase
-          .from('document_analyses')
+      try {
+        const { data: analysisData, error: analysisError } = await supabase
+          .from('document_analysis')
           .select('*')
           .eq('created_by', userId)
           .order('created_at', { ascending: false });
 
-        if (error) throw error;
-        data = analysesData;
-      } else {
-        // Fall back to memos table
-        const { data: memosData, error } = await supabase
+        if (!analysisError && analysisData) {
+          data = analysisData.map(analysis => ({
+            id: analysis.id,
+            file_name: analysis.file_name,
+            analysis_result: analysis.analysis_result,
+            status: analysis.status || 'completed',
+            created_by: analysis.created_by || userId,
+            created_at: analysis.created_at
+          }));
+        }
+      } catch (tableError) {
+        // If document_analysis table doesn't exist, fall back to memos
+        console.log('Document analysis table not found, using memos fallback');
+        
+        const { data: memosData, error: memosError } = await supabase
           .from('memos')
           .select('*')
           .eq('created_by', userId)
           .like('title', 'Document Analysis:%')
           .order('created_at', { ascending: false });
 
-        if (error) throw error;
+        if (memosError) throw memosError;
 
         data = memosData.map(memo => {
           let analysisResult;

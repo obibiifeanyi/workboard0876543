@@ -13,11 +13,11 @@ export interface CTPowerReportData {
   report_number?: string;
 }
 
-type ApiResponse<T = any> = {
+interface ApiResponse<T = any> {
   success: boolean;
   data?: T;
   error?: string;
-};
+}
 
 export class ApiService {
   static async createCTPowerReport(data: CTPowerReportData): Promise<ApiResponse> {
