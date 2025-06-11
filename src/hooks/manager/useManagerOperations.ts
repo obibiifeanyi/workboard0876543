@@ -1,4 +1,3 @@
-
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -75,6 +74,26 @@ export interface Task {
     id: string;
     name: string;
   };
+}
+
+interface Memo {
+  id: string;
+  title: string;
+  content: string;
+  sender_id: string;
+  department_id: string;
+  created_at: string;
+  status: string;
+}
+
+interface Report {
+  id: string;
+  title: string;
+  content: string;
+  user_id: string;
+  department_id: string;
+  created_at: string;
+  status: string;
 }
 
 export const useManagerOperations = () => {
@@ -204,6 +223,52 @@ export const useManagerOperations = () => {
     enabled: !!currentUser?.id,
   });
 
+  // Get manager's departments
+  const { data: departments, isLoading: isLoadingDepartments } = useQuery({
+    queryKey: ['managerDepartments'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .rpc('get_manager_departments', {
+          p_manager_id: (await supabase.auth.getUser()).data.user?.id
+        });
+
+      if (error) throw error;
+      return data as Department[];
+    }
+  });
+
+  // Get department memos
+  const { data: memos, isLoading: isLoadingMemos } = useQuery({
+    queryKey: ['departmentMemos'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('memos')
+        .select('*')
+        .in('department_id', departments?.map(d => d.department_id) || [])
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data as Memo[];
+    },
+    enabled: !!departments
+  });
+
+  // Get department reports
+  const { data: reports, isLoading: isLoadingReports } = useQuery({
+    queryKey: ['departmentReports'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('reports')
+        .select('*')
+        .in('department_id', departments?.map(d => d.department_id) || [])
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data as Report[];
+    },
+    enabled: !!departments
+  });
+
   // Create project mutation
   const createProject = useMutation({
     mutationFn: async (projectData: {
@@ -308,6 +373,60 @@ export const useManagerOperations = () => {
     },
   });
 
+  // Update memo status
+  const updateMemoStatus = useMutation({
+    mutationFn: async ({ memoId, status }: { memoId: string; status: string }) => {
+      const { error } = await supabase
+        .from('memos')
+        .update({ status })
+        .eq('id', memoId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['departmentMemos'] });
+      toast({
+        title: "Success",
+        description: "Memo status updated successfully",
+      });
+    },
+    onError: (error) => {
+      console.error('Error updating memo status:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update memo status",
+        variant: "destructive",
+      });
+    }
+  });
+
+  // Update report status
+  const updateReportStatus = useMutation({
+    mutationFn: async ({ reportId, status }: { reportId: string; status: string }) => {
+      const { error } = await supabase
+        .from('reports')
+        .update({ status })
+        .eq('id', reportId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['departmentReports'] });
+      toast({
+        title: "Success",
+        description: "Report status updated successfully",
+      });
+    },
+    onError: (error) => {
+      console.error('Error updating report status:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update report status",
+        variant: "destructive",
+      });
+    }
+  });
+
   return {
     currentUser,
     managedDepartments,
@@ -323,5 +442,12 @@ export const useManagerOperations = () => {
     addProjectMember,
     removeProjectMember,
     createTask,
+    departments,
+    memos,
+    reports,
+    isLoadingMemos,
+    isLoadingReports,
+    updateMemoStatus,
+    updateReportStatus
   };
 };
