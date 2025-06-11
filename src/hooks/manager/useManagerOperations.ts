@@ -119,7 +119,7 @@ export const useManagerOperations = () => {
   });
 
   // Get managed departments
-  const { data: managedDepartments, isLoading: isLoadingDepartments } = useQuery({
+  const { data: managedDepartments, isLoading: isLoadingManagedDepartments } = useQuery({
     queryKey: ["managedDepartments"],
     queryFn: async () => {
       if (!currentUser?.id) return [];
@@ -433,9 +433,9 @@ export const useManagerOperations = () => {
     teamMembers,
     projects,
     tasks,
-    isLoadingDepartments,
-    isLoadingTeam, // Keep original property name for existing components
-    isLoadingTeamMembers: isLoadingTeam, // Alias for backward compatibility
+    isLoadingManagedDepartments,
+    isLoadingTeam,
+    isLoadingTeamMembers: isLoadingTeam,
     isLoadingProjects,
     isLoadingTasks,
     createProject,
