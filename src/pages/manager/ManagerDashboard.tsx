@@ -1,4 +1,3 @@
-
 import { useState, Suspense } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { ManagerNavigation } from "@/components/manager/ManagerNavigation";
@@ -15,11 +14,22 @@ import { Loader } from "@/components/ui/Loader";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ManagerTabContent } from "@/components/manager/dashboard/ManagerTabContent";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { useAuth } from "@/hooks/useAuth";
+import { Loader2 } from "lucide-react";
 
-const ManagerDashboard = () => {
+export const ManagerDashboard = () => {
   const location = useLocation();
+  const { loading: authLoading } = useAuth();
   const isRootManagerRoute = location.pathname === '/manager';
   const [activeTab, setActiveTab] = useState("team");
+
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   const renderBreadcrumb = () => {
     const paths = location.pathname.split('/').filter(Boolean);
