@@ -1,5 +1,5 @@
 import { AdminOverview } from "./AdminOverview";
-import { UserManagement } from "../UserManagement";
+import { UserManagement } from "@/components/staff-admin/UserManagement";
 import { DepartmentManagement } from "../DepartmentManagement";
 import { SettingsPage } from "../SettingsPage";
 import { useAdminOperations } from "@/hooks/admin/useAdminOperations";
@@ -10,7 +10,8 @@ interface AdminTabContentProps {
 }
 
 export const AdminTabContent = ({ activeTab }: AdminTabContentProps) => {
-  const { isLoading } = useAdminOperations();
+  const { useAdminStats } = useAdminOperations();
+  const { isLoading } = useAdminStats();
 
   if (isLoading) {
     return (
