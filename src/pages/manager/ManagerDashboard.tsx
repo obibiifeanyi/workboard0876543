@@ -11,12 +11,11 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Loader } from "@/components/ui/Loader";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/hooks/use-auth";
 import { Loader2 } from "lucide-react";
 import { DashboardClockInButton } from "@/components/DashboardClockInButton";
 import React, { useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { DocumentManagement } from "@/components/shared/DocumentManagement";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ActivityLogger } from "@/lib/activity-logger";
@@ -24,7 +23,7 @@ import { toast } from "sonner";
 
 export const ManagerDashboard = () => {
   const location = useLocation();
-  const { loading: authLoading, user } = useAuth();
+  const { user } = useAuth();
 
   // Log manager dashboard access
   useEffect(() => {
@@ -89,12 +88,8 @@ export const ManagerDashboard = () => {
     enabled: !!user,
   });
 
-  if (authLoading || activitiesLoading || deptStatsLoading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
+  if (activitiesLoading || deptStatsLoading) {
+    return <div>Loading...</div>;
   }
 
   const renderBreadcrumb = () => {
@@ -143,16 +138,6 @@ export const ManagerDashboard = () => {
         <ErrorBoundary>
           <Outlet />
         </ErrorBoundary>
-
-        {/* Document Management Section */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Document Management</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <DocumentManagement />
-          </CardContent>
-        </Card>
 
         {/* Department Statistics */}
         <Card>
