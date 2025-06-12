@@ -95,8 +95,8 @@ import { ProcurementManagement } from "./components/office-admin/ProcurementMana
 import { DocumentLibrary } from "./components/office-admin/DocumentLibrary";
 import { ExpenseManagement as ExpenseManagementOffice } from "./components/office-admin/ExpenseManagement";
 import { ProjectManagement as ProjectManagementOffice } from "./components/office-admin/ProjectManagement";
-import { BatteryInventory as BatteryInventoryOffice } from "./components/office-admin/BatteryInventory";
-import { SystemSettings as SystemSettingsOffice } from "./components/office-admin/SystemSettings";
+import BatteryInventory from "./components/office-admin/BatteryInventory";
+import SystemSettings from "./components/office-admin/SystemSettings";
 
 const queryClient = new QueryClient();
 
@@ -129,9 +129,9 @@ function App() {
                 <Route path="documents" element={<DocumentLibrary />} />
                 <Route path="expenses" element={<ExpenseManagementOffice />} />
                 <Route path="projects" element={<ProjectManagementOffice />} />
-                <Route path="telecom-sites" element={<TelecomSiteManagement />} />
-                <Route path="battery-inventory" element={<BatteryInventoryOffice />} />
-                <Route path="settings" element={<SystemSettingsOffice />} />
+                <Route path="telecom-sites" element={<TelecomSiteManagementAdmin />} />
+                <Route path="battery-inventory" element={<BatteryInventory />} />
+                <Route path="system-settings" element={<SystemSettings />} />
               </Route>
 
               {/* Accountant routes */}
