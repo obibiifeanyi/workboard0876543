@@ -26,7 +26,8 @@ export type ActivityType =
   | 'clock.out'
   | 'notification.sent'
   | 'permission.granted'
-  | 'permission.revoked';
+  | 'permission.revoked'
+  | 'document_view';
 
 interface ActivityMetadata {
   [key: string]: any;
@@ -327,4 +328,14 @@ export const ActivityLogger = {
       { targetId, permission },
       { id: targetId, type: 'user' }
     ),
+
+  logDocumentView: (userId: string, documentTitle: string) =>
+    logActivity(
+      'document_view',
+      userId,
+      `User viewed document: ${documentTitle}`,
+      { document_title: documentTitle },
+      { id: userId, type: 'document' }
+    ),
 };
+
