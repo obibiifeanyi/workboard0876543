@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { FileText, Check } from "lucide-react";
@@ -57,6 +56,15 @@ export const InvoiceManagement = () => {
     markAsPaidMutation.mutate(invoiceId);
   };
 
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-NG', {
+      style: 'currency',
+      currency: 'NGN',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(amount);
+  };
+
   if (isLoading) {
     return (
       <Card className="bg-black/10 dark:bg-white/5 backdrop-blur-lg border-none">
@@ -95,7 +103,7 @@ export const InvoiceManagement = () => {
                       {invoice.vendor_name} - {format(new Date(invoice.created_at), 'PPP')}
                     </p>
                     <p className="text-sm font-medium">
-                      Amount: ₦{invoice.amount.toLocaleString()}
+                      Amount: {formatCurrency(invoice.amount)}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">

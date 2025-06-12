@@ -1,8 +1,36 @@
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { ThemeProvider } from "next-themes";
+import { ThemeProvider } from "@/components/theme-provider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { RoleBasedRoute } from "@/components/RoleBasedRoute";
+import LoginPage from "@/pages/Login";
+import RegisterPage from "@/pages/Signup";
+import ForgotPasswordPage from "@/pages/ResetPassword";
+import ResetPasswordPage from "@/pages/ResetPassword";
+import VerifyEmailPage from "@/pages/AuthCallback";
+import AdminDashboard from "@/pages/admin/AdminDashboard";
+import ManagerDashboard from "@/pages/manager/ManagerDashboard";
+import StaffDashboard from "@/pages/staff/StaffDashboard";
+import OfficeAdminDashboard from "@/pages/office-admin/OfficeAdminDashboard";
+import { UserManagement } from "@/components/staff-admin/UserManagement";
+import { DepartmentManagement } from "@/components/staff-admin/DepartmentManagement";
+import { ProjectManagement } from "@/components/admin/ProjectManagement";
+import { TimeAttendanceManagement } from "@/components/admin/TimeAttendanceManagement";
+import { LeaveManagement } from "@/components/admin/LeaveManagement";
+import { CommunicationCenter } from "@/components/admin/CommunicationCenter";
+import { InventoryManagement } from "@/components/staff-admin/InventoryManagement";
+import { BatteryInventory } from "@/components/staff-admin/BatteryInventory";
+import { ExpenseManagement } from "@/components/staff-admin/ExpenseManagement";
+import { TimeTracking } from "@/components/staff-admin/TimeTracking";
+import { LeaveRequestManagement } from "@/components/staff-admin/LeaveRequestManagement";
+import { SystemSettings } from "@/components/staff-admin/SystemSettings";
+import { TelecomSiteManagement } from "@/components/staff-admin/TelecomSiteManagement";
+import { OfficeAdminOverview } from "@/components/office-admin/OfficeAdminOverview";
+import StaffAdminDashboard from "@/components/staff-admin/StaffAdminDashboard";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -10,24 +38,13 @@ import ResetPassword from "./pages/ResetPassword";
 import AuthCallback from "./pages/AuthCallback";
 import Dashboard from "./pages/Dashboard";
 import DocumentsPage from "./pages/documents/DocumentsPage";
-import AdminDashboard from "./pages/admin/AdminDashboard";
-import ManagerDashboard from "./pages/manager/ManagerDashboard";
 import AccountantDashboard from "./pages/accountant/AccountantDashboard";
-import StaffDashboard from "./pages/staff/StaffDashboard";
 import HRDashboard from "./pages/hr/HRDashboard";
-import { RoleBasedRoute } from "./components/RoleBasedRoute";
-
-// Admin nested routes
-import { DepartmentManagement } from "./components/admin/DepartmentManagement";
-import { ProjectManagement } from "./components/admin/ProjectManagement";
-import { TimeAttendanceManagement } from "./components/admin/TimeAttendanceManagement";
-import { LeaveManagement } from "./components/admin/LeaveManagement";
-import { CommunicationCenter } from "./components/admin/CommunicationCenter";
 
 // AI Document Analyzer
 import AIDocumentAnalyzerPage from "./app/dashboard/ai-document-analyzer/page";
 import { APIKeyManagement } from "./components/admin/APIKeyManagement";
-import { TelecomSiteManagement } from "./components/admin/TelecomSiteManagement";
+import { TelecomSiteManagement as TelecomSiteManagementAdmin } from "./components/admin/TelecomSiteManagement";
 import { ActivityManagement } from "./components/admin/ActivityManagement";
 import { AIManagementSystem } from "./components/ai/AIManagementSystem";
 
@@ -62,37 +79,24 @@ import { HRReports } from "./components/hr/HRReports";
 import { FinancialReports } from "./components/accountant/FinancialReports";
 import { InvoiceManagement } from "./components/accountant/InvoiceManagement";
 import { MemoApproval } from "./components/accountant/MemoApproval";
-import { InventoryManagement } from "./components/accountant/InventoryManagement";
+import { InventoryManagement as InventoryManagementAccountant } from "./components/accountant/InventoryManagement";
 import { PaymentProcessing } from "./components/accountant/PaymentProcessing";
 import { AccountSettings } from "./components/accountant/AccountSettings";
 
 // Staff Admin routes with nested routing
-import { StaffAdminDashboard } from "./components/staff-admin/StaffAdminDashboard";
 import { StaffAdminOverview } from "./components/staff-admin/StaffAdminOverview";
 import { TaskAssignment } from "./components/staff-admin/TaskAssignment";
-import { BatteryInventory } from "./components/staff-admin/BatteryInventory";
-import { ExpenseManagement } from "./components/staff-admin/ExpenseManagement";
 import { NotificationManagement } from "./components/staff-admin/NotificationManagement";
-import { TimeTracking } from "./components/staff-admin/TimeTracking";
-import { LeaveRequestManagement } from "./components/staff-admin/LeaveRequestManagement";
 import { MeetingScheduler } from "./components/staff-admin/MeetingScheduler";
 import { VehicleManagement } from "./components/staff-admin/VehicleManagement";
 import { AnalyticsDashboard } from "./components/staff-admin/AnalyticsDashboard";
-import { SystemSettings } from "./components/staff-admin/SystemSettings";
-import { UserManagement } from "./components/staff-admin/UserManagement";
-
-// Office Admin routes with nested routing
-import { OfficeAdminDashboard } from "./components/office-admin/OfficeAdminDashboard";
-import { OfficeAdminOverview } from "./components/office-admin/OfficeAdminOverview";
 import { HRManagement } from "./components/office-admin/HRManagement";
-import { InventoryManagement } from "./components/office-admin/InventoryManagement";
 import { ProcurementManagement } from "./components/office-admin/ProcurementManagement";
 import { DocumentLibrary } from "./components/office-admin/DocumentLibrary";
-import { ExpenseManagement } from "./components/office-admin/ExpenseManagement";
-import { ProjectManagement } from "./components/office-admin/ProjectManagement";
-import { TelecomSiteManagement } from "./components/office-admin/TelecomSiteManagement";
-import { BatteryInventory } from "./components/office-admin/BatteryInventory";
-import { SystemSettings } from "./components/office-admin/SystemSettings";
+import { ExpenseManagement as ExpenseManagementOffice } from "./components/office-admin/ExpenseManagement";
+import { ProjectManagement as ProjectManagementOffice } from "./components/office-admin/ProjectManagement";
+import { BatteryInventory as BatteryInventoryOffice } from "./components/office-admin/BatteryInventory";
+import { SystemSettings as SystemSettingsOffice } from "./components/office-admin/SystemSettings";
 
 const queryClient = new QueryClient();
 
@@ -123,11 +127,11 @@ function App() {
                 <Route path="inventory" element={<InventoryManagement />} />
                 <Route path="procurement" element={<ProcurementManagement />} />
                 <Route path="documents" element={<DocumentLibrary />} />
-                <Route path="expenses" element={<ExpenseManagement />} />
-                <Route path="projects" element={<ProjectManagement />} />
+                <Route path="expenses" element={<ExpenseManagementOffice />} />
+                <Route path="projects" element={<ProjectManagementOffice />} />
                 <Route path="telecom-sites" element={<TelecomSiteManagement />} />
-                <Route path="battery-inventory" element={<BatteryInventory />} />
-                <Route path="settings" element={<SystemSettings />} />
+                <Route path="battery-inventory" element={<BatteryInventoryOffice />} />
+                <Route path="settings" element={<SystemSettingsOffice />} />
               </Route>
 
               {/* Accountant routes */}

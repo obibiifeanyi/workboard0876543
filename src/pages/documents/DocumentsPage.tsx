@@ -1,6 +1,5 @@
-
 import { DashboardLayout } from "@/components/DashboardLayout";
-import { DocumentManagement } from "@/components/documents/DocumentManagement";
+import { DocumentManagement } from "@/components/shared/DocumentManagement";
 import { BackToAdminButton } from "@/components/shared/BackToAdminButton";
 import { AIDocumentButton } from "@/components/shared/AIDocumentButton";
 

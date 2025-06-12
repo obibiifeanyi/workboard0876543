@@ -264,6 +264,8 @@ export const SignupForm = ({ onSignup, error }: SignupFormProps) => {
               <SelectItem value="manager">Manager</SelectItem>
               <SelectItem value="admin">Admin</SelectItem>
               <SelectItem value="accountant">Accountant</SelectItem>
+              <SelectItem value="hr">HR</SelectItem>
+              <SelectItem value="staff_admin">Staff Admin</SelectItem>
             </SelectContent>
           </Select>
         </div>

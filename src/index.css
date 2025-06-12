@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -11,9 +10,9 @@
     --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
-    --primary: 0 100% 51%;  /* #ff1c04 */
+    --primary: 222.2 47.4% 11.2%;
     --primary-foreground: 210 40% 98%;
-    --secondary: 197 86% 43%;  /* #0FA0CE */
+    --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
@@ -23,30 +22,30 @@
     --destructive-foreground: 210 40% 98%;
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 0 100% 51%;  /* Updated to match primary */
-    --radius: 0.75rem;
+    --ring: 222.2 84% 4.9%;
+    --radius: 0.5rem;
   }
  
   .dark {
-    --background: 0 0% 0%;  /* Pure black */
+    --background: 0 0% 0%;
     --foreground: 210 40% 98%;
-    --card: 0 0% 0%;  /* Pure black */
+    --card: 0 0% 0%;
     --card-foreground: 210 40% 98%;
-    --popover: 0 0% 0%;  /* Pure black */
+    --popover: 0 0% 0%;
     --popover-foreground: 210 40% 98%;
-    --primary: 0 100% 51%;  /* #ff1c04 */
-    --primary-foreground: 210 40% 98%;
-    --secondary: 197 86% 43%;  /* #0FA0CE */
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
-    --muted: 0 0% 8%;  /* Very dark charcoal */
+    --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
-    --accent: 0 0% 5%;  /* Dark charcoal */
+    --accent: 217.2 32.6% 17.5%;
     --accent-foreground: 210 40% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
-    --border: 0 0% 15%;  /* Dark charcoal border */
-    --input: 0 0% 15%;  /* Dark charcoal input */
-    --ring: 0 100% 51%;  /* Updated to match primary */
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
   }
 
   * {

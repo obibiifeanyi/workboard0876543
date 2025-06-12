@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,6 +10,15 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
+
+const formatCurrency = (amount: number) => {
+  return new Intl.NumberFormat('en-NG', {
+    style: 'currency',
+    currency: 'NGN',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(amount);
+};
 
 export const PaymentProcessing = () => {
   const { toast } = useToast();
@@ -174,7 +182,7 @@ export const PaymentProcessing = () => {
                     <SelectContent>
                       {pendingInvoices?.map((invoice) => (
                         <SelectItem key={invoice.id} value={invoice.id}>
-                          {invoice.invoice_number} - {invoice.vendor_name} (₦{invoice.amount.toLocaleString()})
+                          {invoice.invoice_number} - {invoice.vendor_name} (₦{formatCurrency(invoice.amount)})
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -266,7 +274,7 @@ export const PaymentProcessing = () => {
                       <div>
                         <div className="flex items-center gap-2">
                           <h4 className="font-medium capitalize">
-                            {transaction.transaction_type} - ₦{transaction.amount.toLocaleString()}
+                            {transaction.transaction_type} - ₦{formatCurrency(transaction.amount)}
                           </h4>
                           <Badge variant={transaction.status === 'completed' ? 'default' : 'secondary'}>
                             {transaction.status === 'completed' ? (
