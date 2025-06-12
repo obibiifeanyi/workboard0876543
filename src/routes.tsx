@@ -15,7 +15,7 @@ const NotFound = lazy(() => import('@/pages/NotFound'));
 
 // Admin routes
 const AdminDashboard = lazy(() => import('@/pages/admin/AdminDashboard'));
-const UserManagement = lazy(() => import('@/pages/admin/UserManagement'));
+const UserManagement = lazy(() => import('@/components/staff-admin/UserManagement'));
 const DepartmentManagement = lazy(() => import('@/pages/admin/DepartmentManagement'));
 const Settings = lazy(() => import('@/pages/admin/Settings'));
 
